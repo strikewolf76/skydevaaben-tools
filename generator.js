@@ -133,6 +133,8 @@
   const SETTINGS_KEY = "sv-generator-settings-v1";
   const TOKEN_KEY = "sv-generator-token";
 
+  const REPO_BASE_LOCKED = "https://skydevaaben.no";
+
   const OWNER = "strikewolf76";
   const REPO = "skydevaaben";
   const BRANCH = "main";
@@ -254,7 +256,6 @@
 
   function collectSettings() {
     return {
-      repoBase: els.repoBase.value,
       siteName: els.siteName.value,
       title: els.title.value,
       destSpotify: els.destSpotify.checked,
@@ -292,7 +293,6 @@
         if (typeof val === "undefined") return;
         if (isCheckbox) el.checked = !!val; else el.value = val;
       };
-      assign(els.repoBase, s.repoBase);
       assign(els.siteName, s.siteName);
       assign(els.title, s.title);
       assign(els.destSpotify, s.destSpotify, true);
@@ -958,9 +958,12 @@ ${normalBrowserLogic}
 
   // ---------- wire ----------
   function wire() {
+    // Enforce locked base URL regardless of localStorage state
+    els.repoBase.value = REPO_BASE_LOCKED;
     applySettings();
     const savedToken = loadToken();
     if (savedToken) els.ghToken.value = savedToken;
+    els.repoBase.value = REPO_BASE_LOCKED; // re-assert after applying other settings
     syncSlugAndCampaignFromTitle();
 
     [
