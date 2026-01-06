@@ -906,14 +906,13 @@ ${normalBrowserLogic}
       return;
     }
 
-    const totalFiles = 1 + (batch.items.length * 3); // og + html + url txt + qr per item
     addLogItem({
       title: "Publishing…",
       status: "RUNNING",
       lines: [
         `Target: ${OWNER}/${REPO} @ ${BRANCH}`,
         `OG image: ${batch.ogImageRel}`,
-        `Files: ${totalFiles}`
+        `Files: ${batch.items.length}`
       ]
     });
 
@@ -1005,26 +1004,6 @@ ${normalBrowserLogic}
           lines: [
             `Repo path: ${it.relPath}`,
             `dest=${it.dest} utm_source=${it.utm_source} utm_medium=${it.utm_medium} utm_content=${it.utm_content}`
-          ]
-        });
-
-        // Store campaign URL alongside the HTML for Channel use
-        const urlPath = it.relPath.replace(/\.html$/, ".txt");
-        const urlContentB64 = utf8ToBase64(it.pagesUrl + "\n");
-        await putFile({
-          owner: OWNER, repo: REPO, branch: BRANCH, token,
-          path: urlPath,
-          message: `Campaign URL: ${batch.slug} (${it.dest}) ${it.utm_content}`,
-          contentBase64: urlContentB64
-        });
-        addLogItem({
-          title: `OK: ${urlPath}`,
-          status: "PUBLISHED",
-          linkText: "Campaign URL",
-          linkHref: it.pagesUrl,
-          lines: [
-            `Repo path: ${urlPath}`,
-            it.pagesUrl
           ]
         });
       } catch (e) {
@@ -1167,9 +1146,7 @@ ${normalBrowserLogic}
       if (!batch || !batch.ok) return;
       renderPreviewGrid();
 
-      const repoBase = normBaseUrl(els.repoBase.value);
       const qrFiles = batch.items.map(i => `qrs/${batch.slug}/${i.dest}-${i.channel}.png`);
-      const urlFiles = batch.items.map(i => i.relPath.replace(/\.html$/, ".txt"));
 
       addLogItem({
         title: "Preview (not published)",
@@ -1178,10 +1155,8 @@ ${normalBrowserLogic}
           `OG image: ${batch.ogImageRel}`,
           `HTML files (${batch.items.length}):`,
           ...batch.items.map(i => `- ${i.relPath}`),
-          `URL files (${urlFiles.length}):`,
-          ...urlFiles.map(f => `- ${f}`),
           `QR files (${qrFiles.length}):`,
-          ...qrFiles.map(f => `- ${repoBase}/${f}`)
+          ...qrFiles.map(f => `- ${normBaseUrl(els.repoBase.value)}/${f}`)
         ]
       });
       hideLogIfEmpty();

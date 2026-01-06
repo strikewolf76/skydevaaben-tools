@@ -5,7 +5,7 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 ## How it works
 - HTML UI: `generator.html` (serve locally or open directly in the browser).
 - Logic: `generator.js` handles validation, batch building, QR generation, and GitHub Content API writes.
-- Output: writes `assets/og/<slug>.jpg`, `tracks/<slug>/<dest>/<utm_content>.html`, and a sibling `tracks/<slug>/<dest>/<utm_content>.txt` containing the campaign URL for the channel.
+- Output: writes `assets/og/<slug>.jpg` and `tracks/<slug>/<dest>/<utm_content>.html` into the repo.
 
 ## Requirements
 - Fine-grained GitHub PAT with **Contents: Read & Write** scoped to the `skydevaaben` repo.
