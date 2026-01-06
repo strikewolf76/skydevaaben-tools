@@ -204,6 +204,9 @@
             <div class="hint mono" id="ogFileInfo"></div>
             <div class="hint">Målfil: <span class="mono" id="ogImageNamePreview"></span></div>
             <div class="hint">Drag & drop et bilde på previewen for rask opplasting.</div>
+            <div class="row" style="margin-top:8px;">
+              <button id="btnDownloadOg">Download OG preview (JPG)</button>
+            </div>
           </div>
 
           <div>
@@ -240,15 +243,29 @@
         <button id="btnCopyCsv">Copy CSV</button>
       </div>
     </div>
+    <div class="row" style="margin-top:8px; gap:12px;">
+      <label class="small" style="display:flex; flex-direction:column; gap:4px;">
+        Dest filter
+        <select id="filterDest" style="min-width:140px;">
+          <option value="all">All destinations</option>
+        </select>
+      </label>
+      <label class="small" style="display:flex; flex-direction:column; gap:4px;">
+        Channel filter
+        <select id="filterChannel" style="min-width:140px;">
+          <option value="all">All channels</option>
+        </select>
+      </label>
+    </div>
     <div class="tablewrap" style="margin-top:10px;">
       <table class="preview">
         <thead>
           <tr>
-            <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th>
+            <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th><th>test</th>
           </tr>
         </thead>
         <tbody id="previewBody">
-          <tr><td colspan="8" style="text-align:center;">Klikk "Refresh preview"</td></tr>
+          <tr><td colspan="9" style="text-align:center;">Klikk "Refresh preview"</td></tr>
         </tbody>
       </table>
     </div>

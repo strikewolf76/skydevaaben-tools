@@ -30,6 +30,7 @@
     ogFileInfo: $("ogFileInfo"),
     ogCanvas: $("ogCanvas"),
     ogImageNamePreview: $("ogImageNamePreview"),
+    btnDownloadOg: $("btnDownloadOg"),
 
     validation: $("validation"),
     log: $("log"),
@@ -50,6 +51,8 @@
     btnCopyUrls: $("btnCopyUrls"),
     btnQrBatch: $("btnQrBatch"),
     previewBody: $("previewBody"),
+    filterDest: $("filterDest"),
+    filterChannel: $("filterChannel"),
   };
 
   // ---------- utils ----------
@@ -92,11 +95,12 @@
     return u.toString();
   }
 
-  function addLogItem({ title, lines = [], linkText, linkHref, status }) {
+  function addLogItem({ title, lines = [], linkText, linkHref, linkDownload, status }) {
     const div = document.createElement("div");
     div.className = "logitem";
     const statusHtml = status ? `<div class="mono">${status}</div>` : "";
-    const linkHtml = (linkHref && linkText) ? `<a href="${linkHref}" target="_blank" rel="noreferrer">${linkText}</a>` : "";
+    const dl = linkDownload ? ` download="${htmlEscape(linkDownload)}"` : "";
+    const linkHtml = (linkHref && linkText) ? `<a href="${linkHref}" target="_blank" rel="noreferrer"${dl}>${linkText}</a>` : "";
     div.innerHTML = `
       <div class="top">
         <div class="path">${title}</div>
@@ -543,6 +547,7 @@ ${normalBrowserLogic}
     if (els.chIGDM.checked) channels.push({ key: "igdm",  content: sanitizeSlug(els.igdmContent.value) });
 
     const items = [];
+    const dupCheck = new Map();
 
     for (const dest of destinations) {
       for (const ch of channels) {
@@ -573,6 +578,12 @@ ${normalBrowserLogic}
           spotifyTrackId: dest.spotifyId,
           webUrl
         });
+
+        const dupKey = `${dest.key}__${utm_content}`;
+        if (dupCheck.has(dupKey)) {
+          return { ok: false, error: `Duplicate utm_content for destination "${dest.key}": ${utm_content}` };
+        }
+        dupCheck.set(dupKey, true);
 
         items.push({
           relPath,
@@ -670,16 +681,46 @@ ${normalBrowserLogic}
     if (!els.previewBody) return;
 
     if (!batch || !batch.ok) {
-      els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Fix validation to preview.</td></tr>';
+      els.previewBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Fix validation to preview.</td></tr>';
       return;
     }
 
     if (!batch.items.length) {
-      els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Ingen kombinasjoner.</td></tr>';
+      els.previewBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Ingen kombinasjoner.</td></tr>';
       return;
     }
 
-    els.previewBody.innerHTML = batch.items.map(i => `
+    const destFilter = els.filterDest?.value || "all";
+    const chFilter = els.filterChannel?.value || "all";
+    const filtered = batch.items.filter(i => {
+      const destOk = destFilter === "all" || i.dest === destFilter;
+      const chOk = chFilter === "all" || i.channel === chFilter;
+      return destOk && chOk;
+    });
+
+    const dests = Array.from(new Set(batch.items.map(i => i.dest)));
+    const channels = Array.from(new Set(batch.items.map(i => i.channel)));
+    if (els.filterDest && els.filterDest.childElementCount <= 1) {
+      dests.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = d;
+        els.filterDest.appendChild(opt);
+      });
+    }
+    if (els.filterChannel && els.filterChannel.childElementCount <= 1) {
+      channels.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        els.filterChannel.appendChild(opt);
+      });
+    }
+
+    const rows = filtered.length ? filtered : [{ empty: true }];
+    els.previewBody.innerHTML = rows.map(i => {
+      if (i.empty) return '<tr><td colspan="9" style="text-align:center;">No rows match filter.</td></tr>';
+      return `
       <tr>
         <td>${htmlEscape(i.dest)}</td>
         <td>${htmlEscape(i.channel)}</td>
@@ -687,10 +728,12 @@ ${normalBrowserLogic}
         <td>${htmlEscape(i.utm_medium)}</td>
         <td>${htmlEscape(i.utm_campaign)}</td>
         <td>${htmlEscape(i.utm_content)}</td>
-        <td>${htmlEscape(i.pagesUrl)}</td>
-        <td>${htmlEscape(i.finalDestUrl)}</td>
+        <td><a href="${htmlEscape(i.pagesUrl)}" target="_blank" rel="noreferrer">open</a></td>
+        <td><a href="${htmlEscape(i.finalDestUrl)}" target="_blank" rel="noreferrer">dest</a></td>
+        <td><a href="${htmlEscape(i.pagesUrl)}" target="_blank" rel="noreferrer">test</a></td>
       </tr>
-    `).join("");
+    `;
+    }).join("");
   }
 
   async function copyPreviewCsv() {
@@ -713,6 +756,24 @@ ${normalBrowserLogic}
       addLogItem({ title: "CSV copied", status: "OK", lines: ["Preview grid kopiert til CSV (clipboard).", `${rows.length} rader.`] });
     } catch (e) {
       addLogItem({ title: "CSV copy failed", status: "FAIL", lines: [String(e.message || e)] });
+    }
+  }
+
+  async function downloadOgPreview() {
+    if (!els.ogCanvas) return;
+    try {
+      const blob = await new Promise((resolve) => els.ogCanvas.toBlob(resolve, "image/jpeg", 0.9));
+      if (!blob) throw new Error("Failed to export canvas");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = els.ogImageNamePreview.textContent || "og-preview.jpg";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      addLogItem({ title: "OG download failed", status: "FAIL", lines: [String(e.message || e)] });
     }
   }
 
@@ -773,7 +834,8 @@ ${normalBrowserLogic}
             reader.readAsDataURL(blob);
           });
           lines.push(`${it.relPath} → QR ready (API)`);
-          addLogItem({ title: `QR: ${it.relPath}`, status: "READY", linkText: "Download QR (PNG)", linkHref: dataUrl, lines: [it.pagesUrl] });
+          const fname = `${batch.slug || "qr"}-${it.dest}-${it.channel}-${it.utm_content}-qr.png`;
+          addLogItem({ title: `QR: ${it.relPath}`, status: "READY", linkText: "Download QR (PNG)", linkHref: dataUrl, linkDownload: fname, lines: [it.pagesUrl] });
         } catch (err) {
           addLogItem({ title: `QR FAIL (API): ${it.relPath}`, status: "FAIL", lines: [String(err?.message || err)] });
         }
@@ -785,7 +847,8 @@ ${normalBrowserLogic}
       for (const it of batch.items) {
         const dataUrl = await window.QRCode.toDataURL(it.pagesUrl, { width: 320, margin: 2 });
         lines.push(`${it.relPath} → QR ready`);
-        addLogItem({ title: `QR: ${it.relPath}`, status: "READY", linkText: "Download QR (PNG)", linkHref: dataUrl, lines: [it.pagesUrl] });
+        const fname = `${batch.slug || "qr"}-${it.dest}-${it.channel}-${it.utm_content}-qr.png`;
+        addLogItem({ title: `QR: ${it.relPath}`, status: "READY", linkText: "Download QR (PNG)", linkHref: dataUrl, linkDownload: fname, lines: [it.pagesUrl] });
       }
       addLogItem({ title: "QR batch done", status: "SUCCESS", lines });
     } catch (e) {
@@ -1089,11 +1152,15 @@ ${normalBrowserLogic}
     els.btnChSocialLight.addEventListener("click", () => setChannelPreset("social"));
     els.btnChMinimal.addEventListener("click", () => setChannelPreset("minimal"));
     els.btnUtmExamples.addEventListener("click", () => fillUtmExamples());
+    els.btnDownloadOg.addEventListener("click", () => downloadOgPreview());
 
     els.btnPreviewGrid.addEventListener("click", () => renderPreviewGrid());
     els.btnCopyCsv.addEventListener("click", () => copyPreviewCsv());
     els.btnCopyUrls.addEventListener("click", () => copyPagesUrls());
     els.btnQrBatch.addEventListener("click", () => generateQrBatch());
+
+    if (els.filterDest) els.filterDest.addEventListener("change", () => renderPreviewGrid());
+    if (els.filterChannel) els.filterChannel.addEventListener("change", () => renderPreviewGrid());
 
     wireOgDragDrop();
 
