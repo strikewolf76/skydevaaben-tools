@@ -35,8 +35,6 @@
     log: $("log"),
 
     btnGenerate: $("btnGenerate"),
-    btnBuildArtifacts: $("btnBuildArtifacts"),
-    btnCheckToken: $("btnCheckToken"),
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
@@ -46,12 +44,7 @@
     btnChSocialLight: $("btnChSocialLight"),
     btnChMinimal: $("btnChMinimal"),
     btnUtmExamples: $("btnUtmExamples"),
-    btnPreviewGrid: $("btnPreviewGrid"),
-    btnCopyCsv: $("btnCopyCsv"),
-    btnCopyUrls: $("btnCopyUrls"),
-    btnQrBatch: $("btnQrBatch"),
     previewBody: $("previewBody"),
-    chPublishQrs: $("chPublishQrs"),
   };
 
   // ---------- utils ----------
@@ -672,26 +665,8 @@ ${normalBrowserLogic}
   }
 
   // ---------- clipboard + QR ----------
-  async function copyPagesUrls() {
-    const batch = buildBatch({ requireOg: false });
-    if (!batch || !batch.ok) return;
-    const urls = batch.items.map(i => i.pagesUrl).join("\n");
-    try {
-      await navigator.clipboard.writeText(urls);
-      addLogItem({ title: "Copied Pages URLs", status: "OK", lines: ["Alle genererte Pages-URLer kopiert til utklippstavle."] });
-    } catch (e) {
-      addLogItem({ title: "Copy failed", status: "FAIL", lines: [String(e.message || e)] });
-    }
-  }
-
-  function csvEscape(val) {
-    const s = String(val ?? "");
-    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
-    return s;
-  }
-
   function renderPreviewGrid() {
-    const batch = buildBatch({ requireOg: false });
+    const batch = buildBatch({ requireOg: true });
     if (!els.previewBody) return;
 
     if (!batch || !batch.ok) {
@@ -718,43 +693,6 @@ ${normalBrowserLogic}
     `).join("");
   }
 
-  async function copyPreviewCsv() {
-    const batch = buildBatch({ requireOg: false });
-    if (!batch || !batch.ok) return;
-    const header = ["destination","channel","utm_source","utm_medium","utm_campaign","utm_content","pagesUrl","finalDestUrl"];
-    const rows = batch.items.map(i => [
-      i.dest,
-      i.channel,
-      i.utm_source,
-      i.utm_medium,
-      i.utm_campaign,
-      i.utm_content,
-      i.pagesUrl,
-      i.finalDestUrl
-    ]);
-    const csv = [header, ...rows].map(r => r.map(csvEscape).join(",")).join("\n");
-    try {
-      await navigator.clipboard.writeText(csv);
-      addLogItem({ title: "CSV copied", status: "OK", lines: ["Preview grid kopiert til CSV (clipboard).", `${rows.length} rader.`] });
-    } catch (e) {
-      addLogItem({ title: "CSV copy failed", status: "FAIL", lines: [String(e.message || e)] });
-    }
-  }
-
-  async function buildArtifacts() {
-    clearLog();
-    const batch = buildBatch({ requireOg: false });
-    if (!batch || !batch.ok) return;
-    renderPreviewGrid();
-    await copyPreviewCsv();
-    await generateQrBatch();
-    addLogItem({ title: "Artifacts built", status: "DONE", lines: [
-      `Rows: ${batch.items.length}`,
-      "Preview grid refreshed",
-      "CSV copied",
-      "QRs generated (UI/PNG links)"
-    ]});
-  }
 
   const QR_LIB_URLS = [
     "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js",
@@ -789,49 +727,6 @@ ${normalBrowserLogic}
     };
 
     return tryUrl();
-  }
-
-  async function generateQrBatch() {
-    const batch = buildBatch({ requireOg: false });
-    if (!batch || !batch.ok) return;
-
-    addLogItem({ title: "Generating QR codes…", status: "RUNNING", lines: [`${batch.items.length} URLs` ] });
-
-    const lines = [];
-
-    const useApiFallback = async () => {
-      for (const it of batch.items) {
-        try {
-          const apiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(it.pagesUrl)}&size=320&margin=2`;
-          const res = await fetch(apiUrl);
-          if (!res.ok) throw new Error(`QR API ${res.status}`);
-          const blob = await res.blob();
-          const dataUrl = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          lines.push(`${it.relPath} → QR ready (API)`);
-          addLogItem({ title: `QR: ${it.relPath}`, status: "READY", linkText: "Download QR (PNG)", linkHref: dataUrl, lines: [it.pagesUrl] });
-        } catch (err) {
-          addLogItem({ title: `QR FAIL (API): ${it.relPath}`, status: "FAIL", lines: [String(err?.message || err)] });
-        }
-      }
-    };
-
-    try {
-      await loadQrLib();
-      for (const it of batch.items) {
-        const dataUrl = await window.QRCode.toDataURL(it.pagesUrl, { width: 320, margin: 2 });
-        lines.push(`${it.relPath} → QR ready`);
-        addLogItem({ title: `QR: ${it.relPath}`, status: "READY", linkText: "Download QR (PNG)", linkHref: dataUrl, lines: [it.pagesUrl] });
-      }
-      addLogItem({ title: "QR batch done", status: "SUCCESS", lines });
-    } catch (e) {
-      addLogItem({ title: "QR lib failed, using API fallback", status: "RETRY", lines: [String(e.message || e)] });
-      await useApiFallback();
-    }
   }
 
   function dataUrlToBase64(dataUrl) {
@@ -960,48 +855,46 @@ ${normalBrowserLogic}
 
     let failures = 0;
 
-    // Optional: publish QR PNGs to repo
-    if (els.chPublishQrs && els.chPublishQrs.checked) {
-      try {
-        await loadQrLib();
-        for (const it of batch.items) {
-          let dataUrl;
-          try {
-            dataUrl = await window.QRCode.toDataURL(it.pagesUrl, { width: 320, margin: 2 });
-          } catch (_) {
-            const apiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(it.pagesUrl)}&size=320&margin=2`;
-            const res = await fetch(apiUrl);
-            if (!res.ok) throw new Error(`QR API ${res.status}`);
-            const blob = await res.blob();
-            dataUrl = await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => resolve(reader.result);
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-          }
-
-          const base64 = dataUrlToBase64(dataUrl);
-          const qrPath = `qrs/${batch.slug}/${it.dest}-${it.channel}.png`;
-          await putFile({
-            owner: OWNER, repo: REPO, branch: BRANCH, token,
-            path: qrPath,
-            message: `QR: ${batch.slug} (${it.dest}/${it.channel})`,
-            contentBase64: base64
-          });
-
-          addLogItem({
-            title: `OK QR: ${qrPath}`,
-            status: "PUBLISHED",
-            linkText: "QR PNG",
-            linkHref: `${repoBase}/${qrPath}`,
-            lines: [it.pagesUrl]
+    // Publish QR PNGs to repo
+    try {
+      await loadQrLib();
+      for (const it of batch.items) {
+        let dataUrl;
+        try {
+          dataUrl = await window.QRCode.toDataURL(it.pagesUrl, { width: 320, margin: 2 });
+        } catch (_) {
+          const apiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(it.pagesUrl)}&size=320&margin=2`;
+          const res = await fetch(apiUrl);
+          if (!res.ok) throw new Error(`QR API ${res.status}`);
+          const blob = await res.blob();
+          dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
           });
         }
-      } catch (e) {
-        addLogItem({ title: "QR publish failed", status: "ERROR", lines: [normalizeTokenError(e)] });
-        failures += 1;
+
+        const base64 = dataUrlToBase64(dataUrl);
+        const qrPath = `qrs/${batch.slug}/${it.dest}-${it.channel}.png`;
+        await putFile({
+          owner: OWNER, repo: REPO, branch: BRANCH, token,
+          path: qrPath,
+          message: `QR: ${batch.slug} (${it.dest}/${it.channel})`,
+          contentBase64: base64
+        });
+
+        addLogItem({
+          title: `OK QR: ${qrPath}`,
+          status: "PUBLISHED",
+          linkText: "QR PNG",
+          linkHref: `${repoBase}/${qrPath}`,
+          lines: [it.pagesUrl]
+        });
       }
+    } catch (e) {
+      addLogItem({ title: "QR publish failed", status: "ERROR", lines: [normalizeTokenError(e)] });
+      failures += 1;
     }
 
     // 2) Publish HTML files sequentially (avoid conflicts)
@@ -1152,26 +1045,27 @@ ${normalBrowserLogic}
 
     els.btnGenerate.addEventListener("click", () => {
       clearLog();
-      const batch = buildBatch();
+      const batch = buildBatch({ requireOg: true });
       if (!batch || !batch.ok) return;
+      renderPreviewGrid();
 
-      const firstSnippet = batch.items[0]?.html?.split("\n").slice(0, 12).join("\n");
+      const qrFiles = batch.items.map(i => `qrs/${batch.slug}/${i.dest}-${i.channel}.png`);
 
       addLogItem({
-        title: "Preview batch (not published)",
+        title: "Preview (not published)",
         status: "READY",
         lines: [
-          `Will publish OG image: ${batch.ogImageRel}`,
-          `Will publish ${batch.items.length} HTML files:`,
-          ...batch.items.map(i => `- ${i.relPath} → ${i.pagesUrl}`),
-          ...(firstSnippet ? ["--- First file preview ---", firstSnippet] : [])
+          `OG image: ${batch.ogImageRel}`,
+          `HTML files (${batch.items.length}):`,
+          ...batch.items.map(i => `- ${i.relPath}`),
+          `QR files (${qrFiles.length}):`,
+          ...qrFiles.map(f => `- ${f}`)
         ]
       });
     });
 
-    els.btnCheckToken.addEventListener("click", () => { checkToken(); });
     els.btnPublish.addEventListener("click", () => publishAll());
-    els.btnReset.addEventListener("click", () => resetForm());
+    if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token fjernet fra nettleseren."] }); });
 
@@ -1185,12 +1079,6 @@ ${normalBrowserLogic}
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chIGDM) els.chIGDM.addEventListener("change", () => { if (els.chIGDM.checked) { ensureUtmDefault("igdm"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
-
-    els.btnPreviewGrid.addEventListener("click", () => renderPreviewGrid());
-    els.btnCopyCsv.addEventListener("click", () => copyPreviewCsv());
-    els.btnCopyUrls.addEventListener("click", () => copyPagesUrls());
-    els.btnQrBatch.addEventListener("click", () => generateQrBatch());
-    if (els.btnBuildArtifacts) els.btnBuildArtifacts.addEventListener("click", () => buildArtifacts());
 
     wireOgDragDrop();
 
