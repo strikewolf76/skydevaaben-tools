@@ -59,6 +59,31 @@
         </div>
       </div>
 
+      <div class="full panel">
+        <div><strong>Campaign Title and OG Image</strong></div>
+        <div class="ogpreview" style="margin-top:8px;">
+          <div>
+            <label for="title">Title</label>
+            <input id="title" value="Born Again (Crimson Noise Remix)" />
+            <div class="hint">Brukes til slug, tittel og utm_campaign.</div>
+
+            <div style="margin-top:12px;"><strong>OG image upload</strong></div>
+            <div class="hint">På publish opprettes <span class="mono">assets/og/&lt;slug&gt;.jpg</span> automatisk.</div>
+            <div style="margin-top:10px;">
+              <input id="ogFile" type="file" accept="image/*" />
+            </div>
+            <div class="hint mono" id="ogFileInfo"></div>
+            <div class="hint">Målfil: <span class="mono" id="ogImageNamePreview"></span></div>
+            <div class="hint">Drag & drop et bilde på previewen for rask opplasting.</div>
+          </div>
+
+          <div>
+            <div><strong>Preview (cropped to 1200×630)</strong></div>
+            <canvas id="ogCanvas" width="1200" height="630" style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(127,127,127,0.2);"></canvas>
+          </div>
+        </div>
+      </div>
+
       <div class="full two-col">
         <div class="panel">
           <div><strong>Destinations</strong></div>
@@ -149,31 +174,6 @@
               <label for="igdmContent">utm_content (IG DM)</label>
               <input id="igdmContent" placeholder="ig-dm-v1" />
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="full panel">
-        <div><strong>Campaign Title and OG Image</strong></div>
-        <div class="ogpreview" style="margin-top:8px;">
-          <div>
-            <label for="title">Title</label>
-            <input id="title" value="Born Again (Crimson Noise Remix)" />
-            <div class="hint">Brukes til slug, tittel og utm_campaign.</div>
-
-            <div style="margin-top:12px;"><strong>OG image upload</strong></div>
-            <div class="hint">På publish opprettes <span class="mono">assets/og/&lt;slug&gt;.jpg</span> automatisk.</div>
-            <div style="margin-top:10px;">
-              <input id="ogFile" type="file" accept="image/*" />
-            </div>
-            <div class="hint mono" id="ogFileInfo"></div>
-            <div class="hint">Målfil: <span class="mono" id="ogImageNamePreview"></span></div>
-            <div class="hint">Drag & drop et bilde på previewen for rask opplasting.</div>
-          </div>
-
-          <div>
-            <div><strong>Preview (cropped to 1200×630)</strong></div>
-            <canvas id="ogCanvas" width="1200" height="630" style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(127,127,127,0.2);"></canvas>
           </div>
         </div>
       </div>
