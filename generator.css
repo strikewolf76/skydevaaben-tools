@@ -17,10 +17,8 @@ textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, 
 button { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(127,127,127,0.35); background: rgba(127,127,127,0.12); cursor: pointer; }
 button.primary { background: rgba(0, 120, 255, 0.18); }
 button.danger { background: rgba(255, 0, 0, 0.10); }
-.link-button { background:none; border:none; color:#0066cc; padding:0; text-decoration:underline; font-weight:600; cursor:pointer; }
 .row.between { justify-content: space-between; }
-.pill-list { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-.pill { border:1px solid rgba(127,127,127,0.25); background: rgba(127,127,127,0.10); border-radius:999px; padding:6px 12px; font-size:12px; }
+.needs-input { border-color: #c33 !important; box-shadow: 0 0 0 1px rgba(204,51,51,0.35); }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
 .hint { font-size: 12px; opacity: 0.8; margin-top: 6px; }
 .ok { color: #0a7; }
