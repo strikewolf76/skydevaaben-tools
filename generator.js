@@ -31,9 +31,6 @@
     chSummary: $("chSummary"),
     chEditor: $("chEditor"),
 
-    btnToggleDest: $("btnToggleDest"),
-    btnToggleCh: $("btnToggleCh"),
-
     ogFile: $("ogFile"),
     ogFileInfo: $("ogFileInfo"),
     ogCanvas: $("ogCanvas"),
@@ -46,12 +43,8 @@
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
-    btnDestSpotifyOnly: $("btnDestSpotifyOnly"),
-    btnDestAll: $("btnDestAll"),
-    btnChAdsAll: $("btnChAdsAll"),
-    btnChSocialLight: $("btnChSocialLight"),
-    btnChMinimal: $("btnChMinimal"),
-    btnUtmExamples: $("btnUtmExamples"),
+    btnToggleDest: $("btnToggleDest"),
+    btnToggleCh: $("btnToggleCh"),
     previewBody: $("previewBody"),
   };
 
@@ -647,49 +640,6 @@ ${normalBrowserLogic}
   }
 
   // ---------- presets ----------
-  function setDestPreset(kind) {
-    if (kind === "spotify") {
-      els.destSpotify.checked = true;
-      els.destApple.checked = false;
-      els.destDeezer.checked = false;
-    } else if (kind === "all") {
-      els.destSpotify.checked = true;
-      els.destApple.checked = true;
-      els.destDeezer.checked = true;
-    }
-    persistSettingsSoon();
-    validateOnly();
-    updateDestSummary();
-    renderPreviewGrid();
-  }
-
-  function setChannelPreset(kind) {
-    if (kind === "ads") {
-      els.chMeta.checked = true;
-      els.chTikTok.checked = true;
-      els.chYouTube.checked = true;
-      els.chIGDM.checked = false;
-    } else if (kind === "social") {
-      els.chMeta.checked = true;
-      els.chTikTok.checked = false;
-      els.chYouTube.checked = false;
-      els.chIGDM.checked = true;
-    } else if (kind === "minimal") {
-      els.chMeta.checked = true;
-      els.chTikTok.checked = false;
-      els.chYouTube.checked = false;
-      els.chIGDM.checked = false;
-    }
-    if (els.chMeta.checked) ensureUtmDefault("meta");
-    if (els.chTikTok.checked) ensureUtmDefault("tiktok");
-    if (els.chYouTube.checked) ensureUtmDefault("youtube");
-    if (els.chIGDM.checked) ensureUtmDefault("igdm");
-    persistSettingsSoon();
-    validateOnly();
-    renderPreviewGrid();
-    updateChannelSummary();
-  }
-
   function ensureUtmDefault(channelKey) {
     const defaults = CHANNEL_UTM_DEFAULTS[channelKey];
     if (!defaults) return;
@@ -945,7 +895,7 @@ ${normalBrowserLogic}
           status: "PUBLISHED",
           linkText: "QR PNG",
           linkHref: `${repoBase}/${qrPath}`,
-          lines: [it.pagesUrl]
+          lines: [`${repoBase}/${qrPath}`]
         });
       }
     } catch (e) {
@@ -1128,7 +1078,7 @@ ${normalBrowserLogic}
           `HTML files (${batch.items.length}):`,
           ...batch.items.map(i => `- ${i.relPath}`),
           `QR files (${qrFiles.length}):`,
-          ...qrFiles.map(f => `- ${f}`)
+          ...qrFiles.map(f => `- ${normBaseUrl(els.repoBase.value)}/${f}`)
         ]
       });
     });
@@ -1138,12 +1088,6 @@ ${normalBrowserLogic}
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token fjernet fra nettleseren."] }); });
 
-    els.btnDestSpotifyOnly.addEventListener("click", () => setDestPreset("spotify"));
-    els.btnDestAll.addEventListener("click", () => setDestPreset("all"));
-    els.btnChAdsAll.addEventListener("click", () => setChannelPreset("ads"));
-    els.btnChSocialLight.addEventListener("click", () => setChannelPreset("social"));
-    els.btnChMinimal.addEventListener("click", () => setChannelPreset("minimal"));
-    els.btnUtmExamples.addEventListener("click", () => fillUtmExamples());
     if (els.btnToggleDest) els.btnToggleDest.addEventListener("click", () => toggleEditor(els.destEditor, els.btnToggleDest, "destinations"));
     if (els.btnToggleCh) els.btnToggleCh.addEventListener("click", () => toggleEditor(els.chEditor, els.btnToggleCh, "channels"));
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
