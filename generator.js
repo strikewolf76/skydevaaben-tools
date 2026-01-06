@@ -168,7 +168,7 @@
     const bgY = (targetH - bgH) / 2;
 
     ctx.save();
-    ctx.filter = "blur(70px) brightness(0.95)"; // strong blur + slight dim for contrast
+    ctx.filter = "blur(50px) brightness(0.95)"; // softer blur + slight dim for contrast
     ctx.drawImage(ogImageBitmap, 0, 0, srcW, srcH, bgX, bgY, bgW, bgH);
     ctx.restore();
 
