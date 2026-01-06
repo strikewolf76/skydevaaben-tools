@@ -434,7 +434,7 @@ ${normalBrowserLogic}
   }
 
   // ---------- validation + batch build ----------
-  function validateOnly() {
+  function validateOnly(requireOg = true) {
     syncSlugAndCampaignFromTitle();
     const errors = [];
 
@@ -480,8 +480,10 @@ ${normalBrowserLogic}
     if (els.chYouTube.checked) required("utm_content (YouTube)", els.ytContent.value, errors);
     if (els.chIGDM.checked) required("utm_content (IG DM)", els.igdmContent.value, errors);
 
-    if (!ogImageLoaded) errors.push("OG image not uploaded yet (required).");
-    if (ogImageError) errors.push(ogImageError);
+    if (requireOg) {
+      if (!ogImageLoaded) errors.push("OG image not uploaded yet (required).");
+      if (ogImageError) errors.push(ogImageError);
+    }
 
     els.ogImageNamePreview.textContent = slug ? `assets/og/${slug}.jpg` : "";
 
@@ -499,8 +501,8 @@ ${normalBrowserLogic}
     return { ok: true };
   }
 
-  function buildBatch() {
-    const v = validateOnly();
+  function buildBatch({ requireOg = true } = {}) {
+    const v = validateOnly(requireOg);
     if (!v.ok) return null;
 
     const repoBase = normBaseUrl(els.repoBase.value);
@@ -648,7 +650,7 @@ ${normalBrowserLogic}
 
   // ---------- clipboard + QR ----------
   async function copyPagesUrls() {
-    const batch = buildBatch();
+    const batch = buildBatch({ requireOg: false });
     if (!batch || !batch.ok) return;
     const urls = batch.items.map(i => i.pagesUrl).join("\n");
     try {
@@ -666,7 +668,7 @@ ${normalBrowserLogic}
   }
 
   function renderPreviewGrid() {
-    const batch = buildBatch();
+    const batch = buildBatch({ requireOg: false });
     if (!els.previewBody) return;
 
     if (!batch || !batch.ok) {
@@ -694,7 +696,7 @@ ${normalBrowserLogic}
   }
 
   async function copyPreviewCsv() {
-    const batch = buildBatch();
+    const batch = buildBatch({ requireOg: false });
     if (!batch || !batch.ok) return;
     const header = ["destination","channel","utm_source","utm_medium","utm_campaign","utm_content","pagesUrl","finalDestUrl"];
     const rows = batch.items.map(i => [
@@ -752,7 +754,7 @@ ${normalBrowserLogic}
   }
 
   async function generateQrBatch() {
-    const batch = buildBatch();
+    const batch = buildBatch({ requireOg: false });
     if (!batch || !batch.ok) return;
 
     addLogItem({ title: "Generating QR codes…", status: "RUNNING", lines: [`${batch.items.length} URLs` ] });
