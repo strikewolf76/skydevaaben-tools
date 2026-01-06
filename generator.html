@@ -5,118 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Skydevaaben Redirect Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <style>
-    :root {
-      color-scheme: light dark;
-      --bg: #0f1116;
-      --card: #181b22;
-      --border: rgba(255,255,255,0.12);
-      --text: #f1ede4;
-      --muted: rgba(241,237,228,0.82);
-      --accent: #c59a3a;
-      --accent-2: #6fb1ff;
-    }
-    body {
-      max-width: 1180px;
-      margin: 24px auto;
-      padding: 0 18px 48px;
-      background: var(--bg);
-      color: var(--text);
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    }
-    h1 { margin-bottom: 6px; font-family: "Sora", "Inter", system-ui, sans-serif; letter-spacing: -0.01em; }
-    .eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-    .muted { opacity: 0.9; font-size: 13px; margin: 0 0 14px; color: var(--muted); }
-    .hero { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom: 10px; }
-    .hero-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .hero-buttons { display:flex; gap:10px; flex-wrap:wrap; }
-    .panel { border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 16px; background: var(--card); box-shadow: 0 12px 28px rgba(0,0,0,0.32); }
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; max-width: 1120px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .muted { opacity: .8; font-size: 13px; margin: 0 0 14px; }
+    .panel { border: 1px solid rgba(127,127,127,0.25); border-radius: 14px; padding: 14px; margin-top: 14px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
     .full { grid-column: 1 / -1; }
-    label { font-size: 12px; opacity: 0.95; color: var(--text); }
-    input, textarea, select {
-      width: 100%; box-sizing: border-box; background:#1f212b; border:1px solid var(--border); color: var(--text);
-      border-radius: 12px; padding: 10px 12px;
-    }
-    input:focus, textarea:focus, select:focus { outline:none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(197,154,58,0.34); }
-    input::placeholder, textarea::placeholder { color: rgba(241,237,228,0.6); }
-    textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace; }
+    label { display: block; font-size: 12px; opacity: 0.85; margin-bottom: 6px; }
+    input, textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(127,127,127,0.35); background: transparent; }
+    textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: var(--muted); }
-    .hint { font-size: 12px; opacity: 0.9; margin-top: 6px; color: var(--muted); }
+    button { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(127,127,127,0.35); background: rgba(127,127,127,0.12); cursor: pointer; }
+    button.primary { background: rgba(0, 120, 255, 0.18); }
+    button.danger { background: rgba(255, 0, 0, 0.10); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+    .hint { font-size: 12px; opacity: 0.8; margin-top: 6px; }
     .ok { color: #0a7; }
     .bad { color: #c33; }
-    .chip { border:1px solid var(--border); border-radius:12px; padding:8px 10px; display:flex; gap:8px; align-items:center; background:#1d1f25; }
+    .chip { border:1px solid rgba(127,127,127,0.25); border-radius:999px; padding:8px 10px; display:flex; gap:8px; align-items:center; }
     .chip input { width:auto; }
     .small { font-size: 12px; opacity:.9; }
     .ogpreview { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 920px) { .grid, .ogpreview { grid-template-columns: 1fr; } }
 
     .log { display:flex; flex-direction:column; gap:10px; }
-    .logitem { border:1px solid rgba(127,127,127,0.18); border-radius:14px; padding:12px; background:#1c1f26; }
+    .logitem { border:1px solid rgba(127,127,127,0.22); border-radius:14px; padding:12px; }
     .logitem .top { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .logitem .path { font-weight:600; }
     .logitem a { word-break: break-all; }
     .tablewrap { overflow:auto; }
     table.preview { width:100%; border-collapse: collapse; font-size:12px; }
     table.preview th, table.preview td { border:1px solid rgba(127,127,127,0.2); padding:6px 8px; text-align:left; }
-    table.preview th { background: rgba(255,255,255,0.05); color: var(--text); }
-    .utmdetail { display:none; }
-
-    .actions-sticky { position: sticky; bottom: 0; z-index: 5; padding: 10px 0 0; background: linear-gradient(180deg, rgba(15,17,22,0) 0%, rgba(15,17,22,0.9) 40%); backdrop-filter: blur(6px); }
-
-    button {
-      border-radius: 14px;
-      border: 1px solid transparent;
-      padding: 9px 14px;
-      font-weight: 600;
-      font-size: 14px;
-      background: #262a34;
-      color: var(--text);
-      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
-    }
-    button.primary { background: var(--accent); color: #0f1116; border: none; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
-    button:active { transform: translateY(0); box-shadow: none; }
-    .ghost { background: transparent; border:1px solid var(--border); }
-
-    summary { cursor: pointer; color: var(--text); }
-    details { border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:#1a1d24; }
-    details[open] { background:#1c1f27; }
-    details summary { font-weight:600; }
-
-    .chip-status { border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#1d1d23; }
+    table.preview th { background: rgba(127,127,127,0.08); }
   </style>
 </head>
 <body>
-  <header class="hero">
-    <div>
-      <div class="eyebrow">Redirects</div>
-      <h1>Skydevaaben</h1>
-      <p class="muted">Slanke redirect-filer, UTM-consistency og raske publikasjoner.</p>
-    </div>
-    <div class="hero-actions">
-      <div id="statusChip" class="chip-status mono">Status</div>
-      <div class="hero-buttons">
-        <button class="primary" id="btnGenerate">Generate</button>
-        <button class="primary" id="btnPublish">Publish</button>
-        <details>
-          <summary>Tools</summary>
-          <div class="row" style="margin-top:8px;">
-            <button id="btnPreviewGrid">Refresh preview</button>
-            <button id="btnCheckToken">Check token</button>
-            <button id="btnCopyUrls">Copy Pages URLs</button>
-            <button id="btnCopyCsv">Copy CSV</button>
-            <button id="btnQrBatch">QR batch</button>
-          </div>
-        </details>
-      </div>
-    </div>
-  </header>
+  <h1>Skydevaaben – Redirect Generator</h1>
+  <p class="muted">
+    Mål: HTML → <span class="mono">tracks/&lt;slug&gt;/&lt;dest&gt;/&lt;utm_content&gt;.html</span> og bilde → <span class="mono">assets/og/&lt;slug&gt;.jpg</span>.
+  </p>
 
   <div class="panel">
     <div class="grid">
@@ -136,16 +65,15 @@
         <input id="title" value="Born Again (Crimson Noise Remix)" />
       </div>
 
-      <details class="full" open>
-        <summary>Publishing token</summary>
+      <div class="full">
         <label for="ghToken">Publish token (fine-grained PAT)</label>
         <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
-        <div class="hint">Lokal lagring i nettleser, ikke i repo.</div>
+        <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
         <div class="row" style="margin-top:8px;">
           <button id="btnForgetToken">Forget saved token</button>
-          <div class="hint">Hvis token mangler/feiler, lag ny PAT.</div>
+          <div class="hint">Hvis token mangler/feiler, vi ber deg lage nytt og lagrer det lokalt.</div>
         </div>
-      </details>
+      </div>
 
       <div>
         <label for="trackSlug">Track slug</label>
@@ -159,22 +87,44 @@
         <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
       </div>
 
-      <details class="full" open>
-        <summary>Destinations</summary>
+      <div class="full panel">
+        <div><strong>Destinations</strong></div>
         <div class="hint">Spotify bygges fra URL (ID hentes automatisk). Andre trenger full URL.</div>
+
         <div class="row" style="margin-top:6px;">
           <button id="btnDestSpotifyOnly">Preset: Spotify only</button>
           <button id="btnDestAll">Preset: All destinations</button>
         </div>
+
         <div class="grid" style="margin-top:10px;">
-          <div class="full panel">
-            <div><strong>Status</strong></div>
-            <div id="validation" class="mono"></div>
-            <div class="row" style="margin-top:8px;">
-              <button id="btnReset" class="ghost">Reset</button>
-              <button id="btnQrBatch" class="ghost">QR batch</button>
+          <div class="chip">
+            <input id="destSpotify" type="checkbox" checked>
+            <div>
+              <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
+              <div class="hint mono">tracks/&lt;slug&gt;/spotify/…</div>
             </div>
           </div>
+          <div>
+            <label for="spotifyUrl">Spotify track URL</label>
+            <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
+          </div>
+
+          <div class="chip">
+            <input id="destApple" type="checkbox">
+            <div>
+              <div><strong>Apple</strong> <span class="small">(requires URL)</span></div>
+              <div class="hint mono">tracks/&lt;slug&gt;/apple/…</div>
+            </div>
+          </div>
+          <div>
+            <label for="appleUrl">Apple URL</label>
+            <input id="appleUrl" placeholder="https://music.apple.com/..." />
+          </div>
+
+          <div class="chip">
+            <input id="destDeezer" type="checkbox">
+            <div>
+              <div><strong>Deezer</strong> <span class="small">(requires URL)</span></div>
               <div class="hint mono">tracks/&lt;slug&gt;/deezer/…</div>
             </div>
           </div>
@@ -183,17 +133,19 @@
             <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
           </div>
         </div>
-      </details>
+      </div>
 
-      <details class="full" open>
-        <summary>Channels</summary>
+      <div class="full panel">
+        <div><strong>Channels</strong></div>
         <div class="hint">Filer navngis <span class="mono">&lt;utm_content&gt;.html</span> per destination.</div>
+
         <div class="row" style="margin-top:6px;">
           <button id="btnChAdsAll">Preset: Ads (Meta+TikTok+YouTube)</button>
           <button id="btnChSocialLight">Preset: Social light (Meta+IG DM)</button>
           <button id="btnChMinimal">Preset: Minimal (Meta only)</button>
           <button id="btnUtmExamples">Fill utm_content examples</button>
         </div>
+
         <div class="grid" style="margin-top:10px;">
           <div class="chip">
             <input id="chMeta" type="checkbox" checked>
@@ -205,6 +157,7 @@
             <label for="metaContent">utm_content (Meta)</label>
             <input id="metaContent" placeholder="meta-ads-story01" />
           </div>
+
           <div class="chip">
             <input id="chTikTok" type="checkbox" checked>
             <div>
@@ -215,6 +168,7 @@
             <label for="ttContent">utm_content (TikTok)</label>
             <input id="ttContent" placeholder="tt-ads-infeed01" />
           </div>
+
           <div class="chip">
             <input id="chYouTube" type="checkbox" checked>
             <div>
@@ -225,6 +179,7 @@
             <label for="ytContent">utm_content (YouTube)</label>
             <input id="ytContent" placeholder="yt-ads-instream01" />
           </div>
+
           <div class="chip">
             <input id="chIGDM" type="checkbox">
             <div>
@@ -236,56 +191,41 @@
             <input id="igdmContent" placeholder="ig-dm-v1" />
           </div>
         </div>
-      </details>
+      </div>
 
-      <details class="full" open>
-        <summary>OG image</summary>
+      <div class="full panel">
         <div class="ogpreview">
           <div>
-            <div class="hint">Publish lager <span class="mono">assets/og/&lt;slug&gt;.jpg</span>.</div>
+            <div><strong>OG image upload</strong></div>
+            <div class="hint">På publish opprettes <span class="mono">assets/og/&lt;slug&gt;.jpg</span> automatisk.</div>
             <div style="margin-top:10px;">
               <input id="ogFile" type="file" accept="image/*" />
             </div>
             <div class="hint mono" id="ogFileInfo"></div>
             <div class="hint">Målfil: <span class="mono" id="ogImageNamePreview"></span></div>
             <div class="hint">Drag & drop et bilde på previewen for rask opplasting.</div>
-            <div class="row" style="margin-top:8px;">
-              <button id="btnDownloadOg">Download OG preview (JPG)</button>
-            </div>
           </div>
 
           <div>
-            <div><strong>Preview (cropped to 1200x630)</strong></div>
+            <div><strong>Preview (cropped to 1200×630)</strong></div>
             <canvas id="ogCanvas" width="1200" height="630" style="width:100%;height:auto;border-radius:12px;border:1px solid rgba(127,127,127,0.2);"></canvas>
           </div>
         </div>
-      </details>
+      </div>
 
       <div class="full panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
-          <div><strong>Status</strong></div>
-          <div id="statusChip" class="mono"></div>
-        </div>
+        <div><strong>Validation</strong></div>
         <div id="validation" class="mono"></div>
       </div>
     </div>
 
-    <div class="actions-sticky">
-      <div class="row">
-        <button class="primary" id="btnGenerate">Generate batch</button>
-        <button class="primary" id="btnPublish">Publish</button>
-        <button id="btnPreviewGrid">Refresh preview</button>
-        <button id="btnReset">Reset</button>
-        <details>
-          <summary>Advanced</summary>
-          <div class="row" style="margin-top:8px;">
-            <button id="btnCheckToken">Check token</button>
-            <button id="btnCopyUrls">Copy Pages URLs</button>
-            <button id="btnQrBatch">Generate QR PNGs</button>
-            <button id="btnCopyCsv">Copy CSV</button>
-          </div>
-        </details>
-      </div>
+    <div class="row">
+      <button class="primary" id="btnGenerate">Generate batch (preview log)</button>
+      <button class="primary" id="btnCheckToken">Check token</button>
+      <button class="primary" id="btnPublish">Publish to GitHub (create/update files)</button>
+      <button class="danger" id="btnReset">Create new / refresh</button>
+      <button id="btnCopyUrls">Copy all Pages URLs</button>
+      <button id="btnQrBatch">Generate QR PNGs (batch)</button>
     </div>
   </div>
 
@@ -295,33 +235,20 @@
         <div><strong>Preview grid (utm)</strong></div>
         <div class="hint">Se alle kombinasjoner og kopier CSV direkte.</div>
       </div>
-      <label style="display:flex;align-items:center;gap:6px;">
-        <input type="checkbox" id="toggleDetails"> <span class="small">Show UTM details</span>
-      </label>
-    </div>
-    <div class="row" style="margin-top:8px; gap:12px;">
-      <label class="small" style="display:flex; flex-direction:column; gap:4px;">
-        Dest filter
-        <select id="filterDest" style="min-width:140px;">
-          <option value="all">All destinations</option>
-        </select>
-      </label>
-      <label class="small" style="display:flex; flex-direction:column; gap:4px;">
-        Channel filter
-        <select id="filterChannel" style="min-width:140px;">
-          <option value="all">All channels</option>
-        </select>
-      </label>
+      <div class="row">
+        <button id="btnPreviewGrid">Refresh preview</button>
+        <button id="btnCopyCsv">Copy CSV</button>
+      </div>
     </div>
     <div class="tablewrap" style="margin-top:10px;">
       <table class="preview">
         <thead>
           <tr>
-            <th>destination</th><th>channel</th><th>utm_content</th><th>pages</th><th>dest</th><th>test</th><th class="utmdetail">utm_source</th><th class="utmdetail">utm_medium</th><th class="utmdetail">utm_campaign</th>
+            <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th>
           </tr>
         </thead>
         <tbody id="previewBody">
-          <tr><td colspan="9" style="text-align:center;">Klikk "Refresh preview"</td></tr>
+          <tr><td colspan="8" style="text-align:center;">Klikk "Refresh preview"</td></tr>
         </tbody>
       </table>
     </div>
