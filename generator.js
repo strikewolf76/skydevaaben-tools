@@ -44,8 +44,11 @@
     btnChAdsAll: $("btnChAdsAll"),
     btnChSocialLight: $("btnChSocialLight"),
     btnChMinimal: $("btnChMinimal"),
+    btnPreviewGrid: $("btnPreviewGrid"),
+    btnCopyCsv: $("btnCopyCsv"),
     btnCopyUrls: $("btnCopyUrls"),
     btnQrBatch: $("btnQrBatch"),
+    previewBody: $("previewBody"),
   };
 
   // ---------- utils ----------
@@ -72,15 +75,12 @@
       .replace(/"/g, "&quot;");
   }
 
-  function buildUtmmedAndSource(channelKey) {
-    switch (channelKey) {
-      case "meta":   return { utm_source: "meta",      utm_medium: "paid_social" };
-      case "tiktok": return { utm_source: "tiktok",    utm_medium: "paid_social" };
-      case "youtube":return { utm_source: "youtube",   utm_medium: "paid_video"  };
-      case "igdm":   return { utm_source: "instagram", utm_medium: "dm"          };
-      default:       return { utm_source: "other",     utm_medium: "other"       };
-    }
-  }
+  const CHANNELS = {
+    meta:   { utm_source: "meta",      utm_medium: "paid_social" },
+    tiktok: { utm_source: "tiktok",    utm_medium: "paid_social" },
+    youtube:{ utm_source: "youtube",   utm_medium: "paid_video"  },
+    igdm:   { utm_source: "instagram", utm_medium: "dm"          }
+  };
 
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
     const u = new URL(destUrl);
@@ -545,7 +545,11 @@ ${normalBrowserLogic}
 
     for (const dest of destinations) {
       for (const ch of channels) {
-        const { utm_source, utm_medium } = buildUtmmedAndSource(ch.key);
+        const chMeta = CHANNELS[ch.key];
+        if (!chMeta) {
+          return { ok: false, error: `Unknown channel config for "${ch.key}".` };
+        }
+        const { utm_source, utm_medium } = chMeta;
         const utm_content = ch.content;
 
         let webUrl;
@@ -573,7 +577,9 @@ ${normalBrowserLogic}
           relPath,
           pagesUrl: ogUrlAbs,
           dest: dest.key,
+          channel: ch.key,
           utm_source, utm_medium, utm_campaign, utm_content,
+          finalDestUrl: webUrl,
           html
         });
       }
@@ -639,6 +645,63 @@ ${normalBrowserLogic}
       addLogItem({ title: "Copied Pages URLs", status: "OK", lines: ["Alle genererte Pages-URLer kopiert til utklippstavle."] });
     } catch (e) {
       addLogItem({ title: "Copy failed", status: "FAIL", lines: [String(e.message || e)] });
+    }
+  }
+
+  function csvEscape(val) {
+    const s = String(val ?? "");
+    if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function renderPreviewGrid() {
+    const batch = buildBatch();
+    if (!els.previewBody) return;
+
+    if (!batch || !batch.ok) {
+      els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Fix validation to preview.</td></tr>';
+      return;
+    }
+
+    if (!batch.items.length) {
+      els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Ingen kombinasjoner.</td></tr>';
+      return;
+    }
+
+    els.previewBody.innerHTML = batch.items.map(i => `
+      <tr>
+        <td>${htmlEscape(i.dest)}</td>
+        <td>${htmlEscape(i.channel)}</td>
+        <td>${htmlEscape(i.utm_source)}</td>
+        <td>${htmlEscape(i.utm_medium)}</td>
+        <td>${htmlEscape(i.utm_campaign)}</td>
+        <td>${htmlEscape(i.utm_content)}</td>
+        <td>${htmlEscape(i.pagesUrl)}</td>
+        <td>${htmlEscape(i.finalDestUrl)}</td>
+      </tr>
+    `).join("");
+  }
+
+  async function copyPreviewCsv() {
+    const batch = buildBatch();
+    if (!batch || !batch.ok) return;
+    const header = ["destination","channel","utm_source","utm_medium","utm_campaign","utm_content","pagesUrl","finalDestUrl"];
+    const rows = batch.items.map(i => [
+      i.dest,
+      i.channel,
+      i.utm_source,
+      i.utm_medium,
+      i.utm_campaign,
+      i.utm_content,
+      i.pagesUrl,
+      i.finalDestUrl
+    ]);
+    const csv = [header, ...rows].map(r => r.map(csvEscape).join(",")).join("\n");
+    try {
+      await navigator.clipboard.writeText(csv);
+      addLogItem({ title: "CSV copied", status: "OK", lines: ["Preview grid kopiert til CSV (clipboard).", `${rows.length} rader.`] });
+    } catch (e) {
+      addLogItem({ title: "CSV copy failed", status: "FAIL", lines: [String(e.message || e)] });
     }
   }
 
@@ -1015,6 +1078,8 @@ ${normalBrowserLogic}
     els.btnChSocialLight.addEventListener("click", () => setChannelPreset("social"));
     els.btnChMinimal.addEventListener("click", () => setChannelPreset("minimal"));
 
+    els.btnPreviewGrid.addEventListener("click", () => renderPreviewGrid());
+    els.btnCopyCsv.addEventListener("click", () => copyPreviewCsv());
     els.btnCopyUrls.addEventListener("click", () => copyPagesUrls());
     els.btnQrBatch.addEventListener("click", () => generateQrBatch());
 
@@ -1023,6 +1088,7 @@ ${normalBrowserLogic}
     drawOgCanvasFromBitmap();
     autoAlignCampaignToSlug();
     validateOnly();
+    renderPreviewGrid();
   }
 
   wire();

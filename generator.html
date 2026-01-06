@@ -35,6 +35,10 @@
     .logitem .top { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .logitem .path { font-weight:600; }
     .logitem a { word-break: break-all; }
+    .tablewrap { overflow:auto; }
+    table.preview { width:100%; border-collapse: collapse; font-size:12px; }
+    table.preview th, table.preview td { border:1px solid rgba(127,127,127,0.2); padding:6px 8px; text-align:left; }
+    table.preview th { background: rgba(127,127,127,0.08); }
   </style>
 </head>
 <body>
@@ -221,6 +225,31 @@
       <button class="danger" id="btnReset">Create new / refresh</button>
       <button id="btnCopyUrls">Copy all Pages URLs</button>
       <button id="btnQrBatch">Generate QR PNGs (batch)</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="justify-content:space-between; align-items:center;">
+      <div>
+        <div><strong>Preview grid (utm)</strong></div>
+        <div class="hint">Se alle kombinasjoner og kopier CSV direkte.</div>
+      </div>
+      <div class="row">
+        <button id="btnPreviewGrid">Refresh preview</button>
+        <button id="btnCopyCsv">Copy CSV</button>
+      </div>
+    </div>
+    <div class="tablewrap" style="margin-top:10px;">
+      <table class="preview">
+        <thead>
+          <tr>
+            <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th>
+          </tr>
+        </thead>
+        <tbody id="previewBody">
+          <tr><td colspan="8" style="text-align:center;">Klikk "Refresh preview"</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
