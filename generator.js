@@ -508,6 +508,11 @@
 (function () {${appBlock}
   var WEB_URL = "${htmlEscape(webUrl)}";
 
+  // Allow known social crawlers to fetch OG tags (no redirect)
+  var ua = (navigator.userAgent || "").toLowerCase();
+  var isCrawler = /(facebookexternalhit|facebot|instagram|twitterbot|linkedinbot|discordbot|pinterest)/.test(ua);
+  if (isCrawler) return;
+
   var statusEl = document.getElementById("status");
   var playEl = document.getElementById("play");
 
