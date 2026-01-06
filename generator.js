@@ -34,6 +34,10 @@
     tokenStatusText: $("tokenStatusText"),
     tokenInputWrap: $("tokenInputWrap"),
 
+    validationPanel: $("validationPanel"),
+    previewPanel: $("previewPanel"),
+    logPanel: $("logPanel"),
+
     ogFile: $("ogFile"),
     ogFileInfo: $("ogFileInfo"),
     ogCanvas: $("ogCanvas"),
@@ -41,6 +45,8 @@
 
     validation: $("validation"),
     log: $("log"),
+
+    btnChPrefill: $("btnChPrefill"),
 
     btnGenerate: $("btnGenerate"),
     btnPublish: $("btnPublish"),
@@ -97,6 +103,7 @@
   }
 
   function addLogItem({ title, lines = [], linkText, linkHref, status }) {
+    if (els.logPanel) els.logPanel.style.display = "block";
     const div = document.createElement("div");
     div.className = "logitem";
     const statusHtml = status ? `<div class="mono">${status}</div>` : "";
@@ -112,7 +119,15 @@
     els.log.appendChild(div);
   }
 
-  function clearLog() { els.log.innerHTML = ""; }
+  function clearLog() {
+    els.log.innerHTML = "";
+    hideLogIfEmpty();
+  }
+  function hideLogIfEmpty() {
+    if (!els.log) return;
+    const hasItems = els.log.children.length > 0;
+    if (els.logPanel) els.logPanel.style.display = hasItems ? "block" : "none";
+  }
 
   function parseSpotifyTrackId(url) {
     if (!url) return null;
@@ -562,6 +577,7 @@ ${normalBrowserLogic}
 
     if (errors.length) {
       els.validation.innerHTML = `<span class="bad">FAIL</span>\n` + errors.map(e => `- ${e}`).join("\n");
+      if (els.validationPanel) els.validationPanel.style.display = "block";
       return { ok: false, errors };
     }
 
@@ -570,6 +586,7 @@ ${normalBrowserLogic}
       `- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
       `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html\n`;
+    if (els.validationPanel) els.validationPanel.style.display = "block";
 
     return { ok: true };
   }
@@ -674,6 +691,22 @@ ${normalBrowserLogic}
     if (channelKey === "igdm" && !els.igdmContent.value) els.igdmContent.value = defaults;
   }
 
+  function prefillSelectedChannels() {
+    const applyDefault = (key, inputEl) => {
+      const def = CHANNEL_UTM_DEFAULTS[key];
+      if (!inputEl) return;
+      if (!inputEl.value) inputEl.value = def || "";
+    };
+    if (els.chMeta?.checked) applyDefault("meta", els.metaContent);
+    if (els.chTikTok?.checked) applyDefault("tiktok", els.ttContent);
+    if (els.chYouTube?.checked) applyDefault("youtube", els.ytContent);
+    if (els.chIGDM?.checked) applyDefault("igdm", els.igdmContent);
+    persistSettingsSoon();
+    validateOnly();
+    renderPreviewGrid();
+    updateNeedsInput();
+  }
+
   function fillUtmExamples() {
     els.metaContent.value = "meta-ads-story01";
     els.ttContent.value = "tt-ads-infeed01";
@@ -702,14 +735,17 @@ ${normalBrowserLogic}
 
     if (!batch || !batch.ok) {
       els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Fix validation to preview.</td></tr>';
+      if (els.previewPanel) els.previewPanel.style.display = "none";
       return;
     }
 
     if (!batch.items.length) {
       els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Ingen kombinasjoner.</td></tr>';
+      if (els.previewPanel) els.previewPanel.style.display = "none";
       return;
     }
 
+    if (els.previewPanel) els.previewPanel.style.display = "block";
     els.previewBody.innerHTML = batch.items.map(i => `
       <tr>
         <td>${htmlEscape(i.dest)}</td>
@@ -1107,12 +1143,14 @@ ${normalBrowserLogic}
           ...qrFiles.map(f => `- ${normBaseUrl(els.repoBase.value)}/${f}`)
         ]
       });
+      hideLogIfEmpty();
     });
 
     els.btnPublish.addEventListener("click", () => publishAll());
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token fjernet fra nettleseren."] }); });
+    if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
@@ -1125,6 +1163,7 @@ ${normalBrowserLogic}
     validateOnly();
     updateNeedsInput();
     renderPreviewGrid();
+    hideLogIfEmpty();
   }
 
   wire();

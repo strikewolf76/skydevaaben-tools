@@ -84,6 +84,38 @@
         </div>
       </div>
 
+      <div id="validationPanel" class="full panel" style="display:none;">
+        <div><strong>Validation</strong></div>
+        <div id="validation" class="mono"></div>
+      </div>
+
+      <div id="previewPanel" class="full panel" style="display:none;">
+        <div class="row" style="justify-content:space-between; align-items:center;">
+          <div>
+            <div><strong>Preview grid (utm)</strong></div>
+            <div class="hint">Se alle kombinasjoner.</div>
+          </div>
+        </div>
+        <div class="tablewrap" style="margin-top:10px;">
+          <table class="preview">
+            <thead>
+              <tr>
+                <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody">
+              <tr><td colspan="8" style="text-align:center;">Klikk "Preview"</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="logPanel" class="full panel" style="display:none;">
+        <div><strong>Log</strong></div>
+        <div class="hint">Her ser du hvilke repo-paths og Pages-lenker som genereres/publiseres.</div>
+        <div id="log" class="log" style="margin-top:10px;"></div>
+      </div>
+
       <div class="full two-col">
         <div class="panel">
           <div><strong>Destinations</strong></div>
@@ -129,6 +161,9 @@
 
         <div class="panel">
           <div><strong>Channels</strong></div>
+          <div class="row" style="margin-top:6px;">
+            <button id="btnChPrefill">Use prefilled values</button>
+          </div>
 
           <div id="chEditor" class="grid" style="margin-top:10px;">
             <div class="chip">
@@ -177,11 +212,6 @@
           </div>
         </div>
       </div>
-
-      <div class="full panel">
-        <div><strong>Validation</strong></div>
-        <div id="validation" class="mono"></div>
-      </div>
     </div>
 
     <div class="row">
@@ -189,33 +219,6 @@
       <button class="primary" id="btnPublish">Publish</button>
       <button class="danger" id="btnReset">Reset</button>
     </div>
-  </div>
-
-  <div class="panel">
-    <div class="row" style="justify-content:space-between; align-items:center;">
-      <div>
-        <div><strong>Preview grid (utm)</strong></div>
-        <div class="hint">Se alle kombinasjoner.</div>
-      </div>
-    </div>
-    <div class="tablewrap" style="margin-top:10px;">
-      <table class="preview">
-        <thead>
-          <tr>
-            <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th>
-          </tr>
-        </thead>
-        <tbody id="previewBody">
-          <tr><td colspan="8" style="text-align:center;">Klikk "Refresh preview"</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div><strong>Log</strong></div>
-    <div class="hint">Her ser du hvilke repo-paths og Pages-lenker som genereres/publiseres.</div>
-    <div id="log" class="log" style="margin-top:10px;"></div>
   </div>
 
   <script src="./generator.js"></script>
