@@ -12,12 +12,12 @@
   <style>
     :root {
       color-scheme: light dark;
-      --bg: #0e0e11;
-      --card: #16161b;
-      --border: rgba(255,255,255,0.08);
-      --text: #e8e4da;
-      --muted: rgba(232,228,218,0.78);
-      --accent: #c89b3c;
+      --bg: #0f1116;
+      --card: #181b22;
+      --border: rgba(255,255,255,0.12);
+      --text: #f1ede4;
+      --muted: rgba(241,237,228,0.82);
+      --accent: #c59a3a;
       --accent-2: #6fb1ff;
     }
     body {
@@ -30,61 +30,63 @@
     }
     h1 { margin-bottom: 6px; font-family: "Sora", "Inter", system-ui, sans-serif; letter-spacing: -0.01em; }
     .eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-    .muted { opacity: .8; font-size: 13px; margin: 0 0 14px; color: var(--muted); }
+    .muted { opacity: 0.9; font-size: 13px; margin: 0 0 14px; color: var(--muted); }
     .hero { display:flex; justify-content:space-between; gap:20px; align-items:flex-start; margin-bottom: 10px; }
     .hero-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
     .hero-buttons { display:flex; gap:10px; flex-wrap:wrap; }
-    .panel { border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 16px; background: var(--card); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+    .panel { border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 16px; background: var(--card); box-shadow: 0 12px 28px rgba(0,0,0,0.32); }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
     .full { grid-column: 1 / -1; }
-    label { font-size: 12px; opacity: 0.9; }
+    label { font-size: 12px; opacity: 0.95; color: var(--text); }
     input, textarea, select {
-      width: 100%; box-sizing: border-box; background:#1f1f26; border:1px solid var(--border); color: var(--text);
+      width: 100%; box-sizing: border-box; background:#1f212b; border:1px solid var(--border); color: var(--text);
       border-radius: 12px; padding: 10px 12px;
     }
-    input:focus, textarea:focus, select:focus { outline:none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(200,155,60,0.35); }
+    input:focus, textarea:focus, select:focus { outline:none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(197,154,58,0.34); }
+    input::placeholder, textarea::placeholder { color: rgba(241,237,228,0.6); }
     textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; color: var(--muted); }
-    .hint { font-size: 12px; opacity: 0.8; margin-top: 6px; color: var(--muted); }
+    .hint { font-size: 12px; opacity: 0.9; margin-top: 6px; color: var(--muted); }
     .ok { color: #0a7; }
     .bad { color: #c33; }
-    .chip { border:1px solid var(--border); border-radius:999px; padding:8px 10px; display:flex; gap:8px; align-items:center; background:#1d1d23; }
+    .chip { border:1px solid var(--border); border-radius:12px; padding:8px 10px; display:flex; gap:8px; align-items:center; background:#1d1f25; }
     .chip input { width:auto; }
     .small { font-size: 12px; opacity:.9; }
     .ogpreview { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 920px) { .grid, .ogpreview { grid-template-columns: 1fr; } }
 
     .log { display:flex; flex-direction:column; gap:10px; }
-    .logitem { border:1px solid rgba(127,127,127,0.22); border-radius:14px; padding:12px; background:#1a1a20; }
+    .logitem { border:1px solid rgba(127,127,127,0.18); border-radius:14px; padding:12px; background:#1c1f26; }
     .logitem .top { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
     .logitem .path { font-weight:600; }
     .logitem a { word-break: break-all; }
     .tablewrap { overflow:auto; }
     table.preview { width:100%; border-collapse: collapse; font-size:12px; }
     table.preview th, table.preview td { border:1px solid rgba(127,127,127,0.2); padding:6px 8px; text-align:left; }
-    table.preview th { background: rgba(255,255,255,0.04); }
+    table.preview th { background: rgba(255,255,255,0.05); color: var(--text); }
     .utmdetail { display:none; }
 
-    .actions-sticky { position: sticky; bottom: 0; z-index: 5; padding: 10px 0 0; background: linear-gradient(180deg, rgba(14,14,17,0) 0%, rgba(14,14,17,0.92) 40%); backdrop-filter: blur(6px); }
+    .actions-sticky { position: sticky; bottom: 0; z-index: 5; padding: 10px 0 0; background: linear-gradient(180deg, rgba(15,17,22,0) 0%, rgba(15,17,22,0.9) 40%); backdrop-filter: blur(6px); }
 
     button {
-      border-radius: 999px;
+      border-radius: 14px;
       border: 1px solid transparent;
-      padding: 11px 16px;
+      padding: 9px 14px;
       font-weight: 600;
-      background: #26262d;
+      font-size: 14px;
+      background: #262a34;
       color: var(--text);
       transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
     }
-    button.primary { background: var(--accent); color: #0e0e11; border: none; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+    button.primary { background: var(--accent); color: #0f1116; border: none; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.35); }
     button:active { transform: translateY(0); box-shadow: none; }
     .ghost { background: transparent; border:1px solid var(--border); }
 
-    summary { cursor: pointer; }
-    details { border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:#1a1a20; }
-    details[open] { background:#1d1d23; }
+    summary { cursor: pointer; color: var(--text); }
+    details { border:1px solid var(--border); border-radius:14px; padding:10px 12px; background:#1a1d24; }
+    details[open] { background:#1c1f27; }
     details summary { font-weight:600; }
 
     .chip-status { border:1px solid var(--border); padding:6px 10px; border-radius:999px; background:#1d1d23; }
