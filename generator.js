@@ -1167,7 +1167,9 @@ ${normalBrowserLogic}
       if (!batch || !batch.ok) return;
       renderPreviewGrid();
 
+      const repoBase = normBaseUrl(els.repoBase.value);
       const qrFiles = batch.items.map(i => `qrs/${batch.slug}/${i.dest}-${i.channel}.png`);
+      const urlFiles = batch.items.map(i => i.relPath.replace(/\.html$/, ".txt"));
 
       addLogItem({
         title: "Preview (not published)",
@@ -1176,8 +1178,10 @@ ${normalBrowserLogic}
           `OG image: ${batch.ogImageRel}`,
           `HTML files (${batch.items.length}):`,
           ...batch.items.map(i => `- ${i.relPath}`),
+          `URL files (${urlFiles.length}):`,
+          ...urlFiles.map(f => `- ${f}`),
           `QR files (${qrFiles.length}):`,
-          ...qrFiles.map(f => `- ${normBaseUrl(els.repoBase.value)}/${f}`)
+          ...qrFiles.map(f => `- ${repoBase}/${f}`)
         ]
       });
       hideLogIfEmpty();
