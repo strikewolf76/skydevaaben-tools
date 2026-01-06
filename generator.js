@@ -906,13 +906,14 @@ ${normalBrowserLogic}
       return;
     }
 
+    const totalFiles = 1 + (batch.items.length * 3); // og + html + url txt + qr per item
     addLogItem({
       title: "Publishing…",
       status: "RUNNING",
       lines: [
         `Target: ${OWNER}/${REPO} @ ${BRANCH}`,
         `OG image: ${batch.ogImageRel}`,
-        `Files: ${batch.items.length}`
+        `Files: ${totalFiles}`
       ]
     });
 
@@ -1004,6 +1005,26 @@ ${normalBrowserLogic}
           lines: [
             `Repo path: ${it.relPath}`,
             `dest=${it.dest} utm_source=${it.utm_source} utm_medium=${it.utm_medium} utm_content=${it.utm_content}`
+          ]
+        });
+
+        // Store campaign URL alongside the HTML for Channel use
+        const urlPath = it.relPath.replace(/\.html$/, ".txt");
+        const urlContentB64 = utf8ToBase64(it.pagesUrl + "\n");
+        await putFile({
+          owner: OWNER, repo: REPO, branch: BRANCH, token,
+          path: urlPath,
+          message: `Campaign URL: ${batch.slug} (${it.dest}) ${it.utm_content}`,
+          contentBase64: urlContentB64
+        });
+        addLogItem({
+          title: `OK: ${urlPath}`,
+          status: "PUBLISHED",
+          linkText: "Campaign URL",
+          linkHref: it.pagesUrl,
+          lines: [
+            `Repo path: ${urlPath}`,
+            it.pagesUrl
           ]
         });
       } catch (e) {
