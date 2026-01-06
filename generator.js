@@ -35,6 +35,7 @@
     log: $("log"),
 
     btnGenerate: $("btnGenerate"),
+    btnBuildArtifacts: $("btnBuildArtifacts"),
     btnCheckToken: $("btnCheckToken"),
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
@@ -50,6 +51,7 @@
     btnCopyUrls: $("btnCopyUrls"),
     btnQrBatch: $("btnQrBatch"),
     previewBody: $("previewBody"),
+    chPublishQrs: $("chPublishQrs"),
   };
 
   // ---------- utils ----------
@@ -81,6 +83,13 @@
     tiktok: { utm_source: "tiktok",    utm_medium: "paid_social" },
     youtube:{ utm_source: "youtube",   utm_medium: "paid_video"  },
     igdm:   { utm_source: "instagram", utm_medium: "dm"          }
+  };
+
+  const CHANNEL_UTM_DEFAULTS = {
+    meta: "meta-ads-story01",
+    tiktok: "tt-ads-infeed01",
+    youtube: "yt-ads-instream01",
+    igdm: "ig-dm-v1"
   };
 
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
@@ -623,8 +632,22 @@ ${normalBrowserLogic}
       els.chYouTube.checked = false;
       els.chIGDM.checked = false;
     }
+    if (els.chMeta.checked) ensureUtmDefault("meta");
+    if (els.chTikTok.checked) ensureUtmDefault("tiktok");
+    if (els.chYouTube.checked) ensureUtmDefault("youtube");
+    if (els.chIGDM.checked) ensureUtmDefault("igdm");
     persistSettingsSoon();
     validateOnly();
+    renderPreviewGrid();
+  }
+
+  function ensureUtmDefault(channelKey) {
+    const defaults = CHANNEL_UTM_DEFAULTS[channelKey];
+    if (!defaults) return;
+    if (channelKey === "meta" && !els.metaContent.value) els.metaContent.value = defaults;
+    if (channelKey === "tiktok" && !els.ttContent.value) els.ttContent.value = defaults;
+    if (channelKey === "youtube" && !els.ytContent.value) els.ytContent.value = defaults;
+    if (channelKey === "igdm" && !els.igdmContent.value) els.igdmContent.value = defaults;
   }
 
   function fillUtmExamples() {
@@ -718,6 +741,21 @@ ${normalBrowserLogic}
     }
   }
 
+  async function buildArtifacts() {
+    clearLog();
+    const batch = buildBatch({ requireOg: false });
+    if (!batch || !batch.ok) return;
+    renderPreviewGrid();
+    await copyPreviewCsv();
+    await generateQrBatch();
+    addLogItem({ title: "Artifacts built", status: "DONE", lines: [
+      `Rows: ${batch.items.length}`,
+      "Preview grid refreshed",
+      "CSV copied",
+      "QRs generated (UI/PNG links)"
+    ]});
+  }
+
   const QR_LIB_URLS = [
     "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js",
     "https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js",
@@ -796,6 +834,12 @@ ${normalBrowserLogic}
     }
   }
 
+  function dataUrlToBase64(dataUrl) {
+    if (!dataUrl) return "";
+    const parts = String(dataUrl).split(",");
+    return parts.length > 1 ? parts[1] : parts[0];
+  }
+
   // ---------- GitHub API (create/update contents) ----------
   async function ghFetch(path, { method = "GET", token, body } = {}) {
     const res = await fetch(`https://api.github.com${path}`, {
@@ -861,6 +905,8 @@ ${normalBrowserLogic}
     const v = validateOnly();
     if (!v.ok) return;
 
+    const repoBase = normBaseUrl(els.repoBase.value);
+
     const token = (els.ghToken.value || "").trim();
     if (!token) {
       addLogItem({ title: "Missing token", status: "FAIL", lines: [
@@ -913,6 +959,50 @@ ${normalBrowserLogic}
     }
 
     let failures = 0;
+
+    // Optional: publish QR PNGs to repo
+    if (els.chPublishQrs && els.chPublishQrs.checked) {
+      try {
+        await loadQrLib();
+        for (const it of batch.items) {
+          let dataUrl;
+          try {
+            dataUrl = await window.QRCode.toDataURL(it.pagesUrl, { width: 320, margin: 2 });
+          } catch (_) {
+            const apiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(it.pagesUrl)}&size=320&margin=2`;
+            const res = await fetch(apiUrl);
+            if (!res.ok) throw new Error(`QR API ${res.status}`);
+            const blob = await res.blob();
+            dataUrl = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          }
+
+          const base64 = dataUrlToBase64(dataUrl);
+          const qrPath = `qrs/${batch.slug}/${it.dest}-${it.channel}.png`;
+          await putFile({
+            owner: OWNER, repo: REPO, branch: BRANCH, token,
+            path: qrPath,
+            message: `QR: ${batch.slug} (${it.dest}/${it.channel})`,
+            contentBase64: base64
+          });
+
+          addLogItem({
+            title: `OK QR: ${qrPath}`,
+            status: "PUBLISHED",
+            linkText: "QR PNG",
+            linkHref: `${repoBase}/${qrPath}`,
+            lines: [it.pagesUrl]
+          });
+        }
+      } catch (e) {
+        addLogItem({ title: "QR publish failed", status: "ERROR", lines: [normalizeTokenError(e)] });
+        failures += 1;
+      }
+    }
 
     // 2) Publish HTML files sequentially (avoid conflicts)
     for (const it of batch.items) {
@@ -1091,11 +1181,16 @@ ${normalBrowserLogic}
     els.btnChSocialLight.addEventListener("click", () => setChannelPreset("social"));
     els.btnChMinimal.addEventListener("click", () => setChannelPreset("minimal"));
     els.btnUtmExamples.addEventListener("click", () => fillUtmExamples());
+    if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
+    if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
+    if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
+    if (els.chIGDM) els.chIGDM.addEventListener("change", () => { if (els.chIGDM.checked) { ensureUtmDefault("igdm"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
 
     els.btnPreviewGrid.addEventListener("click", () => renderPreviewGrid());
     els.btnCopyCsv.addEventListener("click", () => copyPreviewCsv());
     els.btnCopyUrls.addEventListener("click", () => copyPagesUrls());
     els.btnQrBatch.addEventListener("click", () => generateQrBatch());
+    if (els.btnBuildArtifacts) els.btnBuildArtifacts.addEventListener("click", () => buildArtifacts());
 
     wireOgDragDrop();
 
