@@ -756,7 +756,7 @@ ${normalBrowserLogic}
     }
 
     if (!batch.items.length) {
-      els.previewBody.innerHTML = '<tr><td colspan="8" class="text-center">Ingen kombinasjoner.</td></tr>';
+      els.previewBody.innerHTML = '<tr><td colspan="8" class="text-center">No combinations.</td></tr>';
       hide(els.previewPanel);
       return;
     }
@@ -872,7 +872,7 @@ ${normalBrowserLogic}
     const msg = String(e?.message || e || "").trim();
     const isToken = /bad credentials|expired|authentication|unauthorized/i.test(msg);
     if (isToken) forgetToken();
-    const extra = isToken ? "Token kan være utløpt. Lag ny fine-grained PAT med Contents Read/Write." : "";
+    const extra = isToken ? "Token may be expired. Create a new fine-grained PAT with Contents Read/Write." : "";
     return extra ? `${msg} | ${extra}` : msg;
   }
 
@@ -888,14 +888,14 @@ ${normalBrowserLogic}
     const token = (els.ghToken.value || "").trim();
     if (!token) {
       addLogItem({ title: "Missing token", status: "FAIL", lines: [
-        "Fant ingen token. Lag en fine-grained PAT med Contents Read/Write og lim inn her.",
-        "Hurtiglenke: https://github.com/settings/personal-access-tokens/new"
+        "No token found. Create a fine-grained PAT with Contents Read/Write and paste it here.",
+        "Quick link: https://github.com/settings/personal-access-tokens/new"
       ] });
       return;
     }
     const tokenOk = await validateTokenStatus(true);
     if (!tokenOk) {
-      addLogItem({ title: "Token not valid", status: "FAIL", lines: ["Valider token og prøv igjen."] });
+      addLogItem({ title: "Token not valid", status: "FAIL", lines: ["Validate the token and try again."] });
       return;
     }
     persistToken(token);
@@ -1061,7 +1061,7 @@ ${normalBrowserLogic}
       addLogItem({
         title: "Token check failed",
         status: "FAIL",
-        lines: [normalizeTokenError(e), "Hurtiglenke: https://github.com/settings/personal-access-tokens/new"]
+        lines: [normalizeTokenError(e), "Quick link: https://github.com/settings/personal-access-tokens/new"]
       });
     }
   }
@@ -1165,7 +1165,7 @@ ${normalBrowserLogic}
     els.btnPublish.addEventListener("click", () => publishAll());
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
 
-    els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token fjernet fra nettleseren."] }); });
+    els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token removed from the browser."] }); });
     if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });

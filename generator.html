@@ -10,7 +10,7 @@
 <body>
   <h1>Skydevaaben – Redirect Generator</h1>
   <p class="muted">
-    Mål: HTML → <span class="mono">tracks/&lt;slug&gt;/&lt;dest&gt;/&lt;utm_content&gt;.html</span> og bilde → <span class="mono">assets/og/&lt;slug&gt;.jpg</span>.
+    Goal: HTML → <span class="mono">tracks/&lt;slug&gt;/&lt;dest&gt;/&lt;utm_content&gt;.html</span> and image → <span class="mono">assets/og/&lt;slug&gt;.jpg</span>.
   </p>
 
   <div class="panel">
@@ -37,10 +37,10 @@
             </div>
             <div id="tokenInputWrap" class="token-input">
               <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
-              <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
+              <div class="hint">Used only in the browser for publishing; not stored in the repo. Saved locally for reuse.</div>
               <div class="row mt-8">
                 <button id="btnForgetToken">Forget saved token</button>
-                <div class="hint">Hvis token mangler/feiler, vi ber deg lage nytt og lagrer det lokalt.</div>
+                <div class="hint">If the token is missing/invalid, create a new one; it will be stored locally.</div>
               </div>
             </div>
           </div>
@@ -49,13 +49,13 @@
         <div class="hidden">
           <label for="trackSlug">Track slug</label>
           <input id="trackSlug" value="born-again-crimson-noise" readonly />
-          <div class="hint">Autoutledes fra tittel; kan ikke redigeres.</div>
+          <div class="hint">Auto-derived from title; not editable.</div>
         </div>
 
         <div class="hidden">
           <label for="utmCampaign">utm_campaign</label>
           <input id="utmCampaign" value="born-again-crimson-noise" readonly />
-          <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
+          <div class="hint">Matches slug/title; not editable.</div>
         </div>
       </div>
 
@@ -68,7 +68,7 @@
         <div class="row between">
           <div>
             <div><strong>Preview grid (utm)</strong></div>
-            <div class="hint">Se alle kombinasjoner.</div>
+            <div class="hint">See all combinations.</div>
           </div>
         </div>
         <div class="tablewrap mt-10">
@@ -79,7 +79,7 @@
               </tr>
             </thead>
             <tbody id="previewBody">
-              <tr><td colspan="8" class="text-center">Klikk "Preview"</td></tr>
+              <tr><td colspan="8" class="text-center">Click "Preview"</td></tr>
             </tbody>
           </table>
         </div>
@@ -87,7 +87,7 @@
 
       <div id="logPanel" class="full panel hidden">
         <div><strong>Log</strong></div>
-        <div class="hint">Her ser du hvilke repo-paths og Pages-lenker som genereres/publiseres.</div>
+        <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
         <div id="log" class="log mt-10"></div>
       </div>
 
@@ -98,21 +98,21 @@
       </div>
 
       <div class="full panel">
-        <div><strong>Campaign Title &amp; OG Assets</strong></div>
+        <div><strong>OG (Open Graph) Assets</strong></div>
         <div class="ogpreview mt-8">
           <div>
-            <label for="title">Title</label>
+            <label for="title">Title (used for preview &amp; slug)</label>
             <input id="title" value="Born Again (Crimson Noise Remix)" />
-            <div class="hint">Brukes til slug, tittel og utm_campaign.</div>
+            <div class="hint">Used for slug, page title, and utm_campaign.</div>
 
             <div class="mt-12"><strong>OG image upload</strong></div>
-            <div class="hint">På publish opprettes <span class="mono">assets/og/&lt;slug&gt;.jpg</span> automatisk.</div>
+            <div class="hint">On publish, <span class="mono">assets/og/&lt;slug&gt;.jpg</span> is created automatically.</div>
             <div class="mt-10">
               <input id="ogFile" type="file" accept="image/*" />
             </div>
             <div class="hint mono" id="ogFileInfo"></div>
-            <div class="hint">Målfil: <span class="mono" id="ogImageNamePreview"></span></div>
-            <div class="hint">Drag & drop et bilde på previewen for rask opplasting.</div>
+            <div class="hint">Target file: <span class="mono" id="ogImageNamePreview"></span></div>
+            <div class="hint">Drag & drop an image onto the preview to upload quickly.</div>
           </div>
 
           <div>
