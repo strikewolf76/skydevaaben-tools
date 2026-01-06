@@ -14,9 +14,10 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 ## Using the tool
 1) Open https://tools.skydevaaben.no (or open `generator.html` locally).
 2) Fill title and destination URLs; upload a square OG image (>630px high).
-3) Click **Generate batch** to preview paths/URLs.
-4) Click **Publish to GitHub** and paste your PAT when prompted.
-5) Pages URLs and QR PNGs can be copied/generated from the UI.
+3) Optional: click **Use prefilled values** in Channels to auto-fill utm_content defaults for the selected channels.
+4) Click **Preview** to validate and view the full grid of combinations (validation, preview, and log panels appear above the campaign section).
+5) Click **Publish** and paste your PAT when prompted; the tool writes the redirect HTMLs and OG image to the repo.
+6) Pages URLs and QR PNGs can be copied/generated from the UI.
 
 ## Domain defaults
 - Pages base URL is locked to https://skydevaaben.no.

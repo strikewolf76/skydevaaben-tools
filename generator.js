@@ -103,7 +103,7 @@
   }
 
   function addLogItem({ title, lines = [], linkText, linkHref, status }) {
-    if (els.logPanel) els.logPanel.style.display = "block";
+    show(els.logPanel);
     const div = document.createElement("div");
     div.className = "logitem";
     const statusHtml = status ? `<div class="mono">${status}</div>` : "";
@@ -114,7 +114,7 @@
         <div class="mono">${linkHtml}</div>
       </div>
       ${statusHtml}
-      <div class="mono" style="margin-top:8px;">${lines.map(l => `${htmlEscape(l)}`).join("<br>")}</div>
+      <div class="mono mt-8">${lines.map(l => `${htmlEscape(l)}`).join("<br>")}</div>
     `;
     els.log.appendChild(div);
   }
@@ -126,7 +126,7 @@
   function hideLogIfEmpty() {
     if (!els.log) return;
     const hasItems = els.log.children.length > 0;
-    if (els.logPanel) els.logPanel.style.display = hasItems ? "block" : "none";
+    toggle(els.logPanel, hasItems);
   }
 
   function parseSpotifyTrackId(url) {
@@ -149,6 +149,19 @@
   function markNeed(el, need) {
     if (!el) return;
     el.classList.toggle("needs-input", !!need);
+  }
+
+  function show(el) {
+    if (el) el.classList.remove("hidden");
+  }
+
+  function hide(el) {
+    if (el) el.classList.add("hidden");
+  }
+
+  function toggle(el, shouldShow) {
+    if (!el) return;
+    el.classList.toggle("hidden", !shouldShow);
   }
 
   function updateNeedsInput() {
@@ -182,9 +195,7 @@
       else els.tokenStatusText.classList.add("status-bad");
       if (message && status === "bad") els.tokenStatusText.title = message; else els.tokenStatusText.removeAttribute("title");
     }
-    if (els.tokenInputWrap) {
-      els.tokenInputWrap.style.display = status === "ok" ? "none" : "block";
-    }
+    toggle(els.tokenInputWrap, status !== "ok");
   }
 
   function scheduleTokenValidation() {
@@ -474,16 +485,21 @@
   <meta name="twitter:title" content="${htmlEscape(title)}">
   <meta name="twitter:description" content="${htmlEscape(description)}">
   <meta name="twitter:image" content="${htmlEscape(ogImageAbs)}">
+
+  <style>
+    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin: 16px; }
+    .cta { font-size: 18px; padding: 14px 22px; display: inline-block; text-decoration: none; }
+  </style>
 </head>
 
-<body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+<body>
 
   <p id="status">Opening…</p>
 
   <p>
     <a id="play"
-       href="${htmlEscape(webUrl)}"
-       style="font-size:18px;padding:14px 22px;display:inline-block;">
+       class="cta"
+       href="${htmlEscape(webUrl)}">
       Open
     </a>
   </p>
@@ -577,7 +593,7 @@ ${normalBrowserLogic}
 
     if (errors.length) {
       els.validation.innerHTML = `<span class="bad">FAIL</span>\n` + errors.map(e => `- ${e}`).join("\n");
-      if (els.validationPanel) els.validationPanel.style.display = "block";
+      show(els.validationPanel);
       return { ok: false, errors };
     }
 
@@ -586,7 +602,7 @@ ${normalBrowserLogic}
       `- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
       `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html\n`;
-    if (els.validationPanel) els.validationPanel.style.display = "block";
+    show(els.validationPanel);
 
     return { ok: true };
   }
@@ -734,18 +750,18 @@ ${normalBrowserLogic}
     if (!els.previewBody) return;
 
     if (!batch || !batch.ok) {
-      els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Fix validation to preview.</td></tr>';
-      if (els.previewPanel) els.previewPanel.style.display = "none";
+      els.previewBody.innerHTML = '<tr><td colspan="8" class="text-center">Fix validation to preview.</td></tr>';
+      hide(els.previewPanel);
       return;
     }
 
     if (!batch.items.length) {
-      els.previewBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Ingen kombinasjoner.</td></tr>';
-      if (els.previewPanel) els.previewPanel.style.display = "none";
+      els.previewBody.innerHTML = '<tr><td colspan="8" class="text-center">Ingen kombinasjoner.</td></tr>';
+      hide(els.previewPanel);
       return;
     }
 
-    if (els.previewPanel) els.previewPanel.style.display = "block";
+    show(els.previewPanel);
     els.previewBody.innerHTML = batch.items.map(i => `
       <tr>
         <td>${htmlEscape(i.dest)}</td>

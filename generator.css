@@ -16,6 +16,13 @@ label { display: block; font-size: 12px; opacity: 0.85; margin-bottom: 6px; }
 input, textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(127,127,127,0.35); background: transparent; }
 textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.hidden { display: none !important; }
+.mt-6 { margin-top: 6px !important; }
+.mt-8 { margin-top: 8px !important; }
+.mt-10 { margin-top: 10px !important; }
+.mt-12 { margin-top: 12px !important; }
+.gap-8 { gap: 8px !important; }
+.text-center { text-align: center; }
 button { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(127,127,127,0.35); background: rgba(127,127,127,0.12); cursor: pointer; }
 button.primary { background: rgba(0, 120, 255, 0.18); }
 button.danger { background: rgba(255, 0, 0, 0.10); }
@@ -33,6 +40,7 @@ button.danger { background: rgba(255, 0, 0, 0.10); }
 .chip input { width:auto; }
 .small { font-size: 12px; opacity:.9; }
 .ogpreview { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.og-canvas { width:100%; height:auto; border-radius:12px; border:1px solid rgba(127,127,127,0.2); }
 @media (max-width: 1100px) { .settings-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); } }
 @media (max-width: 920px) {
 	.grid,
