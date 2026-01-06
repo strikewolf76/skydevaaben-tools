@@ -15,146 +15,152 @@
 
   <div class="panel">
     <div class="grid">
-      <div>
-        <label for="repoBase">Pages base URL</label>
-        <input id="repoBase" value="https://skydevaaben.no" readonly aria-label="Pages base URL (locked)" />
-        <div class="hint">Brukes til absolutte <span class="mono">og:url</span>/<span class="mono">og:image</span>. Feltet er låst (protected).</div>
-      </div>
+      <div class="full panel compact">
+        <div class="grid tight">
+          <div>
+            <label for="repoBase">Pages base URL</label>
+            <input id="repoBase" value="https://skydevaaben.no" readonly aria-label="Pages base URL (locked)" />
+            <div class="hint">Brukes til absolutte <span class="mono">og:url</span>/<span class="mono">og:image</span>. Feltet er låst (protected).</div>
+          </div>
 
-      <div>
-        <label for="siteName">og:site_name</label>
-        <input id="siteName" value="Skydevaaben" readonly />
-      </div>
+          <div>
+            <label for="siteName">og:site_name</label>
+            <input id="siteName" value="Skydevaaben" readonly />
+          </div>
 
-      <div class="full">
-        <label for="title">Title</label>
-        <input id="title" value="Born Again (Crimson Noise Remix)" />
-      </div>
+          <div class="full">
+            <label for="title">Title</label>
+            <input id="title" value="Born Again (Crimson Noise Remix)" />
+          </div>
 
-      <div class="full">
-        <label for="ghToken">Publish token (fine-grained PAT)</label>
-        <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
-        <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
-        <div class="row" style="margin-top:8px;">
-          <button id="btnForgetToken">Forget saved token</button>
-          <div class="hint">Hvis token mangler/feiler, vi ber deg lage nytt og lagrer det lokalt.</div>
-        </div>
-      </div>
-
-      <div style="display:none;">
-        <label for="trackSlug">Track slug</label>
-        <input id="trackSlug" value="born-again-crimson-noise" readonly />
-        <div class="hint">Autoutledes fra tittel; kan ikke redigeres.</div>
-      </div>
-
-      <div style="display:none;">
-        <label for="utmCampaign">utm_campaign</label>
-        <input id="utmCampaign" value="born-again-crimson-noise" readonly />
-        <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
-      </div>
-
-      <div class="full panel">
-        <div><strong>Destinations</strong></div>
-        <div class="hint">Spotify bygges fra URL (ID hentes automatisk). Andre trenger full URL.</div>
-
-        <div class="row" style="margin-top:6px;">
-          <button id="btnDestSpotifyOnly">Preset: Spotify only</button>
-          <button id="btnDestAll">Preset: All destinations</button>
-        </div>
-
-        <div class="grid" style="margin-top:10px;">
-          <div class="chip">
-            <input id="destSpotify" type="checkbox" checked>
-            <div>
-              <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
-              <div class="hint mono">tracks/&lt;slug&gt;/spotify/…</div>
+          <div class="full">
+            <label for="ghToken">Publish token (fine-grained PAT)</label>
+            <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
+            <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
+            <div class="row" style="margin-top:8px;">
+              <button id="btnForgetToken">Forget saved token</button>
+              <div class="hint">Hvis token mangler/feiler, vi ber deg lage nytt og lagrer det lokalt.</div>
             </div>
           </div>
-          <div>
-            <label for="spotifyUrl">Spotify track URL</label>
-            <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
+
+          <div style="display:none;">
+            <label for="trackSlug">Track slug</label>
+            <input id="trackSlug" value="born-again-crimson-noise" readonly />
+            <div class="hint">Autoutledes fra tittel; kan ikke redigeres.</div>
           </div>
 
-          <div class="chip">
-            <input id="destApple" type="checkbox">
-            <div>
-              <div><strong>Apple</strong> <span class="small">(requires URL)</span></div>
-              <div class="hint mono">tracks/&lt;slug&gt;/apple/…</div>
-            </div>
-          </div>
-          <div>
-            <label for="appleUrl">Apple URL</label>
-            <input id="appleUrl" placeholder="https://music.apple.com/..." />
-          </div>
-
-          <div class="chip">
-            <input id="destDeezer" type="checkbox">
-            <div>
-              <div><strong>Deezer</strong> <span class="small">(requires URL)</span></div>
-              <div class="hint mono">tracks/&lt;slug&gt;/deezer/…</div>
-            </div>
-          </div>
-          <div>
-            <label for="deezerUrl">Deezer URL</label>
-            <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
+          <div style="display:none;">
+            <label for="utmCampaign">utm_campaign</label>
+            <input id="utmCampaign" value="born-again-crimson-noise" readonly />
+            <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
           </div>
         </div>
       </div>
 
-      <div class="full panel">
-        <div><strong>Channels</strong></div>
-        <div class="hint">Filer navngis <span class="mono">&lt;utm_content&gt;.html</span> per destination.</div>
+      <div class="full two-col">
+        <div class="panel">
+          <div><strong>Destinations</strong></div>
+          <div class="hint">Spotify bygges fra URL (ID hentes automatisk). Andre trenger full URL.</div>
 
-        <div class="row" style="margin-top:6px;">
-          <button id="btnChAdsAll">Preset: Ads (Meta+TikTok+YouTube)</button>
-          <button id="btnChSocialLight">Preset: Social light (Meta+IG DM)</button>
-          <button id="btnChMinimal">Preset: Minimal (Meta only)</button>
-          <button id="btnUtmExamples">Fill utm_content examples</button>
+          <div class="row" style="margin-top:6px;">
+            <button id="btnDestSpotifyOnly">Preset: Spotify only</button>
+            <button id="btnDestAll">Preset: All destinations</button>
+          </div>
+
+          <div class="grid" style="margin-top:10px;">
+            <div class="chip">
+              <input id="destSpotify" type="checkbox" checked>
+              <div>
+                <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
+                <div class="hint mono">tracks/&lt;slug&gt;/spotify/…</div>
+              </div>
+            </div>
+            <div>
+              <label for="spotifyUrl">Spotify track URL</label>
+              <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
+            </div>
+
+            <div class="chip">
+              <input id="destApple" type="checkbox">
+              <div>
+                <div><strong>Apple</strong> <span class="small">(requires URL)</span></div>
+                <div class="hint mono">tracks/&lt;slug&gt;/apple/…</div>
+              </div>
+            </div>
+            <div>
+              <label for="appleUrl">Apple URL</label>
+              <input id="appleUrl" placeholder="https://music.apple.com/..." />
+            </div>
+
+            <div class="chip">
+              <input id="destDeezer" type="checkbox">
+              <div>
+                <div><strong>Deezer</strong> <span class="small">(requires URL)</span></div>
+                <div class="hint mono">tracks/&lt;slug&gt;/deezer/…</div>
+              </div>
+            </div>
+            <div>
+              <label for="deezerUrl">Deezer URL</label>
+              <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
+            </div>
+          </div>
         </div>
 
-        <div class="grid" style="margin-top:10px;">
-          <div class="chip">
-            <input id="chMeta" type="checkbox" checked>
-            <div>
-              <div><strong>Meta Ads</strong> <span class="small mono">meta / paid_social</span></div>
-            </div>
-          </div>
-          <div>
-            <label for="metaContent">utm_content (Meta)</label>
-            <input id="metaContent" placeholder="meta-ads-story01" />
+        <div class="panel">
+          <div><strong>Channels</strong></div>
+          <div class="hint">Filer navngis <span class="mono">&lt;utm_content&gt;.html</span> per destination.</div>
+
+          <div class="row" style="margin-top:6px;">
+            <button id="btnChAdsAll">Preset: Ads (Meta+TikTok+YouTube)</button>
+            <button id="btnChSocialLight">Preset: Social light (Meta+IG DM)</button>
+            <button id="btnChMinimal">Preset: Minimal (Meta only)</button>
+            <button id="btnUtmExamples">Fill utm_content examples</button>
           </div>
 
-          <div class="chip">
-            <input id="chTikTok" type="checkbox" checked>
-            <div>
-              <div><strong>TikTok Ads</strong> <span class="small mono">tiktok / paid_social</span></div>
+          <div class="grid" style="margin-top:10px;">
+            <div class="chip">
+              <input id="chMeta" type="checkbox" checked>
+              <div>
+                <div><strong>Meta Ads</strong> <span class="small mono">meta / paid_social</span></div>
+              </div>
             </div>
-          </div>
-          <div>
-            <label for="ttContent">utm_content (TikTok)</label>
-            <input id="ttContent" placeholder="tt-ads-infeed01" />
-          </div>
+            <div>
+              <label for="metaContent">utm_content (Meta)</label>
+              <input id="metaContent" placeholder="meta-ads-story01" />
+            </div>
 
-          <div class="chip">
-            <input id="chYouTube" type="checkbox" checked>
-            <div>
-              <div><strong>YouTube Ads</strong> <span class="small mono">youtube / paid_video</span></div>
+            <div class="chip">
+              <input id="chTikTok" type="checkbox" checked>
+              <div>
+                <div><strong>TikTok Ads</strong> <span class="small mono">tiktok / paid_social</span></div>
+              </div>
             </div>
-          </div>
-          <div>
-            <label for="ytContent">utm_content (YouTube)</label>
-            <input id="ytContent" placeholder="yt-ads-instream01" />
-          </div>
+            <div>
+              <label for="ttContent">utm_content (TikTok)</label>
+              <input id="ttContent" placeholder="tt-ads-infeed01" />
+            </div>
 
-          <div class="chip">
-            <input id="chIGDM" type="checkbox">
-            <div>
-              <div><strong>IG DM</strong> <span class="small mono">instagram / dm</span></div>
+            <div class="chip">
+              <input id="chYouTube" type="checkbox" checked>
+              <div>
+                <div><strong>YouTube Ads</strong> <span class="small mono">youtube / paid_video</span></div>
+              </div>
             </div>
-          </div>
-          <div>
-            <label for="igdmContent">utm_content (IG DM)</label>
-            <input id="igdmContent" placeholder="ig-dm-v1" />
+            <div>
+              <label for="ytContent">utm_content (YouTube)</label>
+              <input id="ytContent" placeholder="yt-ads-instream01" />
+            </div>
+
+            <div class="chip">
+              <input id="chIGDM" type="checkbox">
+              <div>
+                <div><strong>IG DM</strong> <span class="small mono">instagram / dm</span></div>
+              </div>
+            </div>
+            <div>
+              <label for="igdmContent">utm_content (IG DM)</label>
+              <input id="igdmContent" placeholder="ig-dm-v1" />
+            </div>
           </div>
         </div>
       </div>
