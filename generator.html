@@ -12,6 +12,7 @@
   <p class="muted">
     Goal: HTML → <span class="mono">tracks/&lt;slug&gt;/&lt;dest&gt;/&lt;utm_content&gt;.html</span> and image → <span class="mono">assets/og/&lt;slug&gt;.jpg</span>.
   </p>
+  <p class="section-hint">Configure once, preview the link grid, then publish. Nothing is stored server-side; everything stays in your browser until you publish.</p>
 
   <div class="panel">
     <div class="grid">
@@ -61,6 +62,7 @@
 
       <div id="validationPanel" class="full panel hidden">
         <div><strong>Validation</strong></div>
+        <div class="section-hint">Checks slug safety, required links, channels, and OG image readiness.</div>
         <div id="validation" class="mono"></div>
       </div>
 
@@ -71,6 +73,7 @@
             <div class="hint">See all combinations.</div>
           </div>
         </div>
+        <div class="table-label">Link Preview (Meta / Messenger)</div>
         <div class="tablewrap mt-10">
           <table class="preview">
             <thead>
@@ -99,6 +102,7 @@
 
       <div class="full panel">
         <div><strong>OG (Open Graph) Assets</strong></div>
+        <div class="section-hint">Title and image define how the link preview looks when shared (Meta, Messenger, etc.).</div>
         <div class="ogpreview mt-8">
           <div>
             <label for="title">Title (used for preview &amp; slug)</label>
@@ -117,7 +121,10 @@
 
           <div>
             <div><strong>Preview (cropped to 1200×630)</strong></div>
-            <canvas id="ogCanvas" width="1200" height="630" class="og-canvas"></canvas>
+            <div class="preview-box mt-8">
+              <div class="section-hint">Link preview frame used by Meta/Messenger.</div>
+              <canvas id="ogCanvas" width="1200" height="630" class="og-canvas"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -125,6 +132,7 @@
       <div class="full two-col">
         <div class="panel">
           <div><strong>Destinations</strong></div>
+          <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
 
           <div id="destEditor" class="grid mt-10">
             <div class="chip">
@@ -167,6 +175,7 @@
 
         <div class="panel">
           <div><strong>Channels</strong></div>
+          <div class="section-hint">Checked channels are included; prefill to add sensible utm_content defaults.</div>
           <div class="row mt-6">
             <button id="btnChPrefill">Use prefilled values</button>
           </div>
