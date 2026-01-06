@@ -1098,7 +1098,7 @@ ${normalBrowserLogic}
     wireOgDragDrop();
 
     drawOgCanvasFromBitmap();
-    autoAlignCampaignToSlug();
+    syncSlugAndCampaignFromTitle();
     validateOnly();
     renderPreviewGrid();
   }
