@@ -33,6 +33,7 @@
     btnDownloadOg: $("btnDownloadOg"),
 
     validation: $("validation"),
+    statusChip: $("statusChip"),
     log: $("log"),
 
     btnGenerate: $("btnGenerate"),
@@ -53,6 +54,7 @@
     previewBody: $("previewBody"),
     filterDest: $("filterDest"),
     filterChannel: $("filterChannel"),
+    toggleDetails: $("toggleDetails"),
   };
 
   // ---------- utils ----------
@@ -113,6 +115,14 @@
   }
 
   function clearLog() { els.log.innerHTML = ""; }
+
+  function setStatusChip(ok, msg, count) {
+    if (!els.statusChip) return;
+    const badge = ok ? "ok" : "bad";
+    const text = ok ? (msg || "Ready") : (msg || "Needs fixes");
+    const extra = typeof count === "number" && count > 0 ? ` (${count})` : "";
+    els.statusChip.innerHTML = `<span class="${badge}">${text}${extra}</span>`;
+  }
 
   function parseSpotifyTrackId(url) {
     if (!url) return null;
@@ -490,15 +500,15 @@ ${normalBrowserLogic}
     els.ogImageNamePreview.textContent = slug ? `assets/og/${slug}.jpg` : "";
 
     if (errors.length) {
-      els.validation.innerHTML = `<span class="bad">FAIL</span>\n` + errors.map(e => `- ${e}`).join("\n");
+      els.validation.innerHTML = errors.map(e => `- ${e}`).join("\n");
+      setStatusChip(false, "Fix required", errors.length);
       return { ok: false, errors };
     }
 
     els.validation.innerHTML =
-      `<span class="ok">OK</span>\n` +
-      `- Publish will create/update:\n` +
-      `  - assets/og/${slug}.jpg\n` +
-      `  - tracks/${slug}/<dest>/<utm_content>.html\n`;
+      `- assets/og/${slug}.jpg\n` +
+      `- tracks/${slug}/<dest>/<utm_content>.html`;
+    setStatusChip(true, "Ready", 0);
 
     return { ok: true };
   }
@@ -676,6 +686,13 @@ ${normalBrowserLogic}
     return s;
   }
 
+  function updateDetailColumnsVisibility() {
+    const show = !!els.toggleDetails?.checked;
+    document.querySelectorAll(".utmdetail").forEach(el => {
+      el.style.display = show ? "table-cell" : "none";
+    });
+  }
+
   function renderPreviewGrid() {
     const batch = buildBatch();
     if (!els.previewBody) return;
@@ -724,16 +741,17 @@ ${normalBrowserLogic}
       <tr>
         <td>${htmlEscape(i.dest)}</td>
         <td>${htmlEscape(i.channel)}</td>
-        <td>${htmlEscape(i.utm_source)}</td>
-        <td>${htmlEscape(i.utm_medium)}</td>
-        <td>${htmlEscape(i.utm_campaign)}</td>
         <td>${htmlEscape(i.utm_content)}</td>
         <td><a href="${htmlEscape(i.pagesUrl)}" target="_blank" rel="noreferrer">open</a></td>
         <td><a href="${htmlEscape(i.finalDestUrl)}" target="_blank" rel="noreferrer">dest</a></td>
         <td><a href="${htmlEscape(i.pagesUrl)}" target="_blank" rel="noreferrer">test</a></td>
+        <td class="utmdetail">${htmlEscape(i.utm_source)}</td>
+        <td class="utmdetail">${htmlEscape(i.utm_medium)}</td>
+        <td class="utmdetail">${htmlEscape(i.utm_campaign)}</td>
       </tr>
     `;
     }).join("");
+    updateDetailColumnsVisibility();
   }
 
   async function copyPreviewCsv() {
@@ -1161,6 +1179,7 @@ ${normalBrowserLogic}
 
     if (els.filterDest) els.filterDest.addEventListener("change", () => renderPreviewGrid());
     if (els.filterChannel) els.filterChannel.addEventListener("change", () => renderPreviewGrid());
+    if (els.toggleDetails) els.toggleDetails.addEventListener("change", () => updateDetailColumnsVisibility());
 
     wireOgDragDrop();
 
