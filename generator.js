@@ -44,6 +44,7 @@
     btnChAdsAll: $("btnChAdsAll"),
     btnChSocialLight: $("btnChSocialLight"),
     btnChMinimal: $("btnChMinimal"),
+    btnUtmExamples: $("btnUtmExamples"),
     btnPreviewGrid: $("btnPreviewGrid"),
     btnCopyCsv: $("btnCopyCsv"),
     btnCopyUrls: $("btnCopyUrls"),
@@ -624,6 +625,16 @@ ${normalBrowserLogic}
     validateOnly();
   }
 
+  function fillUtmExamples() {
+    els.metaContent.value = "meta-ads-story01";
+    els.ttContent.value = "tt-ads-infeed01";
+    els.ytContent.value = "yt-ads-instream01";
+    els.igdmContent.value = "ig-dm-v1";
+    persistSettingsSoon();
+    validateOnly();
+    renderPreviewGrid();
+  }
+
   // ---------- drag & drop OG ----------
   function wireOgDragDrop() {
     const canvas = els.ogCanvas;
@@ -997,13 +1008,13 @@ ${normalBrowserLogic}
     els.deezerUrl.value = "";
 
     els.chMeta.checked = true;
-    els.metaContent.value = "meta-ads-story01";
+    els.metaContent.value = "";
     els.chTikTok.checked = true;
-    els.ttContent.value = "tt-ads-infeed01";
+    els.ttContent.value = "";
     els.chYouTube.checked = true;
-    els.ytContent.value = "yt-ads-instream01";
+    els.ytContent.value = "";
     els.chIGDM.checked = false;
-    els.igdmContent.value = "ig-dm-v1";
+    els.igdmContent.value = "";
 
     els.ogFile.value = "";
     els.ogFileInfo.textContent = "";
@@ -1077,6 +1088,7 @@ ${normalBrowserLogic}
     els.btnChAdsAll.addEventListener("click", () => setChannelPreset("ads"));
     els.btnChSocialLight.addEventListener("click", () => setChannelPreset("social"));
     els.btnChMinimal.addEventListener("click", () => setChannelPreset("minimal"));
+    els.btnUtmExamples.addEventListener("click", () => fillUtmExamples());
 
     els.btnPreviewGrid.addEventListener("click", () => renderPreviewGrid());
     els.btnCopyCsv.addEventListener("click", () => copyPreviewCsv());
