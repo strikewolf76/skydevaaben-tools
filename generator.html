@@ -23,7 +23,7 @@
 
       <div>
         <label for="siteName">og:site_name</label>
-        <input id="siteName" value="Skydevaaben" />
+        <input id="siteName" value="Skydevaaben" readonly />
       </div>
 
       <div class="full">
@@ -41,13 +41,13 @@
         </div>
       </div>
 
-      <div>
+      <div style="display:none;">
         <label for="trackSlug">Track slug</label>
         <input id="trackSlug" value="born-again-crimson-noise" readonly />
         <div class="hint">Autoutledes fra tittel; kan ikke redigeres.</div>
       </div>
 
-      <div>
+      <div style="display:none;">
         <label for="utmCampaign">utm_campaign</label>
         <input id="utmCampaign" value="born-again-crimson-noise" readonly />
         <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
@@ -196,11 +196,7 @@
     <div class="row" style="justify-content:space-between; align-items:center;">
       <div>
         <div><strong>Preview grid (utm)</strong></div>
-        <div class="hint">Se alle kombinasjoner og kopier CSV direkte.</div>
-      </div>
-      <div class="row">
-        <button id="btnPreviewGrid">Refresh preview</button>
-        <button id="btnCopyCsv">Copy CSV</button>
+        <div class="hint">Se alle kombinasjoner.</div>
       </div>
     </div>
     <div class="tablewrap" style="margin-top:10px;">
