@@ -29,6 +29,11 @@
     destEditor: $("destEditor"),
     chEditor: $("chEditor"),
 
+    repoBaseDisplay: $("repoBaseDisplay"),
+    siteNameDisplay: $("siteNameDisplay"),
+    tokenStatusText: $("tokenStatusText"),
+    tokenInputWrap: $("tokenInputWrap"),
+
     ogFile: $("ogFile"),
     ogFileInfo: $("ogFileInfo"),
     ogCanvas: $("ogCanvas"),
@@ -147,6 +152,50 @@
     markNeed(els.ttContent, ttMissing);
     markNeed(els.ytContent, ytMissing);
     markNeed(els.igdmContent, igMissing);
+  }
+
+  let tokenStatus = "unknown";
+  let tokenValidateTimer = null;
+
+  function setTokenStatus(status, message) {
+    tokenStatus = status;
+    if (els.tokenStatusText) {
+      els.tokenStatusText.textContent = status === "ok" ? "OK" : status === "pending" ? "Checking…" : "NOT OK";
+      els.tokenStatusText.classList.remove("status-ok", "status-bad", "status-pending");
+      if (status === "ok") els.tokenStatusText.classList.add("status-ok");
+      else if (status === "pending") els.tokenStatusText.classList.add("status-pending");
+      else els.tokenStatusText.classList.add("status-bad");
+      if (message && status === "bad") els.tokenStatusText.title = message; else els.tokenStatusText.removeAttribute("title");
+    }
+    if (els.tokenInputWrap) {
+      els.tokenInputWrap.style.display = status === "ok" ? "none" : "block";
+    }
+  }
+
+  function scheduleTokenValidation() {
+    if (tokenValidateTimer) clearTimeout(tokenValidateTimer);
+    tokenValidateTimer = setTimeout(() => validateTokenStatus(true), 500);
+  }
+
+  async function validateTokenStatus(auto = false) {
+    const token = (els.ghToken.value || "").trim();
+    if (!token) {
+      setTokenStatus("bad");
+      return false;
+    }
+    setTokenStatus("pending");
+    try {
+      await ghFetch(`/repos/${OWNER}/${REPO}`, { token });
+      setTokenStatus("ok");
+      persistToken(token);
+      if (!auto) addLogItem({ title: "Token OK", status: "PASS", lines: ["Permissions OK for Contents (Read/Write)."] });
+      return true;
+    } catch (e) {
+      const msg = normalizeTokenError(e);
+      setTokenStatus("bad", msg);
+      if (!auto) addLogItem({ title: "Token not valid", status: "FAIL", lines: [msg] });
+      return false;
+    }
   }
 
   // ---------- OG image processing ----------
@@ -347,6 +396,7 @@
   function forgetToken() {
     persistToken("");
     els.ghToken.value = "";
+    setTokenStatus("bad");
   }
 
   function syncSlugAndCampaignFromTitle() {
@@ -519,7 +569,7 @@ ${normalBrowserLogic}
       `<span class="ok">OK</span>\n` +
       `- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
-      `  - tracks/${slug}/<dest>/<utm_content>.html\n`;
+      `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html\n`;
 
     return { ok: true };
   }
@@ -791,6 +841,11 @@ ${normalBrowserLogic}
       ] });
       return;
     }
+    const tokenOk = await validateTokenStatus(true);
+    if (!tokenOk) {
+      addLogItem({ title: "Token not valid", status: "FAIL", lines: ["Valider token og prøv igjen."] });
+      return;
+    }
     persistToken(token);
 
     const batch = buildBatch();
@@ -1005,8 +1060,11 @@ ${normalBrowserLogic}
     const savedToken = loadToken();
     if (savedToken) els.ghToken.value = savedToken;
     els.repoBase.value = REPO_BASE_LOCKED; // re-assert after applying other settings
+    if (els.repoBaseDisplay) els.repoBaseDisplay.textContent = REPO_BASE_LOCKED;
+    if (els.siteNameDisplay) els.siteNameDisplay.textContent = els.siteName.value || "";
     syncSlugAndCampaignFromTitle();
     updateNeedsInput();
+    if (savedToken) validateTokenStatus(true); else setTokenStatus("bad");
 
     [
       els.repoBase, els.siteName,
@@ -1018,7 +1076,10 @@ ${normalBrowserLogic}
       if (el === els.title) syncSlugAndCampaignFromTitle();
       validateOnly();
       if (el !== els.ghToken) persistSettingsSoon();
-      else persistToken(els.ghToken.value);
+      else {
+        persistToken(els.ghToken.value);
+        scheduleTokenValidation();
+      }
       updateNeedsInput();
     }));
 
@@ -1052,7 +1113,6 @@ ${normalBrowserLogic}
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token fjernet fra nettleseren."] }); });
-
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });

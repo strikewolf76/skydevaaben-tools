@@ -16,45 +16,46 @@
   <div class="panel">
     <div class="grid">
       <div class="full panel compact">
-        <div class="panel-title">Settings</div>
-        <div class="settings-grid">
+        <div><strong>Settings</strong></div>
+        <div class="settings-inline">
           <div>
-            <label for="repoBase">Pages base URL</label>
-            <input id="repoBase" value="https://skydevaaben.no" readonly aria-label="Pages base URL (locked)" />
-            <div class="hint">Brukes til absolutte <span class="mono">og:url</span>/<span class="mono">og:image</span>. Feltet er låst (protected).</div>
+            <div class="label">Pages base URL</div>
+            <div class="mono" id="repoBaseDisplay">https://skydevaaben.no</div>
+            <input id="repoBase" value="https://skydevaaben.no" readonly aria-label="Pages base URL (locked)" style="display:none;" />
           </div>
 
           <div>
-            <label for="siteName">og:site_name</label>
-            <input id="siteName" value="Skydevaaben" readonly />
+            <div class="label">og:site_name</div>
+            <div class="mono" id="siteNameDisplay">Skydevaaben</div>
+            <input id="siteName" value="Skydevaaben" readonly style="display:none;" />
           </div>
 
           <div>
-            <label for="title">Title</label>
-            <input id="title" value="Born Again (Crimson Noise Remix)" />
-          </div>
-
-          <div>
-            <label for="ghToken">Publish token (fine-grained PAT)</label>
-            <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
-            <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
-            <div class="row" style="margin-top:8px;">
-              <button id="btnForgetToken">Forget saved token</button>
-              <div class="hint">Hvis token mangler/feiler, vi ber deg lage nytt og lagrer det lokalt.</div>
+            <div class="label">Publish token (fine-grained PAT)</div>
+            <div class="row" style="align-items:center; gap:8px;">
+              <span id="tokenStatusText" class="status-bad">NOT OK</span>
+            </div>
+            <div id="tokenInputWrap" class="token-input">
+              <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
+              <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
+              <div class="row" style="margin-top:8px;">
+                <button id="btnForgetToken">Forget saved token</button>
+                <div class="hint">Hvis token mangler/feiler, vi ber deg lage nytt og lagrer det lokalt.</div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div style="display:none;">
-            <label for="trackSlug">Track slug</label>
-            <input id="trackSlug" value="born-again-crimson-noise" readonly />
-            <div class="hint">Autoutledes fra tittel; kan ikke redigeres.</div>
-          </div>
+        <div style="display:none;">
+          <label for="trackSlug">Track slug</label>
+          <input id="trackSlug" value="born-again-crimson-noise" readonly />
+          <div class="hint">Autoutledes fra tittel; kan ikke redigeres.</div>
+        </div>
 
-          <div style="display:none;">
-            <label for="utmCampaign">utm_campaign</label>
-            <input id="utmCampaign" value="born-again-crimson-noise" readonly />
-            <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
-          </div>
+        <div style="display:none;">
+          <label for="utmCampaign">utm_campaign</label>
+          <input id="utmCampaign" value="born-again-crimson-noise" readonly />
+          <div class="hint">Settes lik slug/tittel; kan ikke redigeres.</div>
         </div>
       </div>
 
@@ -153,9 +154,14 @@
       </div>
 
       <div class="full panel">
-        <div class="ogpreview">
+        <div><strong>Campaign Title and OG Image</strong></div>
+        <div class="ogpreview" style="margin-top:8px;">
           <div>
-            <div><strong>OG image upload</strong></div>
+            <label for="title">Title</label>
+            <input id="title" value="Born Again (Crimson Noise Remix)" />
+            <div class="hint">Brukes til slug, tittel og utm_campaign.</div>
+
+            <div style="margin-top:12px;"><strong>OG image upload</strong></div>
             <div class="hint">På publish opprettes <span class="mono">assets/og/&lt;slug&gt;.jpg</span> automatisk.</div>
             <div style="margin-top:10px;">
               <input id="ogFile" type="file" accept="image/*" />
