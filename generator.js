@@ -26,6 +26,14 @@
     chIGDM: $("chIGDM"),
     igdmContent: $("igdmContent"),
 
+    destSummary: $("destSummary"),
+    destEditor: $("destEditor"),
+    chSummary: $("chSummary"),
+    chEditor: $("chEditor"),
+
+    btnToggleDest: $("btnToggleDest"),
+    btnToggleCh: $("btnToggleCh"),
+
     ogFile: $("ogFile"),
     ogFileInfo: $("ogFileInfo"),
     ogCanvas: $("ogCanvas"),
@@ -85,6 +93,19 @@
     igdm: "ig-dm-v1"
   };
 
+  const DEST_OPTIONS = [
+    { id: "destSpotify", label: "Spotify" },
+    { id: "destApple", label: "Apple" },
+    { id: "destDeezer", label: "Deezer" }
+  ];
+
+  const CHANNEL_OPTIONS = [
+    { id: "chMeta", label: "Meta" },
+    { id: "chTikTok", label: "TikTok" },
+    { id: "chYouTube", label: "YouTube" },
+    { id: "chIGDM", label: "IG DM" }
+  ];
+
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
     const u = new URL(destUrl);
     u.searchParams.set("utm_source", utm_source);
@@ -127,6 +148,38 @@
     if (hasApple) return "Tap to open in Apple Music.";
     if (hasDeezer) return "Tap to open in Deezer.";
     return "Tap to open.";
+  }
+
+  function renderPills(target, labels, emptyText) {
+    if (!target) return;
+    if (!labels.length) {
+      target.innerHTML = `<span class="hint">${htmlEscape(emptyText)}</span>`;
+      return;
+    }
+    target.innerHTML = labels.map(l => `<span class="pill">${htmlEscape(l)}</span>`).join("");
+  }
+
+  function updateDestSummary() {
+    const labels = DEST_OPTIONS.filter(opt => els[opt.id]?.checked).map(opt => opt.label);
+    renderPills(els.destSummary, labels, "Ingen destinasjoner valgt.");
+  }
+
+  function updateChannelSummary() {
+    const labels = CHANNEL_OPTIONS.filter(opt => els[opt.id]?.checked).map(opt => opt.label);
+    renderPills(els.chSummary, labels, "Ingen kanaler valgt.");
+  }
+
+  function setEditorOpen(editorEl, btnEl, open, label) {
+    if (!editorEl) return;
+    editorEl.dataset.open = open ? "1" : "0";
+    editorEl.style.display = open ? "grid" : "none";
+    if (btnEl) btnEl.textContent = open ? `Hide ${label}` : `Select more ${label}`;
+  }
+
+  function toggleEditor(editorEl, btnEl, label) {
+    if (!editorEl) return;
+    const open = editorEl.dataset.open === "1";
+    setEditorOpen(editorEl, btnEl, !open, label);
   }
 
   // ---------- OG image processing ----------
@@ -606,6 +659,8 @@ ${normalBrowserLogic}
     }
     persistSettingsSoon();
     validateOnly();
+    updateDestSummary();
+    renderPreviewGrid();
   }
 
   function setChannelPreset(kind) {
@@ -632,6 +687,7 @@ ${normalBrowserLogic}
     persistSettingsSoon();
     validateOnly();
     renderPreviewGrid();
+    updateChannelSummary();
   }
 
   function ensureUtmDefault(channelKey) {
@@ -1012,6 +1068,10 @@ ${normalBrowserLogic}
     els.ogImageNamePreview.textContent = "";
 
     syncSlugAndCampaignFromTitle();
+    updateDestSummary();
+    updateChannelSummary();
+    setEditorOpen(els.destEditor, els.btnToggleDest, false, "destinations");
+    setEditorOpen(els.chEditor, els.btnToggleCh, false, "channels");
     persistSettingsSoon();
   }
 
@@ -1024,6 +1084,10 @@ ${normalBrowserLogic}
     if (savedToken) els.ghToken.value = savedToken;
     els.repoBase.value = REPO_BASE_LOCKED; // re-assert after applying other settings
     syncSlugAndCampaignFromTitle();
+    updateDestSummary();
+    updateChannelSummary();
+    setEditorOpen(els.destEditor, els.btnToggleDest, false, "destinations");
+    setEditorOpen(els.chEditor, els.btnToggleCh, false, "channels");
 
     [
       els.repoBase, els.siteName,
@@ -1036,6 +1100,11 @@ ${normalBrowserLogic}
       validateOnly();
       if (el !== els.ghToken) persistSettingsSoon();
       else persistToken(els.ghToken.value);
+
+      if (DEST_OPTIONS.some(opt => els[opt.id] === el) || CHANNEL_OPTIONS.some(opt => els[opt.id] === el)) {
+        updateDestSummary();
+        updateChannelSummary();
+      }
     }));
 
     els.ogFile.addEventListener("change", (e) => {
@@ -1075,6 +1144,8 @@ ${normalBrowserLogic}
     els.btnChSocialLight.addEventListener("click", () => setChannelPreset("social"));
     els.btnChMinimal.addEventListener("click", () => setChannelPreset("minimal"));
     els.btnUtmExamples.addEventListener("click", () => fillUtmExamples());
+    if (els.btnToggleDest) els.btnToggleDest.addEventListener("click", () => toggleEditor(els.destEditor, els.btnToggleDest, "destinations"));
+    if (els.btnToggleCh) els.btnToggleCh.addEventListener("click", () => toggleEditor(els.chEditor, els.btnToggleCh, "channels"));
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
@@ -1085,6 +1156,8 @@ ${normalBrowserLogic}
     drawOgCanvasFromBitmap();
     syncSlugAndCampaignFromTitle();
     validateOnly();
+    updateDestSummary();
+    updateChannelSummary();
     renderPreviewGrid();
   }
 

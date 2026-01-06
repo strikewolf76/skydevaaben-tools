@@ -16,7 +16,8 @@
   <div class="panel">
     <div class="grid">
       <div class="full panel compact">
-        <div class="grid tight">
+        <div class="panel-title">Settings</div>
+        <div class="settings-grid">
           <div>
             <label for="repoBase">Pages base URL</label>
             <input id="repoBase" value="https://skydevaaben.no" readonly aria-label="Pages base URL (locked)" />
@@ -28,12 +29,12 @@
             <input id="siteName" value="Skydevaaben" readonly />
           </div>
 
-          <div class="full">
+          <div>
             <label for="title">Title</label>
             <input id="title" value="Born Again (Crimson Noise Remix)" />
           </div>
 
-          <div class="full">
+          <div>
             <label for="ghToken">Publish token (fine-grained PAT)</label>
             <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
             <div class="hint">Brukes kun i nettleseren for å publisere; ikke lagres i repo. Lagres lokalt i nettleseren for gjenbruk.</div>
@@ -59,15 +60,14 @@
 
       <div class="full two-col">
         <div class="panel">
-          <div><strong>Destinations</strong></div>
-          <div class="hint">Spotify bygges fra URL (ID hentes automatisk). Andre trenger full URL.</div>
-
-          <div class="row" style="margin-top:6px;">
-            <button id="btnDestSpotifyOnly">Preset: Spotify only</button>
-            <button id="btnDestAll">Preset: All destinations</button>
+          <div class="row between">
+            <div><strong>Destinations</strong></div>
+            <button class="link-button" id="btnToggleDest">Select more destinations</button>
           </div>
+          <div class="hint">Spotify bygges fra URL (ID hentes automatisk). Andre trenger full URL.</div>
+          <div id="destSummary" class="pill-list"></div>
 
-          <div class="grid" style="margin-top:10px;">
+          <div id="destEditor" class="grid" style="margin-top:10px; display:none;">
             <div class="chip">
               <input id="destSpotify" type="checkbox" checked>
               <div>
@@ -103,21 +103,23 @@
               <label for="deezerUrl">Deezer URL</label>
               <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
             </div>
+
+            <div class="full row" style="margin-top:6px;">
+              <button id="btnDestSpotifyOnly">Preset: Spotify only</button>
+              <button id="btnDestAll">Preset: All destinations</button>
+            </div>
           </div>
         </div>
 
         <div class="panel">
-          <div><strong>Channels</strong></div>
-          <div class="hint">Filer navngis <span class="mono">&lt;utm_content&gt;.html</span> per destination.</div>
-
-          <div class="row" style="margin-top:6px;">
-            <button id="btnChAdsAll">Preset: Ads (Meta+TikTok+YouTube)</button>
-            <button id="btnChSocialLight">Preset: Social light (Meta+IG DM)</button>
-            <button id="btnChMinimal">Preset: Minimal (Meta only)</button>
-            <button id="btnUtmExamples">Fill utm_content examples</button>
+          <div class="row between">
+            <div><strong>Channels</strong></div>
+            <button class="link-button" id="btnToggleCh">Select more channels</button>
           </div>
+          <div class="hint">Filer navngis <span class="mono">&lt;utm_content&gt;.html</span> per destination.</div>
+          <div id="chSummary" class="pill-list"></div>
 
-          <div class="grid" style="margin-top:10px;">
+          <div id="chEditor" class="grid" style="margin-top:10px; display:none;">
             <div class="chip">
               <input id="chMeta" type="checkbox" checked>
               <div>
@@ -160,6 +162,13 @@
             <div>
               <label for="igdmContent">utm_content (IG DM)</label>
               <input id="igdmContent" placeholder="ig-dm-v1" />
+            </div>
+
+            <div class="full row" style="margin-top:6px;">
+              <button id="btnChAdsAll">Preset: Ads (Meta+TikTok+YouTube)</button>
+              <button id="btnChSocialLight">Preset: Social light (Meta+IG DM)</button>
+              <button id="btnChMinimal">Preset: Minimal (Meta only)</button>
+              <button id="btnUtmExamples">Fill utm_content examples</button>
             </div>
           </div>
         </div>
