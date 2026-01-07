@@ -26,8 +26,6 @@
     ttContent: $("ttContent"),
     chYouTube: $("chYouTube"),
     ytContent: $("ytContent"),
-    chIGDM: $("chIGDM"),
-    igdmContent: $("igdmContent"),
 
     destEditor: $("destEditor"),
     chEditor: $("chEditor"),
@@ -62,6 +60,7 @@
     btnFeed: $("btnFeed"),
     btnInfeed: $("btnInfeed"),
     btnInstream: $("btnInstream"),
+    btnSlotDec: $("btnSlotDec"),
     btnSlotInc: $("btnSlotInc"),
     creativeSlot: $("creativeSlot"),
     previewBody: $("previewBody"),
@@ -94,15 +93,13 @@
   const CHANNELS = {
     meta:   { utm_source: "meta",      utm_medium: "paid_social" },
     tiktok: { utm_source: "tiktok",    utm_medium: "paid_social" },
-    youtube:{ utm_source: "youtube",   utm_medium: "paid_video"  },
-    igdm:   { utm_source: "instagram", utm_medium: "dm"          }
+    youtube:{ utm_source: "youtube",   utm_medium: "paid_video"  }
   };
 
   const CHANNEL_UTM_DEFAULTS = {
     meta: "meta-ads-story01",
     tiktok: "tt-ads-infeed01",
-    youtube: "yt-ads-instream01",
-    igdm: "ig-dm-v1"
+    youtube: "yt-ads-instream01"
   };
 
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
@@ -187,11 +184,9 @@
     const metaMissing = els.chMeta.checked && !(els.metaContent.value || "").trim();
     const ttMissing = els.chTikTok.checked && !(els.ttContent.value || "").trim();
     const ytMissing = els.chYouTube.checked && !(els.ytContent.value || "").trim();
-    const igMissing = els.chIGDM.checked && !(els.igdmContent.value || "").trim();
     markNeed(els.metaContent, metaMissing);
     markNeed(els.ttContent, ttMissing);
     markNeed(els.ytContent, ytMissing);
-    markNeed(els.igdmContent, igMissing);
   }
 
   async function copyCredsToClipboard() {
@@ -285,8 +280,7 @@
   const CHANNEL_INPUTS = {
     meta: () => els.metaContent,
     tiktok: () => els.ttContent,
-    youtube: () => els.ytContent,
-    igdm: () => els.igdmContent
+    youtube: () => els.ytContent
   };
 
   const PRESET_MAP = {
@@ -516,6 +510,12 @@
     return padSlot(next);
   }
 
+  function decrementSlot(v) {
+    const num = parseInt(String(v || "01"), 10);
+    const next = Number.isNaN(num) ? 1 : Math.max(num - 1, 1);
+    return padSlot(next);
+  }
+
   function loadHashStore() {
     return safeGetJson(HASH_KEY, {});
   }
@@ -553,8 +553,6 @@
       ttContent: els.ttContent.value,
       chYouTube: els.chYouTube.checked,
       ytContent: els.ytContent.value,
-      chIGDM: els.chIGDM.checked,
-      igdmContent: els.igdmContent.value,
     };
   }
 
@@ -591,8 +589,6 @@
       assign(els.ttContent, s.ttContent);
       assign(els.chYouTube, s.chYouTube, true);
       assign(els.ytContent, s.ytContent);
-      assign(els.chIGDM, s.chIGDM, true);
-      assign(els.igdmContent, s.igdmContent);
       updateMetaPixelStatus();
     } catch { /* ignore */ }
   }
@@ -836,13 +832,12 @@ ${normalBrowserLogic}
     if (els.destApple.checked) required("Apple URL", (els.appleUrl.value || "").trim(), errors);
     if (els.destDeezer.checked) required("Deezer URL", (els.deezerUrl.value || "").trim(), errors);
 
-    const anyCh = els.chMeta.checked || els.chTikTok.checked || els.chYouTube.checked || els.chIGDM.checked;
+    const anyCh = els.chMeta.checked || els.chTikTok.checked || els.chYouTube.checked;
     if (!anyCh) errors.push("Select at least one channel.");
 
     if (els.chMeta.checked) required("utm_content (Meta)", els.metaContent.value, errors);
     if (els.chTikTok.checked) required("utm_content (TikTok)", els.ttContent.value, errors);
     if (els.chYouTube.checked) required("utm_content (YouTube)", els.ytContent.value, errors);
-    if (els.chIGDM.checked) required("utm_content (IG DM)", els.igdmContent.value, errors);
 
     if (requireOg) {
       if (!ogImageLoaded) errors.push("OG image not uploaded yet (required).");
@@ -862,7 +857,7 @@ ${normalBrowserLogic}
       `- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
       `  - tracks/${slug}/&lt;dest&gt;/meta.html (Meta)\n` +
-      `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html (TikTok/YouTube/IG DM)\n`;
+      `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html (TikTok/YouTube)\n`;
     show(els.validationPanel);
 
     return { ok: true };
@@ -910,7 +905,6 @@ ${normalBrowserLogic}
     if (els.chMeta.checked) channels.push({ key: "meta",   content: sanitizeSlug(els.metaContent.value) });
     if (els.chTikTok.checked) channels.push({ key: "tiktok", content: sanitizeSlug(els.ttContent.value) });
     if (els.chYouTube.checked) channels.push({ key: "youtube",content: sanitizeSlug(els.ytContent.value) });
-    if (els.chIGDM.checked) channels.push({ key: "igdm",  content: sanitizeSlug(els.igdmContent.value) });
 
     const items = [];
 
@@ -978,7 +972,6 @@ ${normalBrowserLogic}
     if (channelKey === "meta" && !els.metaContent.value) els.metaContent.value = defaults;
     if (channelKey === "tiktok" && !els.ttContent.value) els.ttContent.value = defaults;
     if (channelKey === "youtube" && !els.ytContent.value) els.ytContent.value = defaults;
-    if (channelKey === "igdm" && !els.igdmContent.value) els.igdmContent.value = defaults;
   }
 
   function prefillSelectedChannels() {
@@ -990,7 +983,6 @@ ${normalBrowserLogic}
     if (els.chMeta?.checked) applyDefault("meta", els.metaContent);
     if (els.chTikTok?.checked) applyDefault("tiktok", els.ttContent);
     if (els.chYouTube?.checked) applyDefault("youtube", els.ytContent);
-    if (els.chIGDM?.checked) applyDefault("igdm", els.igdmContent);
     persistSettingsSoon();
     validateOnly();
     renderPreviewGrid();
@@ -1001,7 +993,6 @@ ${normalBrowserLogic}
     els.metaContent.value = "meta-ads-story01";
     els.ttContent.value = "tt-ads-infeed01";
     els.ytContent.value = "yt-ads-instream01";
-    els.igdmContent.value = "ig-dm-v1";
     persistSettingsSoon();
     validateOnly();
     renderPreviewGrid();
@@ -1051,6 +1042,15 @@ ${normalBrowserLogic}
     setStoredSlot(slug, channel, bumped);
     setSlotInput(bumped);
     return bumped;
+  }
+
+  function decrementSlotForChannel(channel) {
+    const slug = sanitizeSlug(els.trackSlug.value || "");
+    const current = getStoredSlot(slug, channel);
+    const dec = decrementSlot(current);
+    setStoredSlot(slug, channel, dec);
+    setSlotInput(dec);
+    return dec;
   }
 
   function bumpContent(content) {
@@ -1254,8 +1254,7 @@ ${normalBrowserLogic}
         const channelToInput = {
           meta: els.metaContent,
           tiktok: els.ttContent,
-          youtube: els.ytContent,
-          igdm: els.igdmContent
+          youtube: els.ytContent
         };
         collisions.forEach(c => {
           const input = channelToInput[c.channel];
@@ -1474,12 +1473,10 @@ ${normalBrowserLogic}
 
     els.chMeta.checked = true;
     els.metaContent.value = "";
-    els.chTikTok.checked = true;
+    els.chTikTok.checked = false;
     els.ttContent.value = "";
-    els.chYouTube.checked = true;
+    els.chYouTube.checked = false;
     els.ytContent.value = "";
-    els.chIGDM.checked = false;
-    els.igdmContent.value = "";
 
     els.ogFile.value = "";
     els.ogFileInfo.textContent = "";
@@ -1521,7 +1518,7 @@ ${normalBrowserLogic}
       els.ghToken,
       els.title,
       els.destSpotify, els.spotifyUrl, els.destApple, els.appleUrl, els.destDeezer, els.deezerUrl,
-      els.chMeta, els.metaContent, els.chTikTok, els.ttContent, els.chYouTube, els.ytContent, els.chIGDM, els.igdmContent
+      els.chMeta, els.metaContent, els.chTikTok, els.ttContent, els.chYouTube, els.ytContent
     ].forEach(el => el.addEventListener("input", () => {
       if (el === els.title) { syncSlugAndCampaignFromTitle(); syncSlotFromStorage(); }
       validateOnly();
@@ -1572,6 +1569,9 @@ ${normalBrowserLogic}
     if (els.btnFeed) els.btnFeed.addEventListener("click", () => applyPreset("feed"));
     if (els.btnInfeed) els.btnInfeed.addEventListener("click", () => applyPreset("infeed"));
     if (els.btnInstream) els.btnInstream.addEventListener("click", () => applyPreset("instream"));
+    if (els.btnSlotDec) els.btnSlotDec.addEventListener("click", () => {
+      decrementSlotForChannel(lastPresetChannel || "meta");
+    });
     if (els.btnSlotInc) els.btnSlotInc.addEventListener("click", () => {
       bumpSlotForChannel(lastPresetChannel || "meta");
     });
@@ -1585,7 +1585,6 @@ ${normalBrowserLogic}
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
-    if (els.chIGDM) els.chIGDM.addEventListener("change", () => { if (els.chIGDM.checked) { ensureUtmDefault("igdm"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
 
     wireOgDragDrop();
 
