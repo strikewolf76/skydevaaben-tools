@@ -57,6 +57,13 @@
     btnForgetToken: $("btnForgetToken"),
     btnCopyCreds: $("btnCopyCreds"),
     btnTheme: $("btnTheme"),
+    btnStory: $("btnStory"),
+    btnReel: $("btnReel"),
+    btnFeed: $("btnFeed"),
+    btnInfeed: $("btnInfeed"),
+    btnInstream: $("btnInstream"),
+    btnSlotInc: $("btnSlotInc"),
+    creativeSlot: $("creativeSlot"),
     previewBody: $("previewBody"),
   };
 
@@ -267,10 +274,28 @@
   const SETTINGS_KEY = "sv-generator-settings-v1";
   const TOKEN_KEY = "sv-generator-token";
   const THEME_KEY = "sv-generator-theme-v1";
+  const SLOT_KEY = "sv-slot-state-v1";
+  const HASH_KEY = "sv-file-hash-v1";
+  const PUBLISH_HISTORY_KEY = "sv-publish-history-v1";
 
   const REPO_BASE_LOCKED = "https://skydevaaben.no";
 
   const THEMES = ["base", "ocean", "forest", "sunset", "sand", "slate", "mint"];
+
+  const CHANNEL_INPUTS = {
+    meta: () => els.metaContent,
+    tiktok: () => els.ttContent,
+    youtube: () => els.ytContent,
+    igdm: () => els.igdmContent
+  };
+
+  const PRESET_MAP = {
+    story:  { channel: "meta",   prefix: "meta-ads-story" },
+    reel:   { channel: "meta",   prefix: "meta-ads-reel" },
+    feed:   { channel: "meta",   prefix: "meta-ads-feed" },
+    infeed: { channel: "tiktok", prefix: "tt-ads-infeed" },
+    instream: { channel: "youtube", prefix: "yt-ads-instream" }
+  };
 
   const OWNER = "strikewolf76";
   const REPO = "skydevaaben";
@@ -383,12 +408,35 @@
     return btoa(binary);
   }
 
+  function hashString(str) {
+    // Lightweight, stable hash (djb2-ish)
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+      hash = hash >>> 0; // force uint32
+    }
+    return hash.toString(16);
+  }
+
   // ---------- persistence (localStorage) ----------
   function safeGet(key) {
     try { return localStorage.getItem(key); } catch { return null; }
   }
   function safeSet(key, value) {
     try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* ignore */ }
+  }
+
+  function safeGetJson(key, fallback) {
+    const raw = safeGet(key);
+    if (!raw) return fallback;
+    try { return JSON.parse(raw); } catch { return fallback; }
+  }
+
+  function safeSetJson(key, value) {
+    try {
+      if (!value) { localStorage.removeItem(key); return; }
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch { /* ignore */ }
   }
 
   function normalizeTheme(theme) {
@@ -427,6 +475,65 @@
     const next = THEMES[(idx + 1) % THEMES.length];
     applyTheme(next);
     persistTheme(next);
+  }
+
+  // ---------- slots + history ----------
+  function loadSlotState() {
+    return safeGetJson(SLOT_KEY, {});
+  }
+
+  function persistSlotState(state) {
+    safeSetJson(SLOT_KEY, state || {});
+  }
+
+  function slotKey(slug, channel) {
+    return `${slug || ""}::${channel || ""}`;
+  }
+
+  function getStoredSlot(slug, channel) {
+    const state = loadSlotState();
+    return state[slotKey(slug, channel)] || "01";
+  }
+
+  function setStoredSlot(slug, channel, value) {
+    const v = padSlot(value || "01");
+    const state = loadSlotState();
+    state[slotKey(slug, channel)] = v;
+    persistSlotState(state);
+    return v;
+  }
+
+  function padSlot(v) {
+    const num = parseInt(String(v || "01"), 10);
+    if (Number.isNaN(num) || num < 1) return "01";
+    if (num > 99) return "99";
+    return String(num).padStart(2, "0");
+  }
+
+  function bumpSlot(v) {
+    const num = parseInt(String(v || "01"), 10);
+    const next = Number.isNaN(num) ? 1 : Math.min(num + 1, 99);
+    return padSlot(next);
+  }
+
+  function loadHashStore() {
+    return safeGetJson(HASH_KEY, {});
+  }
+
+  function persistHashStore(store) {
+    safeSetJson(HASH_KEY, store || {});
+  }
+
+  function loadPublishHistory() {
+    return safeGetJson(PUBLISH_HISTORY_KEY, {});
+  }
+
+  function persistPublishHistory(history) {
+    safeSetJson(PUBLISH_HISTORY_KEY, history || {});
+  }
+
+  function histKey({ slug, dest, channel, utm_content }) {
+    return `${slug || ""}::${dest || ""}::${channel || ""}::${utm_content || ""}`;
   }
 
   function collectSettings() {
@@ -900,6 +1007,69 @@ ${normalBrowserLogic}
     renderPreviewGrid();
   }
 
+  // ---------- creative presets ----------
+  let lastPresetChannel = "meta";
+
+  function setSlotInput(value) {
+    if (!els.creativeSlot) return;
+    els.creativeSlot.value = padSlot(value);
+  }
+
+  function applyPreset(presetKey) {
+    const preset = PRESET_MAP[presetKey];
+    if (!preset) return;
+    const slug = sanitizeSlug(els.trackSlug.value || "");
+    const channel = preset.channel;
+    lastPresetChannel = channel;
+
+    const currentSlot = padSlot(els.creativeSlot?.value || getStoredSlot(slug, channel));
+    const nextContent = `${preset.prefix}${currentSlot}`;
+    const inputFn = CHANNEL_INPUTS[channel];
+    const input = inputFn ? inputFn() : null;
+    if (input) input.value = nextContent;
+
+    const bumped = bumpSlot(currentSlot);
+    setStoredSlot(slug, channel, bumped);
+    setSlotInput(bumped);
+
+    persistSettingsSoon();
+    validateOnly();
+    renderPreviewGrid();
+    updateNeedsInput();
+  }
+
+  function syncSlotFromStorage() {
+    const slug = sanitizeSlug(els.trackSlug.value || "");
+    const slot = getStoredSlot(slug, lastPresetChannel || "meta");
+    setSlotInput(slot);
+  }
+
+  function bumpSlotForChannel(channel) {
+    const slug = sanitizeSlug(els.trackSlug.value || "");
+    const current = getStoredSlot(slug, channel);
+    const bumped = bumpSlot(current);
+    setStoredSlot(slug, channel, bumped);
+    setSlotInput(bumped);
+    return bumped;
+  }
+
+  function bumpContent(content) {
+    const str = String(content || "").trim();
+    // Manually peel off trailing digits to avoid regex literal parsing quirks in some environments
+    let end = str.length;
+    while (end > 0 && str.charCodeAt(end - 1) >= 48 && str.charCodeAt(end - 1) <= 57) {
+      end -= 1;
+    }
+
+    if (end !== str.length) {
+      const base = str.slice(0, end);
+      const next = bumpSlot(str.slice(end));
+      return `${base}${next}`;
+    }
+
+    return `${str || "creative"}-01`;
+  }
+
   // ---------- drag & drop OG ----------
   function wireOgDragDrop() {
     const canvas = els.ogCanvas;
@@ -1051,6 +1221,8 @@ ${normalBrowserLogic}
     if (!v.ok) return;
 
     const repoBase = normBaseUrl(els.repoBase.value);
+    const publishHistory = loadPublishHistory();
+    const hashStore = loadHashStore();
 
     const token = (els.ghToken.value || "").trim();
     if (!token) {
@@ -1073,6 +1245,36 @@ ${normalBrowserLogic}
       return;
     }
 
+    // Collision warning on utm_content reuse
+    const collisions = batch.items.filter(it => publishHistory[histKey({ slug: batch.slug, dest: it.dest, channel: it.channel, utm_content: it.utm_content })]);
+    if (collisions.length) {
+      const bumpList = collisions.map(c => `${c.channel}:${c.utm_content}`);
+      const inc = window.confirm(`Already published: ${bumpList.join(", ")}. Increment to next slot?`);
+      if (inc) {
+        const channelToInput = {
+          meta: els.metaContent,
+          tiktok: els.ttContent,
+          youtube: els.ytContent,
+          igdm: els.igdmContent
+        };
+        collisions.forEach(c => {
+          const input = channelToInput[c.channel];
+          if (input) {
+            input.value = bumpContent(input.value || c.utm_content);
+            setStoredSlot(batch.slug, c.channel, input.value.match(/(\d+)$/)?.[1] || getStoredSlot(batch.slug, c.channel));
+          }
+        });
+        persistSettingsSoon();
+        renderPreviewGrid();
+        validateOnly();
+        addLogItem({ title: "Adjusted utm_content", status: "INFO", lines: ["Collision avoided. Review and publish again."] });
+        return;
+      } else {
+        addLogItem({ title: "Already published", status: "WARN", lines: ["No changes made. Adjust utm_content or confirm overwrite."] });
+        return;
+      }
+    }
+
     addLogItem({
       title: "Publishing…",
       status: "RUNNING",
@@ -1083,34 +1285,33 @@ ${normalBrowserLogic}
       ]
     });
 
-    // 1) Publish OG image
+    let failures = 0;
+    const pendingUploads = [];
+    let confirmNeeded = false;
+
+    // Prepare OG image upload (hash-aware)
     try {
       const ogJpgB64 = await canvasToJpegBase64(els.ogCanvas, 0.92);
-      await putFile({
-        owner: OWNER, repo: REPO, branch: BRANCH, token,
-        path: batch.ogImageRel,
-        message: `OG image: ${batch.slug}`,
-        contentBase64: ogJpgB64
-      });
-      addLogItem({
-        title: `OK: ${batch.ogImageRel}`,
-        status: "PUBLISHED",
-        linkText: "Open OG image",
-        linkHref: batch.ogImageAbs,
-        lines: [`Repo path: ${batch.ogImageRel}`]
-      });
+      const ogHash = hashString(ogJpgB64);
+      const prevHash = hashStore[batch.ogImageRel];
+      if (prevHash && prevHash === ogHash) {
+        addLogItem({ title: `UNCHANGED: ${batch.ogImageRel}`, status: "UNCHANGED", lines: [batch.ogImageRel] });
+      } else {
+        if (prevHash && prevHash !== ogHash) confirmNeeded = true;
+        pendingUploads.push({
+          path: batch.ogImageRel,
+          hash: ogHash,
+          link: batch.ogImageAbs,
+          type: "OG",
+          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: batch.ogImageRel, message: `OG image: ${batch.slug}`, contentBase64: ogJpgB64 })
+        });
+      }
     } catch (e) {
-      addLogItem({
-        title: `FAIL: ${batch.ogImageRel}`,
-        status: "ERROR",
-        lines: [normalizeTokenError(e)]
-      });
+      addLogItem({ title: `FAIL: ${batch.ogImageRel}`, status: "ERROR", lines: [normalizeTokenError(e)] });
       return;
     }
 
-    let failures = 0;
-
-    // Publish QR PNGs to repo
+    // Prepare QR uploads
     try {
       await loadQrLib();
       for (const it of batch.items) {
@@ -1132,69 +1333,93 @@ ${normalBrowserLogic}
 
         const base64 = dataUrlToBase64(dataUrl);
         const qrPath = `qrs/${batch.slug}/${it.dest}-${it.channel}.png`;
-        await putFile({
-          owner: OWNER, repo: REPO, branch: BRANCH, token,
-          path: qrPath,
-          message: `QR: ${batch.slug} (${it.dest}/${it.channel})`,
-          contentBase64: base64
-        });
-
-        addLogItem({
-          title: `OK QR: ${qrPath}`,
-          status: "PUBLISHED",
-          linkText: "QR PNG",
-          linkHref: `${repoBase}/${qrPath}`,
-          lines: [`${repoBase}/${qrPath}`]
-        });
+        const qrHash = hashString(base64);
+        const prevHash = hashStore[qrPath];
+        if (prevHash && prevHash === qrHash) {
+          addLogItem({ title: `UNCHANGED: ${qrPath}`, status: "UNCHANGED", lines: [`${repoBase}/${qrPath}`] });
+        } else {
+          if (prevHash && prevHash !== qrHash) confirmNeeded = true;
+          pendingUploads.push({
+            path: qrPath,
+            hash: qrHash,
+            link: `${repoBase}/${qrPath}`,
+            type: "QR",
+            run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: qrPath, message: `QR: ${batch.slug} (${it.dest}/${it.channel})`, contentBase64: base64 })
+          });
+        }
       }
     } catch (e) {
       addLogItem({ title: "QR publish failed", status: "ERROR", lines: [normalizeTokenError(e)] });
       failures += 1;
     }
 
-    // 2) Publish HTML files sequentially (avoid conflicts)
+    // Prepare HTML uploads
     for (const it of batch.items) {
       try {
-        const htmlB64 = utf8ToBase64(it.html);
-        await putFile({
-          owner: OWNER, repo: REPO, branch: BRANCH, token,
-          path: it.relPath,
-          message: `Redirect: ${batch.slug} (${it.dest}) ${it.utm_content}`,
-          contentBase64: htmlB64
-        });
-
-        addLogItem({
-          title: `OK: ${it.relPath}`,
-          status: "PUBLISHED",
-          linkText: "Open Pages URL",
-          linkHref: it.pagesUrl,
-          lines: [
-            `Repo path: ${it.relPath}`,
-            `dest=${it.dest} utm_source=${it.utm_source} utm_medium=${it.utm_medium} utm_content=${it.utm_content}`
-          ]
-        });
+        const htmlHash = hashString(it.html);
+        const prevHash = hashStore[it.relPath];
+        if (prevHash && prevHash === htmlHash) {
+          addLogItem({ title: `UNCHANGED: ${it.relPath}`, status: "UNCHANGED", lines: [`dest=${it.dest} utm_content=${it.utm_content}`] });
+        } else {
+          if (prevHash && prevHash !== htmlHash) confirmNeeded = true;
+          const htmlB64 = utf8ToBase64(it.html);
+          pendingUploads.push({
+            path: it.relPath,
+            hash: htmlHash,
+            link: it.pagesUrl,
+            type: "HTML",
+            item: it,
+            run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Redirect: ${batch.slug} (${it.dest}) ${it.utm_content}`, contentBase64: htmlB64 })
+          });
+        }
       } catch (e) {
-        addLogItem({
-          title: `FAIL: ${it.relPath}`,
-          status: "ERROR",
-          lines: [normalizeTokenError(e)]
-        });
+        addLogItem({ title: `FAIL: ${it.relPath}`, status: "ERROR", lines: [normalizeTokenError(e)] });
         failures += 1;
-        continue;
       }
     }
+
+    if (confirmNeeded) {
+      const ok = window.confirm(`Overwrite ${pendingUploads.length} file(s)?`);
+      if (!ok) {
+        addLogItem({ title: "Canceled", status: "CANCEL", lines: ["User canceled overwrite."] });
+        return;
+      }
+    }
+
+    for (const job of pendingUploads) {
+      try {
+        await job.run();
+        hashStore[job.path] = job.hash;
+        addLogItem({
+          title: `${job.type} OK: ${job.path}`,
+          status: "PUBLISHED",
+          linkText: job.link ? "Open" : undefined,
+          linkHref: job.link,
+          lines: job.item ? [`dest=${job.item.dest} utm_content=${job.item.utm_content}`] : [job.path]
+        });
+      } catch (e) {
+        addLogItem({ title: `FAIL: ${job.path}`, status: "ERROR", lines: [normalizeTokenError(e)] });
+        failures += 1;
+      }
+    }
+
+    persistHashStore(hashStore);
+    batch.items.forEach(it => {
+      publishHistory[histKey({ slug: batch.slug, dest: it.dest, channel: it.channel, utm_content: it.utm_content })] = true;
+    });
+    persistPublishHistory(publishHistory);
 
     if (failures > 0) {
       addLogItem({
         title: "DONE (with errors)",
         status: "PARTIAL",
-        lines: [`${failures} of ${batch.items.length} HTML files failed. Check errors above.`]
+        lines: [`${failures} file(s) failed. Check errors above.`]
       });
     } else {
       addLogItem({
         title: "DONE",
         status: "SUCCESS",
-        lines: ["All files created/updated in GitHub. Give Pages a few seconds, then test the Pages URLs."]
+        lines: ["All changed files created/updated. Unchanged files were skipped."]
       });
     }
   }
@@ -1276,6 +1501,7 @@ ${normalBrowserLogic}
   function wire() {
     const initialTheme = applyTheme(loadTheme());
     persistTheme(initialTheme);
+    syncSlotFromStorage();
 
     // Enforce locked base URL regardless of localStorage state
     els.repoBase.value = REPO_BASE_LOCKED;
@@ -1297,7 +1523,7 @@ ${normalBrowserLogic}
       els.destSpotify, els.spotifyUrl, els.destApple, els.appleUrl, els.destDeezer, els.deezerUrl,
       els.chMeta, els.metaContent, els.chTikTok, els.ttContent, els.chYouTube, els.ytContent, els.chIGDM, els.igdmContent
     ].forEach(el => el.addEventListener("input", () => {
-      if (el === els.title) syncSlugAndCampaignFromTitle();
+      if (el === els.title) { syncSlugAndCampaignFromTitle(); syncSlotFromStorage(); }
       validateOnly();
       if (el !== els.ghToken) persistSettingsSoon();
       else {
@@ -1341,6 +1567,20 @@ ${normalBrowserLogic}
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token removed from the browser."] }); });
     if (els.btnCopyCreds) els.btnCopyCreds.addEventListener("click", () => copyCredsToClipboard());
     if (els.btnTheme) els.btnTheme.addEventListener("click", () => cycleTheme());
+    if (els.btnStory) els.btnStory.addEventListener("click", () => applyPreset("story"));
+    if (els.btnReel) els.btnReel.addEventListener("click", () => applyPreset("reel"));
+    if (els.btnFeed) els.btnFeed.addEventListener("click", () => applyPreset("feed"));
+    if (els.btnInfeed) els.btnInfeed.addEventListener("click", () => applyPreset("infeed"));
+    if (els.btnInstream) els.btnInstream.addEventListener("click", () => applyPreset("instream"));
+    if (els.btnSlotInc) els.btnSlotInc.addEventListener("click", () => {
+      bumpSlotForChannel(lastPresetChannel || "meta");
+    });
+    if (els.creativeSlot) els.creativeSlot.addEventListener("input", () => {
+      const slug = sanitizeSlug(els.trackSlug.value || "");
+      const normalized = padSlot(els.creativeSlot.value);
+      setStoredSlot(slug, lastPresetChannel || "meta", normalized);
+      setSlotInput(normalized);
+    });
     if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
