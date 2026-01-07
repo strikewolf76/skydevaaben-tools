@@ -5,6 +5,7 @@
     repoBase: $("repoBase"),
     siteName: $("siteName"),
     ghToken: $("ghToken"),
+    metaPixelId: $("metaPixelId"),
 
     title: $("title"),
     trackSlug: $("trackSlug"),
@@ -356,6 +357,7 @@
     return {
       siteName: els.siteName.value,
       title: els.title.value,
+      metaPixelId: els.metaPixelId.value,
       destSpotify: els.destSpotify.checked,
       spotifyUrl: els.spotifyUrl.value,
       destApple: els.destApple.checked,
@@ -393,6 +395,7 @@
       };
       assign(els.siteName, s.siteName);
       assign(els.title, s.title);
+      assign(els.metaPixelId, s.metaPixelId);
       assign(els.destSpotify, s.destSpotify, true);
       assign(els.spotifyUrl, s.spotifyUrl);
       assign(els.destApple, s.destApple, true);
@@ -441,7 +444,13 @@
     ogImageAbs,
     destType,
     spotifyTrackId,
-    webUrl
+    webUrl,
+    metaPixelId,
+    trackSlug,
+    destKey,
+    channel,
+    utm_campaign,
+    utm_content
   }) {
     const isSpotify = destType === "spotify";
 
@@ -449,6 +458,7 @@
   var TRACK_ID = "${htmlEscape(spotifyTrackId)}";
   var APP_URI = "spotify:track:" + TRACK_ID;
 ` : `
+    var TRACK_ID = null;
   var APP_URI = null;
 `;
 
@@ -471,6 +481,7 @@
   <meta charset="utf-8">
   <title>${htmlEscape(title)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
 
   <meta property="og:type" content="music.song">
   <meta property="og:site_name" content="${htmlEscape(siteName)}">
@@ -507,11 +518,39 @@
 <script>
 (function () {${appBlock}
   var WEB_URL = "${htmlEscape(webUrl)}";
+  var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
+  var TRACK_SLUG = "${htmlEscape(trackSlug || "")}";
+  var DEST_KEY = "${htmlEscape(destKey || "")}";
+  var CHANNEL = "${htmlEscape(channel || "")}";
+  var UTM_CAMPAIGN = "${htmlEscape(utm_campaign || "")}";
+  var UTM_CONTENT = "${htmlEscape(utm_content || "")}";
+
+  var params = new URLSearchParams(window.location.search || "");
+  var CID = params.get("cid") || "";
 
   // Allow known social crawlers to fetch OG tags (no redirect)
-  var ua = (navigator.userAgent || "").toLowerCase();
-  var isCrawler = /(facebookexternalhit|facebot|instagram|twitterbot|linkedinbot|discordbot|pinterest)/.test(ua);
+  var ua = navigator.userAgent || "";
+  var isCrawler = /(facebookexternalhit|facebot|twitterbot|linkedinbot|discordbot|pinterest)/i.test(ua);
   if (isCrawler) return;
+
+  if (META_PIXEL_ID) {
+    !(function (f, b, e, v, n, t, s) {
+      if (f.fbq) return;
+      n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+      if (!f._fbq) f._fbq = n;
+      n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = [];
+      t = b.createElement(e); t.async = !0; t.src = v;
+      s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+
+    try { fbq("consent", "revoke"); } catch (_) {}
+    fbq("init", META_PIXEL_ID);
+    try {
+      var consent = localStorage.getItem("sv_cookie_consent");
+      if (consent === "granted") fbq("consent", "grant");
+    } catch (_) { /* ignore */ }
+    fbq("track", "PageView");
+  }
 
   var statusEl = document.getElementById("status");
   var playEl = document.getElementById("play");
@@ -521,16 +560,33 @@
     return /FBAN|FBAV|FB_IAB|FBIOS|FB4A|Instagram|Messenger/i.test(ua);
   }
 
+  function trackOutbound(kind) {
+    if (!window.fbq || !META_PIXEL_ID || !TRACK_ID) return;
+    fbq("trackCustom", "OutboundSpotify", {
+      kind: kind,
+      cid: CID,
+      slug: TRACK_SLUG,
+      dest: DEST_KEY,
+      channel: CHANNEL,
+      utm_campaign: UTM_CAMPAIGN,
+      utm_content: UTM_CONTENT,
+      track_id: TRACK_ID
+    });
+  }
+
   playEl.href = WEB_URL;
+  playEl.addEventListener("click", function () { trackOutbound("click"); });
 
   if (isMetaInApp()) {
     playEl.removeAttribute("target");
     statusEl.textContent = "Opening…";
+    trackOutbound("auto");
     setTimeout(function () {
       window.location.href = WEB_URL;
     }, 150);
   } else {
     statusEl.textContent = "Opening…";
+    trackOutbound("auto");
 ${normalBrowserLogic}
   }
 })();
@@ -606,7 +662,8 @@ ${normalBrowserLogic}
       `<span class="ok">OK</span>\n` +
       `- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
-      `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html\n`;
+      `  - tracks/${slug}/&lt;dest&gt;/meta.html (Meta)\n` +
+      `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html (TikTok/YouTube/IG DM)\n`;
     show(els.validationPanel);
 
     return { ok: true };
@@ -619,6 +676,7 @@ ${normalBrowserLogic}
     const repoBase = normBaseUrl(els.repoBase.value);
     const siteName = (els.siteName.value || "").trim();
     const title = (els.title.value || "").trim();
+    const metaPixelId = (els.metaPixelId.value || "").trim();
     const spotifyIdParsed = parseSpotifyTrackId(els.spotifyUrl.value || "");
 
     const hasSpotify = !!(els.destSpotify.checked && spotifyIdParsed);
@@ -673,8 +731,14 @@ ${normalBrowserLogic}
           return { ok: false, error: `Invalid URL for destination "${dest.key}": ${dest.baseUrl}` };
         }
 
-        const relPath = `tracks/${slug}/${dest.key}/${utm_content}.html`;
+        const relPath = ch.key === "meta"
+          ? `tracks/${slug}/${dest.key}/meta.html`
+          : `tracks/${slug}/${dest.key}/${utm_content}.html`;
         const ogUrlAbs = `${repoBase}/${relPath}`;
+
+        const pagesUrl = ch.key === "meta"
+          ? `${ogUrlAbs}?cid=${encodeURIComponent(utm_content)}`
+          : ogUrlAbs;
 
         const html = generateHtml({
           title,
@@ -684,12 +748,18 @@ ${normalBrowserLogic}
           ogImageAbs,
           destType: dest.key === "spotify" ? "spotify" : "web",
           spotifyTrackId: dest.spotifyId,
-          webUrl
+          webUrl,
+          metaPixelId,
+          trackSlug: slug,
+          destKey: dest.key,
+          channel: ch.key,
+          utm_campaign,
+          utm_content
         });
 
         items.push({
           relPath,
-          pagesUrl: ogUrlAbs,
+          pagesUrl,
           dest: dest.key,
           channel: ch.key,
           utm_source, utm_medium, utm_campaign, utm_content,
@@ -1077,6 +1147,7 @@ ${normalBrowserLogic}
     els.title.value = "";
     els.trackSlug.value = "";
     els.utmCampaign.value = "";
+    els.metaPixelId.value = "";
 
     els.destSpotify.checked = true;
     els.spotifyUrl.value = "";
@@ -1124,7 +1195,7 @@ ${normalBrowserLogic}
     if (savedToken) validateTokenStatus(true); else setTokenStatus("bad");
 
     [
-      els.repoBase, els.siteName,
+      els.repoBase, els.siteName, els.metaPixelId,
       els.ghToken,
       els.title,
       els.destSpotify, els.spotifyUrl, els.destApple, els.appleUrl, els.destDeezer, els.deezerUrl,
