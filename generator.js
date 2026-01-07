@@ -55,6 +55,7 @@
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
+    btnCopyCreds: $("btnCopyCreds"),
     previewBody: $("previewBody"),
   };
 
@@ -183,6 +184,24 @@
     markNeed(els.ttContent, ttMissing);
     markNeed(els.ytContent, ytMissing);
     markNeed(els.igdmContent, igMissing);
+  }
+
+  async function copyCredsToClipboard() {
+    const token = (els.ghToken?.value || "").trim();
+    const pixel = (els.metaPixelId?.value || "").trim();
+    if (!token && !pixel) {
+      alert("Nothing to copy. Set token and/or Meta Pixel ID first.");
+      return;
+    }
+    const lines = [];
+    if (token) lines.push(`Publish token: ${token}`);
+    if (pixel) lines.push(`Meta Pixel ID: ${pixel}`);
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      alert("Token / Pixel copied to clipboard.");
+    } catch (e) {
+      alert("Failed to copy. You may need to allow clipboard access.");
+    }
   }
 
   let tokenStatus = "unknown";
@@ -1266,6 +1285,7 @@ ${normalBrowserLogic}
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token removed from the browser."] }); });
+    if (els.btnCopyCreds) els.btnCopyCreds.addEventListener("click", () => copyCredsToClipboard());
     if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
