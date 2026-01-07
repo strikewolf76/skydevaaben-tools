@@ -332,6 +332,8 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const links = data?.linksByPlatform || {};
+      // Local debug: print full platform map to console
+      try { console.log("[resolver] linksByPlatform", links); } catch (_) {}
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
       let updated = false;
       const found = {
