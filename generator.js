@@ -116,23 +116,21 @@
   async function fetchJsonWithCors(url) {
     const proxies = [
       null,
-      "https://cors.isomorphic-git.org/",
-      "https://thingproxy.freeboard.io/fetch/",
-      "https://corsproxy.io/?",
-      "https://api.allorigins.win/raw?url="
+      { type: "allorigins", base: "https://api.allorigins.win/raw?url=" },
+      { type: "corsproxy", base: "https://corsproxy.io/?" }
     ];
     let lastErr = null;
     for (const proxy of proxies) {
-      const target = proxy ? `${proxy}${url}` : url;
+      const target = proxy ? `${proxy.base}${encodeURIComponent(url)}` : url;
       try {
         const res = await fetch(target);
         const text = await res.text();
         if (!res.ok) throw new Error(`HTTP ${res.status} ${text.slice(0, 180)}`);
         const data = text ? JSON.parse(text) : null;
-        return { data, usedProxy: !!proxy, proxy }; 
+        return { data, usedProxy: !!proxy, proxy: proxy?.type || "none" }; 
       } catch (err) {
         lastErr = err;
-        try { console.error("[resolver] fetch failed", target, err); } catch (_) {}
+        try { console.error("[resolver] fetch failed", proxy?.type || "direct", target, err); } catch (_) {}
       }
     }
     throw lastErr || new Error("Unknown resolver fetch error");
