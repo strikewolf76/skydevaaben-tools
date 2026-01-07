@@ -340,6 +340,17 @@
         deezer: links.deezer?.url || null,
       };
 
+      if (!found.spotify || !found.deezer) {
+        addLogItem({
+          title: "Resolver missing platforms",
+          status: "WARN",
+          lines: [
+            `hasSpotify=${!!found.spotify} hasDeezer=${!!found.deezer}`,
+            `resolver keys=${Object.keys(links || {}).join(",") || "-"}`
+          ]
+        });
+      }
+
       if (wantsApple && els.appleUrl) {
         const appleUrlResolved = appleLink;
         if (appleUrlResolved) {
