@@ -338,11 +338,6 @@
       const links = data?.linksByPlatform || {};
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
       let updated = false;
-      const found = {
-        apple: appleLink || null,
-        spotify: links.spotify?.url || null,
-        deezer: links.deezer?.url || null,
-      };
 
       if (wantsApple && els.appleUrl) {
         const appleUrlResolved = appleLink;
@@ -1107,6 +1102,18 @@ ${normalBrowserLogic}
         }
         const { utm_source, utm_medium } = chMeta;
         const utm_content = ch.content;
+
+        let webUrl;
+        try {
+          webUrl = appendUtms(dest.baseUrl, { utm_source, utm_medium, utm_campaign, utm_content });
+        } catch (e) {
+          return { ok: false, error: `Invalid URL for destination "${dest.key}": ${dest.baseUrl}` };
+        }
+
+        const relPath = ch.key === "meta"
+          ? `tracks/${slug}/${dest.key}/meta.html`
+          : `tracks/${slug}/${dest.key}/${utm_content}.html`;
+        const ogUrlAbs = `${repoBase}/${relPath}`;
 
         const pagesUrl = ch.key === "meta"
           ? `${ogUrlAbs}?cid=${encodeURIComponent(utm_content)}`
