@@ -504,17 +504,17 @@
 
     const normalBrowserLogic = isSpotify ? `
       try {
-        trackOutbound("auto");
+        trackAutoOnce();
         window.location.href = APP_URI;
         setTimeout(function () {
           window.location.href = WEB_URL;
         }, 600);
       } catch (e) {
-        trackOutbound("auto");
+        trackAutoOnce();
         window.location.href = WEB_URL;
       }
   ` : `
-      trackOutbound("auto");
+      trackAutoOnce();
       window.location.href = WEB_URL;
   `;
 
@@ -571,6 +571,7 @@
 
   var params = new URLSearchParams(window.location.search || "");
   var CID = params.get("cid") || "";
+  var autoSent = false;
 
   // Allow known social crawlers to fetch OG tags (no redirect)
   var ua = navigator.userAgent || "";
@@ -618,14 +619,21 @@
     });
   }
 
+  function trackAutoOnce() {
+    if (autoSent) return;
+    autoSent = true;
+    trackOutbound("auto");
+  }
+
   playEl.href = WEB_URL;
+  playEl.setAttribute("href", WEB_URL);
   playEl.addEventListener("click", function () { trackOutbound("click"); });
 
   if (isMetaInApp()) {
     playEl.removeAttribute("target");
     statusEl.textContent = "Opening…";
     setTimeout(function () {
-      trackOutbound("auto");
+      trackAutoOnce();
       window.location.href = WEB_URL;
     }, 150);
   } else {
