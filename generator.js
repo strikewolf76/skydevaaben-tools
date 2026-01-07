@@ -114,7 +114,13 @@
   const ODESLI_RESOLVER_API = "https://api.song.link/v1-alpha.1/links";
 
   async function fetchJsonWithCors(url) {
-    const proxies = [null, "https://cors.isomorphic-git.org/", "https://thingproxy.freeboard.io/fetch/"];
+    const proxies = [
+      null,
+      "https://cors.isomorphic-git.org/",
+      "https://thingproxy.freeboard.io/fetch/",
+      "https://corsproxy.io/?",
+      "https://api.allorigins.win/raw?url="
+    ];
     let lastErr = null;
     for (const proxy of proxies) {
       const target = proxy ? `${proxy}${url}` : url;
