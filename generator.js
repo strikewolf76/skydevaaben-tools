@@ -207,11 +207,13 @@
     markNeed(els.ytContent, ytMissing);
   }
 
-  function openSpotifySearch() {
-    const base = (els.title?.value || "").trim();
-    const query = base || "";
-    const url = `https://open.spotify.com/search/${encodeURIComponent(query)}/tracks`;
-    window.open(url, "_blank", "noopener,noreferrer");
+  let appleResolveTargets = { spotify: true, deezer: false };
+
+  function setAppleResolveTargets(targets = {}) {
+    appleResolveTargets = {
+      spotify: !!targets.spotify,
+      deezer: !!targets.deezer,
+    };
   }
 
   // ---------- Apple Music search ----------
@@ -228,7 +230,8 @@
     if (els.appleSearchResults) els.appleSearchResults.innerHTML = "";
   }
 
-  function showAppleSearch() {
+  function showAppleSearch(targets) {
+    if (targets) setAppleResolveTargets(targets);
     if (!els.appleSearchOverlay) return;
     clearAppleSearchResults();
     if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Search by song or artist.";
@@ -249,7 +252,7 @@
     validateOnly();
     updateNeedsInput();
     hideAppleSearch();
-    resolveAppleToSpotify(url);
+    resolveAppleTargets(url);
   }
 
   function renderAppleResults(items = []) {
@@ -367,18 +370,39 @@
     els.deezerSearchResults.appendChild(frag);
   }
 
-  async function resolveAppleToSpotify(appleUrl) {
+  async function resolveAppleTargets(appleUrl) {
     const src = (appleUrl || "").trim();
     if (!src) return;
+    const wantsSpotify = appleResolveTargets.spotify;
+    const wantsDeezer = appleResolveTargets.deezer;
+    if (!wantsSpotify && !wantsDeezer) return;
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const spotifyUrl = data?.linksByPlatform?.spotify?.url;
-      if (spotifyUrl && els.spotifyUrl) {
-        if (els.destSpotify) els.destSpotify.checked = true;
-        els.spotifyUrl.value = spotifyUrl;
+      const links = data?.linksByPlatform || {};
+      let updated = false;
+
+      if (wantsSpotify) {
+        const spotifyUrl = links.spotify?.url;
+        if (spotifyUrl && els.spotifyUrl) {
+          if (els.destSpotify) els.destSpotify.checked = true;
+          els.spotifyUrl.value = spotifyUrl;
+          updated = true;
+        }
+      }
+
+      if (wantsDeezer) {
+        const deezerUrl = links.deezer?.url;
+        if (deezerUrl && els.deezerUrl) {
+          if (els.destDeezer) els.destDeezer.checked = true;
+          els.deezerUrl.value = deezerUrl;
+          updated = true;
+        }
+      }
+
+      if (updated) {
         persistSettingsSoon();
         validateOnly();
         updateNeedsInput();
@@ -1819,8 +1843,8 @@ ${normalBrowserLogic}
     if (els.btnFeed) els.btnFeed.addEventListener("click", () => applyPreset("feed"));
     if (els.btnInfeed) els.btnInfeed.addEventListener("click", () => applyPreset("infeed"));
     if (els.btnInstream) els.btnInstream.addEventListener("click", () => applyPreset("instream"));
-    if (els.btnSpotifySearch) els.btnSpotifySearch.addEventListener("click", () => openSpotifySearch());
-    if (els.btnAppleSearch) els.btnAppleSearch.addEventListener("click", () => showAppleSearch());
+    if (els.btnSpotifySearch) els.btnSpotifySearch.addEventListener("click", () => showAppleSearch({ spotify: true }));
+    if (els.btnAppleSearch) els.btnAppleSearch.addEventListener("click", () => showAppleSearch({ spotify: true, deezer: true }));
     if (els.btnDeezerSearch) els.btnDeezerSearch.addEventListener("click", () => showDeezerSearch());
     if (els.appleSearchForm) els.appleSearchForm.addEventListener("submit", (e) => { e.preventDefault(); runAppleSearch(els.appleSearchInput.value); });
     if (els.appleSearchResults) els.appleSearchResults.addEventListener("click", (e) => {
