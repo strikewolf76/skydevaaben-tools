@@ -504,6 +504,7 @@
 
     const normalBrowserLogic = isSpotify ? `
     try {
+      trackOutbound("auto");
       window.location.href = APP_URI;
       setTimeout(function () {
         window.location.href = WEB_URL;
@@ -512,6 +513,7 @@
       window.location.href = WEB_URL;
     }
 ` : `
+    trackOutbound("auto");
     window.location.href = WEB_URL;
 `;
 
@@ -602,7 +604,7 @@
   }
 
   function trackOutbound(kind) {
-    if (!window.fbq || !META_PIXEL_ID || !TRACK_ID) return;
+    if (!window.fbq || !META_PIXEL_ID) return;
     fbq("trackCustom", "OutboundSpotify", {
       kind: kind,
       cid: CID,
@@ -611,7 +613,7 @@
       channel: CHANNEL,
       utm_campaign: UTM_CAMPAIGN,
       utm_content: UTM_CONTENT,
-      track_id: TRACK_ID
+      track_id: TRACK_ID || ""
     });
   }
 
@@ -627,7 +629,6 @@
     }, 150);
   } else {
     statusEl.textContent = "Opening…";
-    trackOutbound("auto");
 ${normalBrowserLogic}
   }
 })();
