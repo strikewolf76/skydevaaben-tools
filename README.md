@@ -18,6 +18,7 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 4) Click **Preview** to validate and view the full grid of combinations (validation, preview, and log panels appear above the campaign section).
 5) Click **Publish** and paste your PAT when prompted; the tool writes the redirect HTMLs and OG image to the repo.
 6) Pages URLs and QR PNGs can be copied/generated from the UI.
+7) Use the **Theme** button in the top action row to cycle six palettes (Base, Ocean, Forest, Sunset, Sand, Slate, Mint). Choice persists in `localStorage` under `sv-generator-theme-v1`.
 
 ## Domain defaults
 - Pages base URL is locked to https://skydevaaben.no.
@@ -26,6 +27,11 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 ## Token storage
 - The PAT is kept only in your browser `localStorage` under key `sv-generator-token` for the origin you use (e.g., `tools.skydevaaben.no`).
 - Use the "Forget saved token" button or clear site storage to remove it.
+
+## Themes
+- Six palettes: Base, Ocean, Forest, Sunset, Sand, Slate, Mint.
+- Set via the **Theme** button; the selection is stored in `localStorage` (`sv-generator-theme-v1`) and applied by `body[data-theme]`.
+- Colors are implemented through CSS variables in `generator.css`.
 
 ## Local development
 - Open `generator.html` directly in a browser.
