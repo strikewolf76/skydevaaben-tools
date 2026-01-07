@@ -45,12 +45,10 @@ textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, 
 .gap-8 { gap: 8px !important; }
 .text-center { text-align: center; }
 button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button-border); background: var(--button-bg); cursor: pointer; color: var(--button-text); }
-.channel-row button { padding: 6px 9px; border-radius: 8px; font-size: 12px; }
-.preset-btn { padding: 6px 9px; border-radius: 8px; font-size: 12px; }
+.channel-row button { padding: 7px 11px; border-radius: 9px; font-size: 13px; }
+.preset-btn { padding: 7px 11px; border-radius: 9px; font-size: 13px; flex: 1 1 100px; text-align: center; }
 .preset-btn.preset-active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 1px var(--accent-weak) inset; }
 .slot-pill { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--button-border); background: var(--input-bg); min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
-.apply-btn { padding: 6px 10px; border-radius: 8px; font-size: 12px; background: var(--accent); border-color: var(--accent); color: #fff; }
-.apply-btn:hover { background: color-mix(in srgb, var(--accent) 85%, #000 15%); border-color: color-mix(in srgb, var(--accent) 90%, #000 10%); }
 button.primary { background: var(--accent-weak); color: var(--text); }
 button.danger { background: var(--danger-weak); color: var(--text); }
 .row.between { justify-content: space-between; }

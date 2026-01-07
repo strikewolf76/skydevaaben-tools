@@ -47,8 +47,6 @@
     validation: $("validation"),
     log: $("log"),
 
-    btnChPrefill: $("btnChPrefill"),
-
     btnGenerate: $("btnGenerate"),
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
@@ -1019,9 +1017,8 @@ ${normalBrowserLogic}
     const input = inputFn ? inputFn() : null;
     if (input) input.value = nextContent;
 
-    const bumped = bumpSlot(currentSlot);
-    setStoredSlot(slug, channel, bumped);
-    setSlotInput(bumped);
+    setStoredSlot(slug, channel, currentSlot);
+    setSlotInput(currentSlot);
 
     persistSettingsSoon();
     validateOnly();
@@ -1590,7 +1587,6 @@ ${normalBrowserLogic}
     if (els.btnSlotInc) els.btnSlotInc.addEventListener("click", () => {
       bumpSlotForChannel(lastPresetChannel || "meta");
     });
-    if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chYouTube) els.chYouTube.addEventListener("change", () => { if (els.chYouTube.checked) { ensureUtmDefault("youtube"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
