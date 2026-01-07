@@ -324,15 +324,16 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const links = data?.linksByPlatform || {};
+      const appleLink = links.appleMusic?.url || links.itunes?.url || src;
       let updated = false;
       const found = {
-        apple: links.appleMusic?.url || null,
+        apple: appleLink || null,
         spotify: links.spotify?.url || null,
         deezer: links.deezer?.url || null,
       };
 
       if (wantsApple && els.appleUrl) {
-        const appleUrlResolved = links.appleMusic?.url || src;
+        const appleUrlResolved = appleLink;
         if (appleUrlResolved) {
           els.appleUrl.value = appleUrlResolved;
           updated = true;
@@ -369,7 +370,9 @@
           `apple enabled=${wantsApple} link=${found.apple || "-"}`,
           `spotify enabled=${wantsSpotify} link=${found.spotify || "-"}`,
           `deezer enabled=${wantsDeezer} link=${found.deezer || "-"}`,
-          `resolver link raw=${links.appleMusic?.url || "-"}`
+          `resolver apple=${links.appleMusic?.url || "-"}`,
+          `resolver itunes=${links.itunes?.url || "-"}`,
+          `resolver keys=${Object.keys(links || {}).join(",") || "-"}`
         ]
       });
     } catch (_) {
