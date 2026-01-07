@@ -15,25 +15,18 @@
 
     destSpotify: $("destSpotify"),
     spotifyUrl: $("spotifyUrl"),
-    btnSpotifySearch: $("btnSpotifySearch"),
     destApple: $("destApple"),
     appleUrl: $("appleUrl"),
-    btnAppleSearch: $("btnAppleSearch"),
-    appleSearchOverlay: $("appleSearchOverlay"),
-    appleSearchForm: $("appleSearchForm"),
-    appleSearchInput: $("appleSearchInput"),
-    appleSearchResults: $("appleSearchResults"),
-    appleSearchStatus: $("appleSearchStatus"),
-    btnAppleSearchClose: $("btnAppleSearchClose"),
     destDeezer: $("destDeezer"),
     deezerUrl: $("deezerUrl"),
-    btnDeezerSearch: $("btnDeezerSearch"),
-    deezerSearchOverlay: $("deezerSearchOverlay"),
-    deezerSearchForm: $("deezerSearchForm"),
-    deezerSearchInput: $("deezerSearchInput"),
-    deezerSearchResults: $("deezerSearchResults"),
-    deezerSearchStatus: $("deezerSearchStatus"),
-    btnDeezerSearchClose: $("btnDeezerSearchClose"),
+
+    btnResolver: $("btnResolver"),
+    resolverOverlay: $("resolverOverlay"),
+    resolverForm: $("resolverForm"),
+    resolverInput: $("resolverInput"),
+    resolverResults: $("resolverResults"),
+    resolverStatus: $("resolverStatus"),
+    btnResolverClose: $("btnResolverClose"),
 
     chMeta: $("chMeta"),
     metaContent: $("metaContent"),
@@ -207,7 +200,7 @@
     markNeed(els.ytContent, ytMissing);
   }
 
-  let appleResolveTargets = { spotify: true, deezer: false };
+  let appleResolveTargets = { spotify: true, deezer: true };
 
   function setAppleResolveTargets(targets = {}) {
     appleResolveTargets = {
@@ -216,48 +209,47 @@
     };
   }
 
-  // ---------- Apple Music search ----------
-  let appleSearchAbort = null;
-  let deezerSearchAbort = null;
+  // ---------- Resolver (Apple search -> Odesli) ----------
+  let resolverSearchAbort = null;
 
-  function hideAppleSearch() {
-    if (appleSearchAbort) appleSearchAbort.abort();
-    appleSearchAbort = null;
-    hide(els.appleSearchOverlay);
+  function hideResolver() {
+    if (resolverSearchAbort) resolverSearchAbort.abort();
+    resolverSearchAbort = null;
+    hide(els.resolverOverlay);
   }
 
-  function clearAppleSearchResults() {
-    if (els.appleSearchResults) els.appleSearchResults.innerHTML = "";
+  function clearResolverResults() {
+    if (els.resolverResults) els.resolverResults.innerHTML = "";
   }
 
-  function showAppleSearch(targets) {
-    if (targets) setAppleResolveTargets(targets);
-    if (!els.appleSearchOverlay) return;
-    clearAppleSearchResults();
-    if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Search by song or artist.";
-    show(els.appleSearchOverlay);
-    if (els.appleSearchInput) {
+  function showResolver() {
+    setAppleResolveTargets({ spotify: true, deezer: true });
+    if (!els.resolverOverlay) return;
+    clearResolverResults();
+    if (els.resolverStatus) els.resolverStatus.textContent = "Search by song or artist.";
+    show(els.resolverOverlay);
+    if (els.resolverInput) {
       const seed = (els.title?.value || "").trim();
-      els.appleSearchInput.value = seed;
-      els.appleSearchInput.focus();
-      els.appleSearchInput.select();
+      els.resolverInput.value = seed;
+      els.resolverInput.focus();
+      els.resolverInput.select();
     }
   }
 
-  function applyAppleSelection(url) {
+  function applyResolverSelection(url) {
     if (!url) return;
     if (els.destApple) els.destApple.checked = true;
     els.appleUrl.value = url;
     persistSettingsSoon();
     validateOnly();
     updateNeedsInput();
-    hideAppleSearch();
+    hideResolver();
     resolveAppleTargets(url);
   }
 
-  function renderAppleResults(items = []) {
-    clearAppleSearchResults();
-    if (!els.appleSearchResults) return;
+  function renderResolverResults(items = []) {
+    clearResolverResults();
+    if (!els.resolverResults) return;
     const frag = document.createDocumentFragment();
     items.forEach(item => {
       const card = document.createElement("button");
@@ -278,96 +270,36 @@
       `;
       frag.appendChild(card);
     });
-    els.appleSearchResults.appendChild(frag);
+    els.resolverResults.appendChild(frag);
   }
 
-  async function runAppleSearch(term) {
+  async function runResolverSearch(term) {
     const q = (term || "").trim();
     if (!q) {
-      if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Enter a song or artist.";
-      clearAppleSearchResults();
+      if (els.resolverStatus) els.resolverStatus.textContent = "Enter a song or artist.";
+      clearResolverResults();
       return;
     }
-    if (appleSearchAbort) appleSearchAbort.abort();
-    appleSearchAbort = new AbortController();
-    if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Searching…";
-    clearAppleSearchResults();
+    if (resolverSearchAbort) resolverSearchAbort.abort();
+    resolverSearchAbort = new AbortController();
+    if (els.resolverStatus) els.resolverStatus.textContent = "Searching…";
+    clearResolverResults();
     try {
       const url = `${APPLE_SEARCH_API}?term=${encodeURIComponent(q)}&entity=musicTrack&limit=15`; 
-      const res = await fetch(url, { signal: appleSearchAbort.signal });
+      const res = await fetch(url, { signal: resolverSearchAbort.signal });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const items = Array.isArray(data.results) ? data.results.filter(r => r.trackViewUrl) : [];
       if (!items.length) {
-        if (els.appleSearchStatus) els.appleSearchStatus.textContent = "No results.";
+        if (els.resolverStatus) els.resolverStatus.textContent = "No results.";
         return;
       }
-      if (els.appleSearchStatus) els.appleSearchStatus.textContent = `Found ${items.length} result${items.length === 1 ? "" : "s"}. Click to fill.`;
-      renderAppleResults(items);
+      if (els.resolverStatus) els.resolverStatus.textContent = `Found ${items.length} result${items.length === 1 ? "" : "s"}. Click to fill.`;
+      renderResolverResults(items);
     } catch (e) {
       if (e.name === "AbortError") return;
-      if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Search failed. Try again.";
+      if (els.resolverStatus) els.resolverStatus.textContent = "Search failed. Try again.";
     }
-  }
-
-  // ---------- Deezer search ----------
-  function hideDeezerSearch() {
-    if (deezerSearchAbort) deezerSearchAbort.abort();
-    deezerSearchAbort = null;
-    hide(els.deezerSearchOverlay);
-  }
-
-  function clearDeezerSearchResults() {
-    if (els.deezerSearchResults) els.deezerSearchResults.innerHTML = "";
-  }
-
-  function showDeezerSearch() {
-    if (!els.deezerSearchOverlay) return;
-    clearDeezerSearchResults();
-    if (els.deezerSearchStatus) els.deezerSearchStatus.textContent = "Search by song or artist.";
-    show(els.deezerSearchOverlay);
-    if (els.deezerSearchInput) {
-      const seed = (els.title?.value || "").trim();
-      els.deezerSearchInput.value = seed;
-      els.deezerSearchInput.focus();
-      els.deezerSearchInput.select();
-    }
-  }
-
-  function applyDeezerSelection(url) {
-    if (!url) return;
-    if (els.destDeezer) els.destDeezer.checked = true;
-    els.deezerUrl.value = url;
-    persistSettingsSoon();
-    validateOnly();
-    updateNeedsInput();
-    hideDeezerSearch();
-  }
-
-  function renderDeezerResults(items = []) {
-    clearDeezerSearchResults();
-    if (!els.deezerSearchResults) return;
-    const frag = document.createDocumentFragment();
-    items.forEach(item => {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "search-result";
-      const art = item.album?.cover_medium || item.album?.cover || "";
-      const track = htmlEscape(item.title || "Unknown track");
-      const artist = htmlEscape(item.artist?.name || "");
-      const album = htmlEscape(item.album?.title || "");
-      const url = item.link || "";
-      card.dataset.deezerUrl = url;
-      card.innerHTML = `
-        <img class="result-art" src="${art}" alt="" loading="lazy" />
-        <div class="search-meta">
-          <div class="search-title">${track}</div>
-          <div class="search-sub">${artist}${album ? " • " + album : ""}</div>
-        </div>
-      `;
-      frag.appendChild(card);
-    });
-    els.deezerSearchResults.appendChild(frag);
   }
 
   async function resolveAppleTargets(appleUrl) {
@@ -409,35 +341,6 @@
       }
     } catch (_) {
       // Silent failure; user can still paste manually
-    }
-  }
-
-  async function runDeezerSearch(term) {
-    const q = (term || "").trim();
-    if (!q) {
-      if (els.deezerSearchStatus) els.deezerSearchStatus.textContent = "Enter a song or artist.";
-      clearDeezerSearchResults();
-      return;
-    }
-    if (deezerSearchAbort) deezerSearchAbort.abort();
-    deezerSearchAbort = new AbortController();
-    if (els.deezerSearchStatus) els.deezerSearchStatus.textContent = "Searching…";
-    clearDeezerSearchResults();
-    try {
-      const url = `${DEEZER_SEARCH_API}?q=${encodeURIComponent(q)}&limit=15`;
-      const res = await fetch(url, { signal: deezerSearchAbort.signal });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const items = Array.isArray(data.data) ? data.data.filter(r => r.link) : [];
-      if (!items.length) {
-        if (els.deezerSearchStatus) els.deezerSearchStatus.textContent = "No results.";
-        return;
-      }
-      if (els.deezerSearchStatus) els.deezerSearchStatus.textContent = `Found ${items.length} result${items.length === 1 ? "" : "s"}. Click to fill.`;
-      renderDeezerResults(items);
-    } catch (e) {
-      if (e.name === "AbortError") return;
-      if (els.deezerSearchStatus) els.deezerSearchStatus.textContent = "Search failed. Try again.";
     }
   }
 
@@ -1843,30 +1746,18 @@ ${normalBrowserLogic}
     if (els.btnFeed) els.btnFeed.addEventListener("click", () => applyPreset("feed"));
     if (els.btnInfeed) els.btnInfeed.addEventListener("click", () => applyPreset("infeed"));
     if (els.btnInstream) els.btnInstream.addEventListener("click", () => applyPreset("instream"));
-    if (els.btnSpotifySearch) els.btnSpotifySearch.addEventListener("click", () => showAppleSearch({ spotify: true }));
-    if (els.btnAppleSearch) els.btnAppleSearch.addEventListener("click", () => showAppleSearch({ spotify: true, deezer: true }));
-    if (els.btnDeezerSearch) els.btnDeezerSearch.addEventListener("click", () => showDeezerSearch());
-    if (els.appleSearchForm) els.appleSearchForm.addEventListener("submit", (e) => { e.preventDefault(); runAppleSearch(els.appleSearchInput.value); });
-    if (els.appleSearchResults) els.appleSearchResults.addEventListener("click", (e) => {
+    if (els.btnResolver) els.btnResolver.addEventListener("click", () => showResolver());
+    if (els.resolverForm) els.resolverForm.addEventListener("submit", (e) => { e.preventDefault(); runResolverSearch(els.resolverInput.value); });
+    if (els.resolverResults) els.resolverResults.addEventListener("click", (e) => {
       const card = e.target.closest("[data-apple-url]");
       if (!card) return;
-      applyAppleSelection(card.dataset.appleUrl);
+      applyResolverSelection(card.dataset.appleUrl);
     });
-    if (els.btnAppleSearchClose) els.btnAppleSearchClose.addEventListener("click", () => hideAppleSearch());
-    if (els.appleSearchOverlay) els.appleSearchOverlay.addEventListener("click", (e) => { if (e.target === els.appleSearchOverlay) hideAppleSearch(); });
-    if (els.deezerSearchForm) els.deezerSearchForm.addEventListener("submit", (e) => { e.preventDefault(); runDeezerSearch(els.deezerSearchInput.value); });
-    if (els.deezerSearchResults) els.deezerSearchResults.addEventListener("click", (e) => {
-      const card = e.target.closest("[data-deezer-url]");
-      if (!card) return;
-      applyDeezerSelection(card.dataset.deezerUrl);
-    });
-    if (els.btnDeezerSearchClose) els.btnDeezerSearchClose.addEventListener("click", () => hideDeezerSearch());
-    if (els.deezerSearchOverlay) els.deezerSearchOverlay.addEventListener("click", (e) => { if (e.target === els.deezerSearchOverlay) hideDeezerSearch(); });
+    if (els.btnResolverClose) els.btnResolverClose.addEventListener("click", () => hideResolver());
+    if (els.resolverOverlay) els.resolverOverlay.addEventListener("click", (e) => { if (e.target === els.resolverOverlay) hideResolver(); });
     document.addEventListener("keydown", (e) => {
-      const modalOpen = els.appleSearchOverlay && !els.appleSearchOverlay.classList.contains("hidden");
-      const deezerOpen = els.deezerSearchOverlay && !els.deezerSearchOverlay.classList.contains("hidden");
-      if (modalOpen && e.key === "Escape") hideAppleSearch();
-      if (deezerOpen && e.key === "Escape") hideDeezerSearch();
+      const resolverOpen = els.resolverOverlay && !els.resolverOverlay.classList.contains("hidden");
+      if (resolverOpen && e.key === "Escape") hideResolver();
     });
     if (els.btnSlotDec) els.btnSlotDec.addEventListener("click", () => {
       decrementSlotForChannel(lastPresetChannel || "meta");

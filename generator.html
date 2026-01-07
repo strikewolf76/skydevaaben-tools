@@ -154,6 +154,10 @@
             <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
           </div>
           <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
+          <div class="row mt-8">
+            <button id="btnResolver" class="primary" data-tip="Search once and auto-fill Spotify, Apple, and Deezer via Odesli.">Odesli Song URL Resolver</button>
+            <div class="hint">Search Apple Music, then Odesli will fill Spotify, Apple, and Deezer URLs when you pick a result.</div>
+          </div>
 
           <div id="destEditor" class="grid mt-10">
             <div class="chip">
@@ -165,10 +169,7 @@
             </div>
             <div>
               <label for="spotifyUrl">Spotify track URL</label>
-              <div class="input-with-btn">
-                <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
-                <button type="button" id="btnSpotifySearch" class="secondary" data-tip="Open Spotify search in a new tab using the current title.">Search</button>
-              </div>
+              <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
             </div>
 
             <div class="chip">
@@ -180,10 +181,7 @@
             </div>
             <div>
               <label for="appleUrl">Apple URL</label>
-              <div class="input-with-btn">
-                <input id="appleUrl" placeholder="https://music.apple.com/..." />
-                <button type="button" id="btnAppleSearch" class="secondary" data-tip="Search Apple Music for track links.">Search</button>
-              </div>
+              <input id="appleUrl" placeholder="https://music.apple.com/..." />
             </div>
 
             <div class="chip">
@@ -195,10 +193,7 @@
             </div>
             <div>
               <label for="deezerUrl">Deezer URL</label>
-              <div class="input-with-btn">
-                <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
-                <button type="button" id="btnDeezerSearch" class="secondary" data-tip="Search Deezer for track links.">Search</button>
-              </div>
+              <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
             </div>
           </div>
         </div>
@@ -261,33 +256,18 @@
     </div>
   </div>
 
-  <div id="appleSearchOverlay" class="modal-overlay hidden">
+  <div id="resolverOverlay" class="modal-overlay hidden">
     <div class="modal">
       <div class="modal-head">
-        <div><strong>Search Apple Music</strong></div>
-        <button type="button" id="btnAppleSearchClose" class="icon-btn" aria-label="Close search">×</button>
+        <div><strong>Odesli Song URL Resolver</strong></div>
+        <button type="button" id="btnResolverClose" class="icon-btn" aria-label="Close resolver">×</button>
       </div>
-      <form id="appleSearchForm" class="modal-search">
-        <input id="appleSearchInput" placeholder="Search by song or artist" autocomplete="off" />
+      <form id="resolverForm" class="modal-search">
+        <input id="resolverInput" placeholder="Search by song or artist" autocomplete="off" />
         <button type="submit" class="primary">Search</button>
       </form>
-      <div id="appleSearchStatus" class="hint"></div>
-      <div id="appleSearchResults" class="search-results"></div>
-    </div>
-  </div>
-
-  <div id="deezerSearchOverlay" class="modal-overlay hidden">
-    <div class="modal">
-      <div class="modal-head">
-        <div><strong>Search Deezer</strong></div>
-        <button type="button" id="btnDeezerSearchClose" class="icon-btn" aria-label="Close search">×</button>
-      </div>
-      <form id="deezerSearchForm" class="modal-search">
-        <input id="deezerSearchInput" placeholder="Search by song or artist" autocomplete="off" />
-        <button type="submit" class="primary">Search</button>
-      </form>
-      <div id="deezerSearchStatus" class="hint"></div>
-      <div id="deezerSearchResults" class="search-results"></div>
+      <div id="resolverStatus" class="hint"></div>
+      <div id="resolverResults" class="search-results"></div>
     </div>
   </div>
 
