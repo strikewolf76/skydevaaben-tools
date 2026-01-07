@@ -504,12 +504,13 @@
 
     const normalBrowserLogic = isSpotify ? `
     try {
-      trackOutbound("auto");
       window.location.href = APP_URI;
       setTimeout(function () {
+        trackOutbound("auto");
         window.location.href = WEB_URL;
       }, 600);
     } catch (e) {
+      trackOutbound("auto");
       window.location.href = WEB_URL;
     }
 ` : `
