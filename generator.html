@@ -67,17 +67,21 @@
       </div>
 
       <div id="validationPanel" class="full panel hidden">
-        <div><strong>Validation</strong></div>
+        <div class="panel-head">
+          <div><strong>Validation</strong></div>
+          <span class="tip-marker" data-tip="Runs safety checks for slug, required links, channels, and OG image readiness.">?</span>
+        </div>
         <div class="section-hint">Checks slug safety, required links, channels, and OG image readiness.</div>
         <div id="validation" class="mono"></div>
       </div>
 
       <div id="previewPanel" class="full panel hidden">
-        <div class="row between">
+        <div class="panel-head">
           <div>
             <div><strong>Preview grid (utm)</strong></div>
             <div class="hint">See all combinations.</div>
           </div>
+          <span class="tip-marker" data-tip="Shows every destination + channel combination with utm parameters and final redirect URL.">?</span>
         </div>
         <div class="table-label">Link Preview (Meta / Messenger)</div>
         <div class="tablewrap mt-10">
@@ -95,21 +99,27 @@
       </div>
 
       <div id="logPanel" class="full panel hidden">
-        <div><strong>Log</strong></div>
+        <div class="panel-head">
+          <div><strong>Log</strong></div>
+          <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
+        </div>
         <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
         <div id="log" class="log mt-10"></div>
       </div>
 
       <div class="row">
-        <button class="primary" id="btnGenerate">Preview</button>
-        <button class="primary" id="btnPublish">Publish</button>
-        <button class="primary" id="btnCopyCreds">Copy token + pixel</button>
-        <button id="btnTheme">Theme: Base</button>
-        <button class="danger" id="btnReset">Reset</button>
+        <button class="primary" id="btnGenerate" data-tip="Generate preview grid without publishing.">Preview</button>
+        <button class="primary" id="btnPublish" data-tip="Create/update redirect pages and OG image, then push to Pages.">Publish</button>
+        <button class="primary" id="btnCopyCreds" data-tip="Copy current PAT and Meta Pixel ID to clipboard.">Copy token + pixel</button>
+        <button id="btnTheme" data-tip="Cycle themes for preview; not persisted.">Theme: Base</button>
+        <button class="danger" id="btnReset" data-tip="Clear inputs and restore defaults.">Reset</button>
       </div>
 
       <div class="full panel">
-        <div><strong>OG (Open Graph) Assets</strong></div>
+        <div class="panel-head">
+          <div><strong>OG (Open Graph) Assets</strong></div>
+          <span class="tip-marker" data-tip="Set title and upload OG image used for social previews; file saved as assets/og/&lt;slug&gt;.jpg on publish.">?</span>
+        </div>
         <div class="section-hint">Title and image define how the link preview looks when shared (Meta, Messenger, etc.).</div>
         <div class="ogpreview mt-8">
           <div>
@@ -139,7 +149,10 @@
 
       <div class="full two-col">
         <div class="panel">
-          <div><strong>Destinations</strong></div>
+          <div class="panel-head">
+            <div><strong>Destinations</strong></div>
+            <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
+          </div>
           <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
 
           <div id="destEditor" class="grid mt-10">
@@ -182,7 +195,10 @@
         </div>
 
         <div class="panel">
-          <div><strong>Channels</strong></div>
+          <div class="panel-head">
+            <div><strong>Channels</strong></div>
+            <span class="tip-marker" data-tip="Toggle ad channels and set utm_content presets; slot controls suffix numbering.">?</span>
+          </div>
           <div class="section-hint">Checked channels are included; prefill to add sensible utm_content defaults.</div>
           <div class="row mt-6 channel-row">
             <button id="btnClearUtm" class="clear-btn">Clear all <span class="tip-marker" data-tip="Clears all utm_content fields across channels.">?</span></button>

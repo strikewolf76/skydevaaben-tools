@@ -25,6 +25,7 @@ h1 { font-size: 22px; margin: 0 0 8px; }
 .panel { border: 1px solid var(--panel-border); border-radius: var(--panel-radius); padding: 14px; margin-top: 14px; background: var(--panel-bg); }
 .panel.compact { padding: 10px; margin-top: 6px; }
 .panel-title { font-weight: 600; font-size: 14px; margin: 0 0 8px; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
 .grid.tight { gap: 8px 12px; }
 .settings-grid { display:grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 10px 12px; align-items: start; }
