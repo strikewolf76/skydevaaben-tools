@@ -130,7 +130,6 @@
         return { data, usedProxy: !!proxy, proxy: proxy?.type || "none" }; 
       } catch (err) {
         lastErr = err;
-        try { console.error("[resolver] fetch failed", proxy?.type || "direct", target, err); } catch (_) {}
       }
     }
     throw lastErr || new Error("Unknown resolver fetch error");
@@ -263,14 +262,6 @@
     if (!url) return;
     const appleEnabled = !!els.destApple?.checked;
     if (appleEnabled && els.appleUrl) els.appleUrl.value = url;
-    addLogItem({
-      title: "Resolver selection",
-      status: "START",
-      lines: [
-        `picked=${url}`,
-        `enabled apple=${appleEnabled} spotify=${!!els.destSpotify?.checked} deezer=${!!els.destDeezer?.checked}`
-      ]
-    });
     persistSettingsSoon();
     validateOnly();
     updateNeedsInput();
@@ -341,20 +332,10 @@
     const wantsDeezer = !!els.destDeezer?.checked;
     const wantsApple = !!els.destApple?.checked;
     if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
-    addLogItem({
-      title: "Resolver request",
-      status: "RUN",
-      lines: [
-        `src=${src}`,
-        `enabled apple=${wantsApple} spotify=${wantsSpotify} deezer=${wantsDeezer}`
-      ]
-    });
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
-      const { data, usedProxy, proxy } = await fetchJsonWithCors(url);
+      const { data } = await fetchJsonWithCors(url);
       const links = data?.linksByPlatform || {};
-      // Local debug: print full platform map to console
-      try { console.log("[resolver] linksByPlatform", links); } catch (_) {}
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
       let updated = false;
       const found = {
@@ -362,25 +343,6 @@
         spotify: links.spotify?.url || null,
         deezer: links.deezer?.url || null,
       };
-
-      if (!found.spotify || !found.deezer) {
-        addLogItem({
-          title: "Resolver missing platforms",
-          status: "WARN",
-          lines: [
-            `hasSpotify=${!!found.spotify} hasDeezer=${!!found.deezer}`,
-            `resolver keys=${Object.keys(links || {}).join(",") || "-"}`
-          ]
-        });
-      }
-
-      // Deep debug: log raw resolver payload (trimmed) to help diagnose missing platforms
-      const rawSample = JSON.stringify({ platforms: Object.keys(links || {}), raw: links }, null, 2);
-      addLogItem({
-        title: "Resolver raw",
-        status: "DEBUG",
-        lines: rawSample.split("\n").slice(0, 12) // avoid flooding the log
-      });
 
       if (wantsApple && els.appleUrl) {
         const appleUrlResolved = appleLink;
@@ -411,24 +373,10 @@
         validateOnly();
         updateNeedsInput();
       }
-
-      // Emit a debug log entry to help trace resolver results
-      addLogItem({
-        title: "Resolver",
-        status: updated ? "OK" : "NO CHANGE",
-        lines: [
-          `apple enabled=${wantsApple} link=${found.apple || "-"}`,
-          `spotify enabled=${wantsSpotify} link=${found.spotify || "-"}`,
-          `deezer enabled=${wantsDeezer} link=${found.deezer || "-"}`,
-          `resolver apple=${links.appleMusic?.url || "-"}`,
-          `resolver itunes=${links.itunes?.url || "-"}`,
-          `resolver keys=${Object.keys(links || {}).join(",") || "-"}`,
-          `proxy=${usedProxy ? proxy : "none"}`
-        ]
-      });
     } catch (e) {
-      addLogItem({ title: "Resolver failed", status: "ERROR", lines: [String(e || "unknown error")] });
-      try { console.error("[resolver] error", e); } catch (_) {}
+      if (els.resolverStatus) {
+        els.resolverStatus.textContent = "Resolver failed. Fill manually.";
+      }
     }
   }
 
@@ -1159,18 +1107,6 @@ ${normalBrowserLogic}
         }
         const { utm_source, utm_medium } = chMeta;
         const utm_content = ch.content;
-
-        let webUrl;
-        try {
-          webUrl = appendUtms(dest.baseUrl, { utm_source, utm_medium, utm_campaign, utm_content });
-        } catch (e) {
-          return { ok: false, error: `Invalid URL for destination "${dest.key}": ${dest.baseUrl}` };
-        }
-
-        const relPath = ch.key === "meta"
-          ? `tracks/${slug}/${dest.key}/meta.html`
-          : `tracks/${slug}/${dest.key}/${utm_content}.html`;
-        const ogUrlAbs = `${repoBase}/${relPath}`;
 
         const pagesUrl = ch.key === "meta"
           ? `${ogUrlAbs}?cid=${encodeURIComponent(utm_content)}`
