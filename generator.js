@@ -6,6 +6,7 @@
     siteName: $("siteName"),
     ghToken: $("ghToken"),
     metaPixelId: $("metaPixelId"),
+    metaPixelStatusText: $("metaPixelStatusText"),
 
     title: $("title"),
     trackSlug: $("trackSlug"),
@@ -185,6 +186,7 @@
 
   let tokenStatus = "unknown";
   let tokenValidateTimer = null;
+  let metaPixelStatus = "unknown";
 
   function setTokenStatus(status, message) {
     tokenStatus = status;
@@ -197,6 +199,17 @@
       if (message && status === "bad") els.tokenStatusText.title = message; else els.tokenStatusText.removeAttribute("title");
     }
     toggle(els.tokenInputWrap, status !== "ok");
+  }
+
+  function setMetaPixelStatus(status) {
+    metaPixelStatus = status;
+    if (els.metaPixelStatusText) {
+      els.metaPixelStatusText.textContent = status === "ok" ? "OK" : status === "pending" ? "Checking…" : "NOT SET";
+      els.metaPixelStatusText.classList.remove("status-ok", "status-bad", "status-pending");
+      if (status === "ok") els.metaPixelStatusText.classList.add("status-ok");
+      else if (status === "pending") els.metaPixelStatusText.classList.add("status-pending");
+      else els.metaPixelStatusText.classList.add("status-bad");
+    }
   }
 
   function scheduleTokenValidation() {
@@ -410,6 +423,7 @@
       assign(els.ytContent, s.ytContent);
       assign(els.chIGDM, s.chIGDM, true);
       assign(els.igdmContent, s.igdmContent);
+      updateMetaPixelStatus();
     } catch { /* ignore */ }
   }
 
@@ -433,6 +447,11 @@
     els.trackSlug.value = slug;
     els.utmCampaign.value = slug;
     els.ogImageNamePreview.textContent = slug ? `assets/og/${slug}.jpg` : "";
+  }
+
+  function updateMetaPixelStatus() {
+    const val = (els.metaPixelId?.value || "").trim();
+    setMetaPixelStatus(val ? "ok" : "bad");
   }
 
   // ---------- HTML generation ----------
@@ -1148,7 +1167,6 @@ ${normalBrowserLogic}
     els.title.value = "";
     els.trackSlug.value = "";
     els.utmCampaign.value = "";
-    els.metaPixelId.value = "";
 
     els.destSpotify.checked = true;
     els.spotifyUrl.value = "";
@@ -1178,6 +1196,7 @@ ${normalBrowserLogic}
 
     syncSlugAndCampaignFromTitle();
     updateNeedsInput();
+    updateMetaPixelStatus();
     persistSettingsSoon();
   }
 
@@ -1193,6 +1212,7 @@ ${normalBrowserLogic}
     if (els.siteNameDisplay) els.siteNameDisplay.textContent = els.siteName.value || "";
     syncSlugAndCampaignFromTitle();
     updateNeedsInput();
+    updateMetaPixelStatus();
     if (savedToken) validateTokenStatus(true); else setTokenStatus("bad");
 
     [
@@ -1210,6 +1230,7 @@ ${normalBrowserLogic}
         scheduleTokenValidation();
       }
       updateNeedsInput();
+      if (el === els.metaPixelId) updateMetaPixelStatus();
     }));
 
     els.ogFile.addEventListener("change", (e) => {
@@ -1255,6 +1276,7 @@ ${normalBrowserLogic}
     syncSlugAndCampaignFromTitle();
     validateOnly();
     updateNeedsInput();
+    updateMetaPixelStatus();
     renderPreviewGrid();
     hideLogIfEmpty();
   }
