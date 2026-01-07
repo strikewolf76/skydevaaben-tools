@@ -329,8 +329,21 @@
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const text = await res.text();
+      if (!res.ok) {
+        addLogItem({ title: "Resolver failed", status: "HTTP", lines: [`status=${res.status}`, text.slice(0, 240)] });
+        try { console.error("[resolver] http error", res.status, text); } catch (_) {}
+        return;
+      }
+
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; }
+      catch (e) {
+        addLogItem({ title: "Resolver failed", status: "PARSE", lines: [String(e), text.slice(0, 240)] });
+        try { console.error("[resolver] parse error", e, text); } catch (_) {}
+        return;
+      }
+
       const links = data?.linksByPlatform || {};
       // Local debug: print full platform map to console
       try { console.log("[resolver] linksByPlatform", links); } catch (_) {}
