@@ -317,6 +317,11 @@
       const data = await res.json();
       const links = data?.linksByPlatform || {};
       let updated = false;
+      const found = {
+        apple: links.appleMusic?.url || null,
+        spotify: links.spotify?.url || null,
+        deezer: links.deezer?.url || null,
+      };
 
       if (wantsApple && els.appleUrl) {
         const appleUrlResolved = links.appleMusic?.url || src;
@@ -347,8 +352,19 @@
         validateOnly();
         updateNeedsInput();
       }
+
+      // Emit a debug log entry to help trace resolver results
+      addLogItem({
+        title: "Resolver",
+        status: updated ? "OK" : "NO CHANGE",
+        lines: [
+          `apple enabled=${wantsApple} link=${found.apple || "-"}`,
+          `spotify enabled=${wantsSpotify} link=${found.spotify || "-"}`,
+          `deezer enabled=${wantsDeezer} link=${found.deezer || "-"}`,
+        ]
+      });
     } catch (_) {
-      // Silent failure; user can still paste manually
+      addLogItem({ title: "Resolver failed", status: "ERROR", lines: [String(e || "unknown error")] });
     }
   }
 
