@@ -118,6 +118,7 @@
 
   const APPLE_SEARCH_API = "https://itunes.apple.com/search";
   const DEEZER_SEARCH_API = "https://api.deezer.com/search";
+  const ODESLI_RESOLVER_API = "https://api.song.link/v1-alpha.1/links";
 
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
     const u = new URL(destUrl);
@@ -248,6 +249,7 @@
     validateOnly();
     updateNeedsInput();
     hideAppleSearch();
+    resolveAppleToSpotify(url);
   }
 
   function renderAppleResults(items = []) {
@@ -363,6 +365,27 @@
       frag.appendChild(card);
     });
     els.deezerSearchResults.appendChild(frag);
+  }
+
+  async function resolveAppleToSpotify(appleUrl) {
+    const src = (appleUrl || "").trim();
+    if (!src) return;
+    try {
+      const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const spotifyUrl = data?.linksByPlatform?.spotify?.url;
+      if (spotifyUrl && els.spotifyUrl) {
+        if (els.destSpotify) els.destSpotify.checked = true;
+        els.spotifyUrl.value = spotifyUrl;
+        persistSettingsSoon();
+        validateOnly();
+        updateNeedsInput();
+      }
+    } catch (_) {
+      // Silent failure; user can still paste manually
+    }
   }
 
   async function runDeezerSearch(term) {
