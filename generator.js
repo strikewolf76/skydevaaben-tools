@@ -503,20 +503,20 @@
 `;
 
     const normalBrowserLogic = isSpotify ? `
-    try {
-      window.location.href = APP_URI;
-      setTimeout(function () {
+      try {
+        trackOutbound("auto");
+        window.location.href = APP_URI;
+        setTimeout(function () {
+          window.location.href = WEB_URL;
+        }, 600);
+      } catch (e) {
         trackOutbound("auto");
         window.location.href = WEB_URL;
-      }, 600);
-    } catch (e) {
+      }
+  ` : `
       trackOutbound("auto");
       window.location.href = WEB_URL;
-    }
-` : `
-    trackOutbound("auto");
-    window.location.href = WEB_URL;
-`;
+  `;
 
     return `<!doctype html>
 <html lang="en">
@@ -624,8 +624,8 @@
   if (isMetaInApp()) {
     playEl.removeAttribute("target");
     statusEl.textContent = "Opening…";
-    trackOutbound("auto");
     setTimeout(function () {
+      trackOutbound("auto");
       window.location.href = WEB_URL;
     }, 150);
   } else {
