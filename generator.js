@@ -1003,7 +1003,7 @@ ${normalBrowserLogic}
 
   function setSlotInput(value) {
     if (!els.creativeSlot) return;
-    els.creativeSlot.value = padSlot(value);
+    els.creativeSlot.textContent = padSlot(value);
   }
 
   function applyPreset(presetKey) {
@@ -1013,7 +1013,7 @@ ${normalBrowserLogic}
     const channel = preset.channel;
     lastPresetChannel = channel;
 
-    const currentSlot = padSlot(els.creativeSlot?.value || getStoredSlot(slug, channel));
+    const currentSlot = padSlot(getStoredSlot(slug, channel));
     const nextContent = `${preset.prefix}${currentSlot}`;
     const inputFn = CHANNEL_INPUTS[channel];
     const input = inputFn ? inputFn() : null;
@@ -1027,6 +1027,7 @@ ${normalBrowserLogic}
     validateOnly();
     renderPreviewGrid();
     updateNeedsInput();
+    setActivePreset(presetKey);
   }
 
   function syncSlotFromStorage() {
@@ -1051,6 +1052,20 @@ ${normalBrowserLogic}
     setStoredSlot(slug, channel, dec);
     setSlotInput(dec);
     return dec;
+  }
+
+  function setActivePreset(key) {
+    const map = {
+      story: els.btnStory,
+      reel: els.btnReel,
+      feed: els.btnFeed,
+      infeed: els.btnInfeed,
+      instream: els.btnInstream,
+    };
+    Object.entries(map).forEach(([k, btn]) => {
+      if (!btn) return;
+      btn.classList.toggle("preset-active", k === key);
+    });
   }
 
   function bumpContent(content) {
@@ -1574,12 +1589,6 @@ ${normalBrowserLogic}
     });
     if (els.btnSlotInc) els.btnSlotInc.addEventListener("click", () => {
       bumpSlotForChannel(lastPresetChannel || "meta");
-    });
-    if (els.creativeSlot) els.creativeSlot.addEventListener("input", () => {
-      const slug = sanitizeSlug(els.trackSlug.value || "");
-      const normalized = padSlot(els.creativeSlot.value);
-      setStoredSlot(slug, lastPresetChannel || "meta", normalized);
-      setSlotInput(normalized);
     });
     if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });

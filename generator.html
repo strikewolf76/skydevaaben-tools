@@ -183,19 +183,19 @@
         <div class="panel">
           <div><strong>Channels</strong></div>
           <div class="section-hint">Checked channels are included; prefill to add sensible utm_content defaults.</div>
-          <div class="row mt-6">
-            <button id="btnChPrefill">Use prefilled values</button>
-            <div class="row gap-8" style="margin-top:0">
-              <label for="creativeSlot" class="label" style="margin-bottom:0">Slot</label>
-              <input id="creativeSlot" value="01" style="width:70px" />
-              <button id="btnSlotDec">-</button>
-              <button id="btnSlotInc">+</button>
-              <button id="btnStory">story</button>
-              <button id="btnReel">reel</button>
-              <button id="btnFeed">feed</button>
-              <button id="btnInfeed">infeed</button>
-              <button id="btnInstream">instream</button>
-            </div>
+          <div class="row mt-6 channel-row">
+            <label class="label" style="margin-bottom:0">Slot</label>
+            <button id="btnSlotDec">-</button>
+            <span id="creativeSlot" class="slot-pill">01</span>
+            <button id="btnSlotInc">+</button>
+            <button id="btnStory" class="preset-btn">story</button>
+            <button id="btnReel" class="preset-btn">reel</button>
+            <button id="btnFeed" class="preset-btn">feed</button>
+            <button id="btnInfeed" class="preset-btn">infeed</button>
+            <button id="btnInstream" class="preset-btn">instream</button>
+          </div>
+          <div class="row mt-6 channel-row">
+            <button id="btnChPrefill" class="preset-btn">Use prefilled values</button>
           </div>
 
           <div id="chEditor" class="grid mt-10">
