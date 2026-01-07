@@ -15,6 +15,7 @@
 
     destSpotify: $("destSpotify"),
     spotifyUrl: $("spotifyUrl"),
+    btnSpotifySearch: $("btnSpotifySearch"),
     destApple: $("destApple"),
     appleUrl: $("appleUrl"),
     btnAppleSearch: $("btnAppleSearch"),
@@ -195,6 +196,13 @@
     markNeed(els.metaContent, metaMissing);
     markNeed(els.ttContent, ttMissing);
     markNeed(els.ytContent, ytMissing);
+  }
+
+  function openSpotifySearch() {
+    const base = (els.title?.value || "").trim();
+    const query = base || "";
+    const url = `https://open.spotify.com/search/${encodeURIComponent(query)}/tracks`;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   // ---------- Apple Music search ----------
@@ -1690,6 +1698,7 @@ ${normalBrowserLogic}
     if (els.btnFeed) els.btnFeed.addEventListener("click", () => applyPreset("feed"));
     if (els.btnInfeed) els.btnInfeed.addEventListener("click", () => applyPreset("infeed"));
     if (els.btnInstream) els.btnInstream.addEventListener("click", () => applyPreset("instream"));
+    if (els.btnSpotifySearch) els.btnSpotifySearch.addEventListener("click", () => openSpotifySearch());
     if (els.btnAppleSearch) els.btnAppleSearch.addEventListener("click", () => showAppleSearch());
     if (els.appleSearchForm) els.appleSearchForm.addEventListener("submit", (e) => { e.preventDefault(); runAppleSearch(els.appleSearchInput.value); });
     if (els.appleSearchResults) els.appleSearchResults.addEventListener("click", (e) => {
