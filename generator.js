@@ -53,6 +53,7 @@
     btnForgetToken: $("btnForgetToken"),
     btnCopyCreds: $("btnCopyCreds"),
     btnTheme: $("btnTheme"),
+    btnClearUtm: $("btnClearUtm"),
     btnStory: $("btnStory"),
     btnReel: $("btnReel"),
     btnFeed: $("btnFeed"),
@@ -1016,8 +1017,6 @@ ${normalBrowserLogic}
     const inputFn = CHANNEL_INPUTS[channel];
     const input = inputFn ? inputFn() : null;
     if (input) input.value = nextContent;
-
-    setStoredSlot(slug, channel, currentSlot);
     setSlotInput(currentSlot);
 
     persistSettingsSoon();
@@ -1063,6 +1062,15 @@ ${normalBrowserLogic}
       if (!btn) return;
       btn.classList.toggle("preset-active", k === key);
     });
+  }
+
+  function clearUtmFields() {
+    [els.metaContent, els.ttContent, els.ytContent].forEach(el => { if (el) el.value = ""; });
+    setActivePreset(null);
+    persistSettingsSoon();
+    validateOnly();
+    renderPreviewGrid();
+    updateNeedsInput();
   }
 
   function bumpContent(content) {
@@ -1572,6 +1580,7 @@ ${normalBrowserLogic}
 
     els.btnPublish.addEventListener("click", () => publishAll());
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
+    if (els.btnClearUtm) els.btnClearUtm.addEventListener("click", () => clearUtmFields());
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token removed from the browser."] }); });
     if (els.btnCopyCreds) els.btnCopyCreds.addEventListener("click", () => copyCredsToClipboard());

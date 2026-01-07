@@ -50,6 +50,8 @@ button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button
 .preset-btn.preset-active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 1px var(--accent-weak) inset; }
 .slot-pill { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--button-border); background: var(--input-bg); min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
 .channel-row .label { margin-bottom: 0; text-align: center; }
+.clear-btn { background: var(--danger-weak); border-color: var(--danger); color: var(--text); }
+.clear-btn:hover { background: color-mix(in srgb, var(--danger) 15%, var(--danger-weak)); border-color: var(--danger); }
 button.primary { background: var(--accent-weak); color: var(--text); }
 button.danger { background: var(--danger-weak); color: var(--text); }
 .row.between { justify-content: space-between; }
