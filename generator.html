@@ -12,12 +12,11 @@
   <p class="muted">
     Goal: HTML → <span class="mono">tracks/&lt;slug&gt;/&lt;dest&gt;/&lt;utm_content&gt;.html</span> and image → <span class="mono">assets/og/&lt;slug&gt;.jpg</span>.
   </p>
-  <p class="section-hint">Configure once, preview the link grid, then publish. Nothing is stored server-side; everything stays in your browser until you publish.</p>
-
-  <div class="panel">
-    <div class="grid">
+            <div class="label">Meta Pixel ID</div>
+            <div class="row gap-8">
+              <span id="metaPixelStatusText" class="status-bad">NOT SET</span>
+            </div>
       <div class="full panel compact">
-        <div><strong>Settings</strong></div>
         <div class="settings-inline">
           <div>
             <div class="label">Pages base URL</div>
@@ -46,7 +45,6 @@
             <div class="label">Publish token (fine-grained PAT)</div>
             <div class="row gap-8">
               <span id="tokenStatusText" class="status-bad">NOT OK</span>
-              <button id="btnCopyCreds">Copy token + pixel</button>
             </div>
             <div id="tokenInputWrap" class="token-input">
               <input id="ghToken" type="password" placeholder="Paste PAT (Contents: Read+Write)" />
@@ -109,6 +107,7 @@
       <div class="row">
         <button class="primary" id="btnGenerate">Preview</button>
         <button class="primary" id="btnPublish">Publish</button>
+        <button class="primary" id="btnCopyCreds">Copy token + pixel</button>
         <button class="danger" id="btnReset">Reset</button>
       </div>
 
