@@ -305,11 +305,11 @@
   async function resolveAppleTargets(appleUrl) {
     const src = (appleUrl || "").trim();
     if (!src) return;
-    // Only populate destinations that are currently enabled
-    const wantsSpotify = appleResolveTargets.spotify && !!els.destSpotify?.checked;
-    const wantsDeezer = appleResolveTargets.deezer && !!els.destDeezer?.checked;
+    // Populate every destination that is currently enabled
+    const wantsSpotify = !!els.destSpotify?.checked;
+    const wantsDeezer = !!els.destDeezer?.checked;
     const wantsApple = !!els.destApple?.checked;
-    if (!wantsSpotify && !wantsDeezer) return;
+    if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
       const res = await fetch(url);
@@ -318,9 +318,12 @@
       const links = data?.linksByPlatform || {};
       let updated = false;
 
-      if (wantsApple && els.appleUrl && !els.appleUrl.value) {
-        els.appleUrl.value = src;
-        updated = true;
+      if (wantsApple && els.appleUrl) {
+        const appleUrlResolved = links.appleMusic?.url || src;
+        if (appleUrlResolved) {
+          els.appleUrl.value = appleUrlResolved;
+          updated = true;
+        }
       }
 
       if (wantsSpotify) {
