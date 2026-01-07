@@ -518,6 +518,7 @@
 <script>
 (function () {${appBlock}
   var WEB_URL = "${htmlEscape(webUrl)}";
+  WEB_URL = WEB_URL.replace(/&amp;/g, "&");
   var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
   var TRACK_SLUG = "${htmlEscape(trackSlug || "")}";
   var DEST_KEY = "${htmlEscape(destKey || "")}";
