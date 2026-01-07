@@ -230,7 +230,7 @@
       else if (status === "pending") els.metaPixelStatusText.classList.add("status-pending");
       else els.metaPixelStatusText.classList.add("status-bad");
     }
-    toggle(els.metaPixelInputWrap, status !== "ok");
+    if (els.metaPixelId) els.metaPixelId.classList.toggle("hidden", status === "ok");
   }
 
   function scheduleTokenValidation() {
