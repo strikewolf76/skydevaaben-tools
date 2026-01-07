@@ -510,7 +510,6 @@
           window.location.href = WEB_URL;
         }, 600);
       } catch (e) {
-        trackAutoOnce();
         window.location.href = WEB_URL;
       }
   ` : `
@@ -626,7 +625,6 @@
   }
 
   playEl.href = WEB_URL;
-  playEl.setAttribute("href", WEB_URL);
   playEl.addEventListener("click", function () { trackOutbound("click"); });
 
   if (isMetaInApp()) {
