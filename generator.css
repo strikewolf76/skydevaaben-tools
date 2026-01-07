@@ -48,7 +48,7 @@ button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button
 .channel-row button { padding: 7px 11px; border-radius: 9px; font-size: 13px; width: 100%; }
 .preset-btn { padding: 7px 11px; border-radius: 9px; font-size: 13px; width: 100%; text-align: center; }
 .preset-btn.preset-active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 1px var(--accent-weak) inset; }
-.slot-pill { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--button-border); background: var(--input-bg); min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
+.slot-pill { padding: 0; border: none; border-radius: 0; background: transparent; min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
 .channel-row .label { margin-bottom: 0; text-align: center; }
 .slot-pill { width: 100%; }
 
