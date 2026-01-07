@@ -873,6 +873,7 @@
   <style>
     body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin: 16px; }
     .cta { font-size: 18px; padding: 14px 22px; display: inline-block; text-decoration: none; }
+    .consent-info { font-size: 13px; opacity: 0.75; margin-top: 16px; max-width: 480px; line-height: 1.4; }
   </style>
 </head>
 
@@ -886,6 +887,10 @@
        href="${htmlEscape(webUrl)}">
       Open
     </a>
+  </p>
+
+  <p id="consent-info" class="consent-info" style="display:none;">
+    This link uses measurement to improve campaigns. By continuing, you agree.
   </p>
 
 <script>
@@ -902,12 +907,44 @@
   var params = new URLSearchParams(window.location.search || "");
   var CID = params.get("cid") || "";
   var autoSent = false;
+  var consentGranted = false;
+  var pixelEventsQueued = [];
 
   // Allow known social crawlers to fetch OG tags (no redirect)
   var ua = navigator.userAgent || "";
   var isCrawler = /(facebookexternalhit|facebot|twitterbot|linkedinbot|discordbot|pinterest)/i.test(ua);
   if (isCrawler) return;
 
+  // Check existing consent
+  var hasConsent = false;
+  try {
+    hasConsent = localStorage.getItem("sv_cookie_consent") === "granted";
+  } catch (_) {}
+
+  // Show consent info for new users
+  if (!hasConsent) {
+    var consentInfoEl = document.getElementById("consent-info");
+    if (consentInfoEl) consentInfoEl.style.display = "block";
+  }
+
+  // Grant consent (once only)
+  function grantConsent() {
+    if (consentGranted) return;
+    consentGranted = true;
+    try {
+      localStorage.setItem("sv_cookie_consent", "granted");
+    } catch (_) {}
+    if (window.fbq && META_PIXEL_ID) {
+      fbq("consent", "grant");
+      // Fire queued events
+      while (pixelEventsQueued.length > 0) {
+        var ev = pixelEventsQueued.shift();
+        ev();
+      }
+    }
+  }
+
+  // Initialize Meta Pixel (if ID present)
   if (META_PIXEL_ID) {
     !(function (f, b, e, v, n, t, s) {
       if (f.fbq) return;
@@ -918,13 +955,19 @@
       s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
     })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
 
-    try { fbq("consent", "revoke"); } catch (_) {}
     fbq("init", META_PIXEL_ID);
-    try {
-      var consent = localStorage.getItem("sv_cookie_consent");
-      if (consent === "granted") fbq("consent", "grant");
-    } catch (_) { /* ignore */ }
-    fbq("track", "PageView");
+    
+    // Default: consent revoked
+    try { fbq("consent", "revoke"); } catch (_) {}
+
+    // If returning user: grant immediately
+    if (hasConsent) {
+      grantConsent();
+      fbq("track", "PageView");
+    } else {
+      // Queue PageView until consent granted
+      pixelEventsQueued.push(function () { fbq("track", "PageView"); });
+    }
   }
 
   var statusEl = document.getElementById("status");
@@ -938,26 +981,38 @@
 
   function trackOutbound(kind) {
     if (!window.fbq || !META_PIXEL_ID) return;
-    fbq("trackCustom", "OutboundSpotify", {
-      kind: kind,
-      cid: CID,
-      slug: TRACK_SLUG,
-      dest: DEST_KEY,
-      channel: CHANNEL,
-      utm_campaign: UTM_CAMPAIGN,
-      utm_content: UTM_CONTENT,
-      track_id: TRACK_ID || ""
-    });
+    var fireEvent = function () {
+      fbq("trackCustom", "OutboundSpotify", {
+        kind: kind,
+        cid: CID,
+        slug: TRACK_SLUG,
+        dest: DEST_KEY,
+        channel: CHANNEL,
+        utm_campaign: UTM_CAMPAIGN,
+        utm_content: UTM_CONTENT,
+        track_id: TRACK_ID || ""
+      });
+    };
+    // If consent already granted, fire immediately; else queue
+    if (consentGranted) {
+      fireEvent();
+    } else {
+      pixelEventsQueued.push(fireEvent);
+    }
   }
 
   function trackAutoOnce() {
     if (autoSent) return;
     autoSent = true;
+    grantConsent(); // Grant consent on auto-redirect
     trackOutbound("auto");
   }
 
   playEl.href = WEB_URL;
-  playEl.addEventListener("click", function () { trackOutbound("click"); });
+  playEl.addEventListener("click", function () {
+    grantConsent(); // Grant consent on manual click
+    trackOutbound("click");
+  });
 
   if (isMetaInApp()) {
     playEl.removeAttribute("target");
