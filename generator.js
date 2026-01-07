@@ -114,10 +114,10 @@
   const ODESLI_RESOLVER_API = "https://api.song.link/v1-alpha.1/links";
 
   async function fetchJsonWithCors(url) {
+    // Try direct first, then allorigins.win (verified working in tests)
     const proxies = [
       null,
-      { type: "allorigins", base: "https://api.allorigins.win/raw?url=" },
-      { type: "corsproxy", base: "https://corsproxy.io/?" }
+      { type: "allorigins", base: "https://api.allorigins.win/raw?url=" }
     ];
     let lastErr = null;
     for (const proxy of proxies) {
