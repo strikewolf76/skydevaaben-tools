@@ -351,6 +351,14 @@
         });
       }
 
+      // Deep debug: log raw resolver payload (trimmed) to help diagnose missing platforms
+      const rawSample = JSON.stringify({ platforms: Object.keys(links || {}), raw: links }, null, 2);
+      addLogItem({
+        title: "Resolver raw",
+        status: "DEBUG",
+        lines: rawSample.split("\n").slice(0, 12) // avoid flooding the log
+      });
+
       if (wantsApple && els.appleUrl) {
         const appleUrlResolved = appleLink;
         if (appleUrlResolved) {
