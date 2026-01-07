@@ -7,6 +7,7 @@
     ghToken: $("ghToken"),
     metaPixelId: $("metaPixelId"),
     metaPixelStatusText: $("metaPixelStatusText"),
+    metaPixelInputWrap: $("metaPixelInputWrap"),
 
     title: $("title"),
     trackSlug: $("trackSlug"),
@@ -210,6 +211,7 @@
       else if (status === "pending") els.metaPixelStatusText.classList.add("status-pending");
       else els.metaPixelStatusText.classList.add("status-bad");
     }
+    toggle(els.metaPixelInputWrap, status !== "ok");
   }
 
   function scheduleTokenValidation() {
