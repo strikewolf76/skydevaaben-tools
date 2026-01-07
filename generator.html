@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <title>Skydevaaben Redirect Generator</title>
   <link rel="stylesheet" href="./generator.css" />
+  <link rel="stylesheet" href="./tooltip.css" />
 </head>
 <body>
   <h1>Skydevaaben – Redirect Generator</h1>
@@ -184,16 +185,16 @@
           <div><strong>Channels</strong></div>
           <div class="section-hint">Checked channels are included; prefill to add sensible utm_content defaults.</div>
           <div class="row mt-6 channel-row">
-            <button id="btnClearUtm" class="clear-btn">Clear all</button>
-            <label class="label">Slot</label>
+            <button id="btnClearUtm" class="clear-btn">Clear all <span class="tip-marker" data-tip="Clears all utm_content fields across channels.">?</span></button>
+            <label class="label">Slot <span class="tip-marker" data-tip="Slot sets the numeric suffix used when applying presets. Use +/- to change manually.">?</span></label>
             <button id="btnSlotDec">-</button>
             <span id="creativeSlot" class="slot-pill">01</span>
             <button id="btnSlotInc">+</button>
-            <button id="btnStory" class="preset-btn">story</button>
-            <button id="btnReel" class="preset-btn">reel</button>
-            <button id="btnFeed" class="preset-btn">feed</button>
-            <button id="btnInfeed" class="preset-btn">infeed</button>
-            <button id="btnInstream" class="preset-btn">instream</button>
+            <button id="btnStory" class="preset-btn">story <span class="tip-marker" data-tip="Sets utm_content to meta-ads-story + slot for Meta ads.">?</span></button>
+            <button id="btnReel" class="preset-btn">reel <span class="tip-marker" data-tip="Sets utm_content to meta-ads-reel + slot for Meta ads.">?</span></button>
+            <button id="btnFeed" class="preset-btn">feed <span class="tip-marker" data-tip="Sets utm_content to meta-ads-feed + slot for Meta ads.">?</span></button>
+            <button id="btnInfeed" class="preset-btn">infeed <span class="tip-marker" data-tip="Sets utm_content to tt-ads-infeed + slot for TikTok ads.">?</span></button>
+            <button id="btnInstream" class="preset-btn">instream <span class="tip-marker" data-tip="Sets utm_content to yt-ads-instream + slot for YouTube ads.">?</span></button>
           </div>
 
           <div id="chEditor" class="grid mt-10">
@@ -235,6 +236,7 @@
     </div>
   </div>
 
+  <script src="./tooltip.js"></script>
   <script src="./generator.js"></script>
 </body>
 </html>
