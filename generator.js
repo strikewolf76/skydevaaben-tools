@@ -113,6 +113,25 @@
   const DEEZER_SEARCH_API = "https://api.deezer.com/search";
   const ODESLI_RESOLVER_API = "https://api.song.link/v1-alpha.1/links";
 
+  async function fetchJsonWithCors(url) {
+    const proxies = [null, "https://cors.isomorphic-git.org/", "https://thingproxy.freeboard.io/fetch/"];
+    let lastErr = null;
+    for (const proxy of proxies) {
+      const target = proxy ? `${proxy}${url}` : url;
+      try {
+        const res = await fetch(target);
+        const text = await res.text();
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${text.slice(0, 180)}`);
+        const data = text ? JSON.parse(text) : null;
+        return { data, usedProxy: !!proxy, proxy }; 
+      } catch (err) {
+        lastErr = err;
+        try { console.error("[resolver] fetch failed", target, err); } catch (_) {}
+      }
+    }
+    throw lastErr || new Error("Unknown resolver fetch error");
+  }
+
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
     const u = new URL(destUrl);
     u.searchParams.set("utm_source", utm_source);
@@ -328,22 +347,7 @@
     });
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
-      const res = await fetch(url);
-      const text = await res.text();
-      if (!res.ok) {
-        addLogItem({ title: "Resolver failed", status: "HTTP", lines: [`status=${res.status}`, text.slice(0, 240)] });
-        try { console.error("[resolver] http error", res.status, text); } catch (_) {}
-        return;
-      }
-
-      let data = null;
-      try { data = text ? JSON.parse(text) : null; }
-      catch (e) {
-        addLogItem({ title: "Resolver failed", status: "PARSE", lines: [String(e), text.slice(0, 240)] });
-        try { console.error("[resolver] parse error", e, text); } catch (_) {}
-        return;
-      }
-
+      const { data, usedProxy, proxy } = await fetchJsonWithCors(url);
       const links = data?.linksByPlatform || {};
       // Local debug: print full platform map to console
       try { console.log("[resolver] linksByPlatform", links); } catch (_) {}
@@ -414,10 +418,11 @@
           `deezer enabled=${wantsDeezer} link=${found.deezer || "-"}`,
           `resolver apple=${links.appleMusic?.url || "-"}`,
           `resolver itunes=${links.itunes?.url || "-"}`,
-          `resolver keys=${Object.keys(links || {}).join(",") || "-"}`
+          `resolver keys=${Object.keys(links || {}).join(",") || "-"}`,
+          `proxy=${usedProxy ? proxy : "none"}`
         ]
       });
-    } catch (_) {
+    } catch (e) {
       addLogItem({ title: "Resolver failed", status: "ERROR", lines: [String(e || "unknown error")] });
     }
   }
