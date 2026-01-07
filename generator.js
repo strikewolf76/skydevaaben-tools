@@ -240,6 +240,14 @@
     if (!url) return;
     const appleEnabled = !!els.destApple?.checked;
     if (appleEnabled && els.appleUrl) els.appleUrl.value = url;
+    addLogItem({
+      title: "Resolver selection",
+      status: "START",
+      lines: [
+        `picked=${url}`,
+        `enabled apple=${appleEnabled} spotify=${!!els.destSpotify?.checked} deezer=${!!els.destDeezer?.checked}`
+      ]
+    });
     persistSettingsSoon();
     validateOnly();
     updateNeedsInput();
@@ -361,6 +369,7 @@
           `apple enabled=${wantsApple} link=${found.apple || "-"}`,
           `spotify enabled=${wantsSpotify} link=${found.spotify || "-"}`,
           `deezer enabled=${wantsDeezer} link=${found.deezer || "-"}`,
+          `resolver link raw=${links.appleMusic?.url || "-"}`
         ]
       });
     } catch (_) {
