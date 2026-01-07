@@ -56,6 +56,7 @@
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
     btnCopyCreds: $("btnCopyCreds"),
+    btnTheme: $("btnTheme"),
     previewBody: $("previewBody"),
   };
 
@@ -265,8 +266,11 @@
 
   const SETTINGS_KEY = "sv-generator-settings-v1";
   const TOKEN_KEY = "sv-generator-token";
+  const THEME_KEY = "sv-generator-theme-v1";
 
   const REPO_BASE_LOCKED = "https://skydevaaben.no";
+
+  const THEMES = ["base", "ocean", "forest", "sunset", "sand", "slate", "mint"];
 
   const OWNER = "strikewolf76";
   const REPO = "skydevaaben";
@@ -385,6 +389,44 @@
   }
   function safeSet(key, value) {
     try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch { /* ignore */ }
+  }
+
+  function normalizeTheme(theme) {
+    return THEMES.includes(theme) ? theme : "base";
+  }
+
+  function humanizeTheme(theme) {
+    if (!theme) return "Base";
+    return theme.charAt(0).toUpperCase() + theme.slice(1);
+  }
+
+  function updateThemeButton(theme) {
+    if (!els.btnTheme) return;
+    const t = normalizeTheme(theme || document.body?.dataset?.theme);
+    els.btnTheme.textContent = `Theme: ${humanizeTheme(t)}`;
+  }
+
+  function applyTheme(theme) {
+    const t = normalizeTheme(theme);
+    if (document?.body) document.body.dataset.theme = t;
+    updateThemeButton(t);
+    return t;
+  }
+
+  function loadTheme() {
+    return normalizeTheme(safeGet(THEME_KEY));
+  }
+
+  function persistTheme(theme) {
+    safeSet(THEME_KEY, normalizeTheme(theme));
+  }
+
+  function cycleTheme() {
+    const current = normalizeTheme(document.body?.dataset?.theme || loadTheme());
+    const idx = THEMES.indexOf(current);
+    const next = THEMES[(idx + 1) % THEMES.length];
+    applyTheme(next);
+    persistTheme(next);
   }
 
   function collectSettings() {
@@ -1232,6 +1274,9 @@ ${normalBrowserLogic}
 
   // ---------- wire ----------
   function wire() {
+    const initialTheme = applyTheme(loadTheme());
+    persistTheme(initialTheme);
+
     // Enforce locked base URL regardless of localStorage state
     els.repoBase.value = REPO_BASE_LOCKED;
     applySettings();
@@ -1295,6 +1340,7 @@ ${normalBrowserLogic}
 
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token removed from the browser."] }); });
     if (els.btnCopyCreds) els.btnCopyCreds.addEventListener("click", () => copyCredsToClipboard());
+    if (els.btnTheme) els.btnTheme.addEventListener("click", () => cycleTheme());
     if (els.btnChPrefill) els.btnChPrefill.addEventListener("click", () => prefillSelectedChannels());
     if (els.chMeta) els.chMeta.addEventListener("change", () => { if (els.chMeta.checked) { ensureUtmDefault("meta"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
     if (els.chTikTok) els.chTikTok.addEventListener("change", () => { if (els.chTikTok.checked) { ensureUtmDefault("tiktok"); persistSettingsSoon(); renderPreviewGrid(); validateOnly(); } });
