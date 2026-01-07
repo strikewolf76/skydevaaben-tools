@@ -318,6 +318,14 @@
     const wantsDeezer = !!els.destDeezer?.checked;
     const wantsApple = !!els.destApple?.checked;
     if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
+    addLogItem({
+      title: "Resolver request",
+      status: "RUN",
+      lines: [
+        `src=${src}`,
+        `enabled apple=${wantsApple} spotify=${wantsSpotify} deezer=${wantsDeezer}`
+      ]
+    });
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
       const res = await fetch(url);
