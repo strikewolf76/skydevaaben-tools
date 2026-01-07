@@ -195,7 +195,10 @@
             </div>
             <div>
               <label for="deezerUrl">Deezer URL</label>
-              <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
+              <div class="input-with-btn">
+                <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
+                <button type="button" id="btnDeezerSearch" class="secondary" data-tip="Search Deezer for track links.">Search</button>
+              </div>
             </div>
           </div>
         </div>
@@ -270,6 +273,21 @@
       </form>
       <div id="appleSearchStatus" class="hint"></div>
       <div id="appleSearchResults" class="search-results"></div>
+    </div>
+  </div>
+
+  <div id="deezerSearchOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <div><strong>Search Deezer</strong></div>
+        <button type="button" id="btnDeezerSearchClose" class="icon-btn" aria-label="Close search">×</button>
+      </div>
+      <form id="deezerSearchForm" class="modal-search">
+        <input id="deezerSearchInput" placeholder="Search by song or artist" autocomplete="off" />
+        <button type="submit" class="primary">Search</button>
+      </form>
+      <div id="deezerSearchStatus" class="hint"></div>
+      <div id="deezerSearchResults" class="search-results"></div>
     </div>
   </div>
 
