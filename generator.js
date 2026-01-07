@@ -424,6 +424,7 @@
       });
     } catch (e) {
       addLogItem({ title: "Resolver failed", status: "ERROR", lines: [String(e || "unknown error")] });
+      try { console.error("[resolver] error", e); } catch (_) {}
     }
   }
 
