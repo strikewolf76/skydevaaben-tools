@@ -5,6 +5,7 @@
   width: 16px;
   height: 16px;
   margin-left: 6px;
+  flex-shrink: 0;
   border-radius: 50%;
   border: 1px solid var(--button-border);
   background: var(--panel-bg);
@@ -29,6 +30,7 @@
   border-radius: 10px;
   border: 1px solid var(--panel-border);
   background: var(--panel-bg);
+  color: var(--text);
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
   font-size: 12px;
   line-height: 1.4;

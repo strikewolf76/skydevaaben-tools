@@ -31,8 +31,8 @@
     if (left < 8) left = 8;
     if (left > maxLeft) left = maxLeft;
 
-    bubble.style.top = `${top + window.scrollY}px`;
-    bubble.style.left = `${left + window.scrollX}px`;
+    bubble.style.top = `${top}px`;
+    bubble.style.left = `${left}px`;
   }
 
   function showBubble(target) {
