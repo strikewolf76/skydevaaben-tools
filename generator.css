@@ -36,7 +36,7 @@ label { display: block; font-size: 12px; opacity: 0.85; margin-bottom: 6px; }
 input, textarea, select { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text); }
 textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
-.channel-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; align-items: center; width: 100%; }
+.channel-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; align-items: center; width: 100%; }
 .hidden { display: none !important; }
 .mt-6 { margin-top: 6px !important; }
 .mt-8 { margin-top: 8px !important; }
@@ -50,6 +50,11 @@ button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button
 .preset-btn.preset-active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 1px var(--accent-weak) inset; }
 .slot-pill { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--button-border); background: var(--input-bg); min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
 .channel-row .label { margin-bottom: 0; text-align: center; }
+.slot-pill { width: 100%; }
+
+@media (max-width: 720px) {
+	.channel-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+}
 .clear-btn { background: var(--danger-weak); border-color: var(--danger); color: var(--text); }
 .clear-btn:hover { background: color-mix(in srgb, var(--danger) 15%, var(--danger-weak)); border-color: var(--danger); }
 button.primary { background: var(--accent-weak); color: var(--text); }
