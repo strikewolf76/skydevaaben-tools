@@ -598,6 +598,7 @@
 
   var statusEl = document.getElementById("status");
   var playEl = document.getElementById("play");
+  if (!statusEl || !playEl) return;
 
   function isMetaInApp() {
     var ua = navigator.userAgent || "";
