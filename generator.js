@@ -114,10 +114,10 @@
   const ODESLI_RESOLVER_API = "https://api.song.link/v1-alpha.1/links";
 
   async function fetchJsonWithCors(url) {
-    // Try direct first, then allorigins.win (verified working in tests)
+    // Try direct first, then codetabs proxy (verified reliable)
     const proxies = [
       null,
-      { type: "allorigins", base: "https://api.allorigins.win/raw?url=" }
+      { type: "codetabs", base: "https://api.codetabs.com/v1/proxy?quest=" }
     ];
     let lastErr = null;
     for (const proxy of proxies) {
