@@ -17,6 +17,13 @@
     spotifyUrl: $("spotifyUrl"),
     destApple: $("destApple"),
     appleUrl: $("appleUrl"),
+    btnAppleSearch: $("btnAppleSearch"),
+    appleSearchOverlay: $("appleSearchOverlay"),
+    appleSearchForm: $("appleSearchForm"),
+    appleSearchInput: $("appleSearchInput"),
+    appleSearchResults: $("appleSearchResults"),
+    appleSearchStatus: $("appleSearchStatus"),
+    btnAppleSearchClose: $("btnAppleSearchClose"),
     destDeezer: $("destDeezer"),
     deezerUrl: $("deezerUrl"),
 
@@ -100,6 +107,8 @@
     tiktok: "tt-ads-infeed01",
     youtube: "yt-ads-instream01"
   };
+
+  const APPLE_SEARCH_API = "https://itunes.apple.com/search";
 
   function appendUtms(destUrl, { utm_source, utm_medium, utm_campaign, utm_content }) {
     const u = new URL(destUrl);
@@ -186,6 +195,97 @@
     markNeed(els.metaContent, metaMissing);
     markNeed(els.ttContent, ttMissing);
     markNeed(els.ytContent, ytMissing);
+  }
+
+  // ---------- Apple Music search ----------
+  let appleSearchAbort = null;
+
+  function hideAppleSearch() {
+    if (appleSearchAbort) appleSearchAbort.abort();
+    appleSearchAbort = null;
+    hide(els.appleSearchOverlay);
+  }
+
+  function clearAppleSearchResults() {
+    if (els.appleSearchResults) els.appleSearchResults.innerHTML = "";
+  }
+
+  function showAppleSearch() {
+    if (!els.appleSearchOverlay) return;
+    clearAppleSearchResults();
+    if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Search by song or artist.";
+    show(els.appleSearchOverlay);
+    if (els.appleSearchInput) {
+      const seed = (els.title?.value || "").trim();
+      els.appleSearchInput.value = seed;
+      els.appleSearchInput.focus();
+      els.appleSearchInput.select();
+    }
+  }
+
+  function applyAppleSelection(url) {
+    if (!url) return;
+    if (els.destApple) els.destApple.checked = true;
+    els.appleUrl.value = url;
+    persistSettingsSoon();
+    validateOnly();
+    updateNeedsInput();
+    hideAppleSearch();
+  }
+
+  function renderAppleResults(items = []) {
+    clearAppleSearchResults();
+    if (!els.appleSearchResults) return;
+    const frag = document.createDocumentFragment();
+    items.forEach(item => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "search-result";
+      const art = (item.artworkUrl100 || "").replace(/100x100bb/, "200x200bb");
+      const track = htmlEscape(item.trackName || "Unknown track");
+      const artist = htmlEscape(item.artistName || "");
+      const album = htmlEscape(item.collectionName || "");
+      const url = item.trackViewUrl || item.collectionViewUrl || "";
+      card.dataset.appleUrl = url;
+      card.innerHTML = `
+        <img class="result-art" src="${art}" alt="" loading="lazy" />
+        <div class="search-meta">
+          <div class="search-title">${track}</div>
+          <div class="search-sub">${artist}${album ? " • " + album : ""}</div>
+        </div>
+      `;
+      frag.appendChild(card);
+    });
+    els.appleSearchResults.appendChild(frag);
+  }
+
+  async function runAppleSearch(term) {
+    const q = (term || "").trim();
+    if (!q) {
+      if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Enter a song or artist.";
+      clearAppleSearchResults();
+      return;
+    }
+    if (appleSearchAbort) appleSearchAbort.abort();
+    appleSearchAbort = new AbortController();
+    if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Searching…";
+    clearAppleSearchResults();
+    try {
+      const url = `${APPLE_SEARCH_API}?term=${encodeURIComponent(q)}&entity=musicTrack&limit=15`; 
+      const res = await fetch(url, { signal: appleSearchAbort.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const items = Array.isArray(data.results) ? data.results.filter(r => r.trackViewUrl) : [];
+      if (!items.length) {
+        if (els.appleSearchStatus) els.appleSearchStatus.textContent = "No results.";
+        return;
+      }
+      if (els.appleSearchStatus) els.appleSearchStatus.textContent = `Found ${items.length} result${items.length === 1 ? "" : "s"}. Click to fill.`;
+      renderAppleResults(items);
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      if (els.appleSearchStatus) els.appleSearchStatus.textContent = "Search failed. Try again.";
+    }
   }
 
   async function copyCredsToClipboard() {
@@ -1590,6 +1690,19 @@ ${normalBrowserLogic}
     if (els.btnFeed) els.btnFeed.addEventListener("click", () => applyPreset("feed"));
     if (els.btnInfeed) els.btnInfeed.addEventListener("click", () => applyPreset("infeed"));
     if (els.btnInstream) els.btnInstream.addEventListener("click", () => applyPreset("instream"));
+    if (els.btnAppleSearch) els.btnAppleSearch.addEventListener("click", () => showAppleSearch());
+    if (els.appleSearchForm) els.appleSearchForm.addEventListener("submit", (e) => { e.preventDefault(); runAppleSearch(els.appleSearchInput.value); });
+    if (els.appleSearchResults) els.appleSearchResults.addEventListener("click", (e) => {
+      const card = e.target.closest("[data-apple-url]");
+      if (!card) return;
+      applyAppleSelection(card.dataset.appleUrl);
+    });
+    if (els.btnAppleSearchClose) els.btnAppleSearchClose.addEventListener("click", () => hideAppleSearch());
+    if (els.appleSearchOverlay) els.appleSearchOverlay.addEventListener("click", (e) => { if (e.target === els.appleSearchOverlay) hideAppleSearch(); });
+    document.addEventListener("keydown", (e) => {
+      const modalOpen = els.appleSearchOverlay && !els.appleSearchOverlay.classList.contains("hidden");
+      if (modalOpen && e.key === "Escape") hideAppleSearch();
+    });
     if (els.btnSlotDec) els.btnSlotDec.addEventListener("click", () => {
       decrementSlotForChannel(lastPresetChannel || "meta");
     });

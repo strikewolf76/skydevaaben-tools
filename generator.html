@@ -177,7 +177,10 @@
             </div>
             <div>
               <label for="appleUrl">Apple URL</label>
-              <input id="appleUrl" placeholder="https://music.apple.com/..." />
+              <div class="input-with-btn">
+                <input id="appleUrl" placeholder="https://music.apple.com/..." />
+                <button type="button" id="btnAppleSearch" class="secondary" data-tip="Search Apple Music for track links.">Search</button>
+              </div>
             </div>
 
             <div class="chip">
@@ -249,6 +252,21 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="appleSearchOverlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <div><strong>Search Apple Music</strong></div>
+        <button type="button" id="btnAppleSearchClose" class="icon-btn" aria-label="Close search">×</button>
+      </div>
+      <form id="appleSearchForm" class="modal-search">
+        <input id="appleSearchInput" placeholder="Search by song or artist" autocomplete="off" />
+        <button type="submit" class="primary">Search</button>
+      </form>
+      <div id="appleSearchStatus" class="hint"></div>
+      <div id="appleSearchResults" class="search-results"></div>
     </div>
   </div>
 
