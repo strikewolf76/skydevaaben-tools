@@ -825,28 +825,8 @@
   }) {
     const isSpotify = destType === "spotify";
 
-    const appBlock = isSpotify ? `
-  var TRACK_ID = "${htmlEscape(spotifyTrackId)}";
-  var APP_URI = "spotify:track:" + TRACK_ID;
-` : `
-    var TRACK_ID = null;
-  var APP_URI = null;
-`;
-
-    const normalBrowserLogic = isSpotify ? `
-      try {
-        trackAutoOnce();
-        window.location.href = APP_URI;
-        setTimeout(function () {
-          window.location.href = WEB_URL;
-        }, 600);
-      } catch (e) {
-        window.location.href = WEB_URL;
-      }
-  ` : `
-      trackAutoOnce();
-      window.location.href = WEB_URL;
-  `;
+    // Button label logic
+    const buttonLabel = isSpotify ? "Open in Spotify" : destType === "apple" ? "Open in Apple Music" : destType === "deezer" ? "Open in Deezer" : "Open";
 
     return `<!doctype html>
 <html lang="en">
@@ -879,14 +859,10 @@
 
 <body>
 
-  <p id="status">Opening…</p>
+  <p id="status">Ready to open.</p>
 
   <p>
-    <a id="play"
-       class="cta"
-       href="${htmlEscape(webUrl)}">
-      Open
-    </a>
+    <button id="play" class="cta">${buttonLabel}</button>
   </p>
 
   <p id="consent-info" class="consent-info" style="display:none;">
@@ -894,7 +870,7 @@
   </p>
 
 <script>
-(function () {${appBlock}
+(function () {
   var WEB_URL = "${htmlEscape(webUrl)}";
   WEB_URL = WEB_URL.replace(/&amp;/g, "&");
   var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
@@ -906,7 +882,6 @@
 
   var params = new URLSearchParams(window.location.search || "");
   var CID = params.get("cid") || "";
-  var autoSent = false;
   var consentGranted = false;
   var pixelEventsQueued = [];
 
@@ -974,11 +949,6 @@
   var playEl = document.getElementById("play");
   if (!statusEl || !playEl) return;
 
-  function isMetaInApp() {
-    var ua = navigator.userAgent || "";
-    return /FBAN|FBAV|FB_IAB|FBIOS|FB4A|Instagram|Messenger/i.test(ua);
-  }
-
   function trackOutbound(kind) {
     if (!window.fbq || !META_PIXEL_ID) return;
     var fireEvent = function () {
@@ -990,7 +960,7 @@
         channel: CHANNEL,
         utm_campaign: UTM_CAMPAIGN,
         utm_content: UTM_CONTENT,
-        track_id: TRACK_ID || ""
+        track_id: ""
       });
     };
     // If consent already granted, fire immediately; else queue
@@ -1001,30 +971,12 @@
     }
   }
 
-  function trackAutoOnce() {
-    if (autoSent) return;
-    autoSent = true;
-    grantConsent(); // Grant consent on auto-redirect
-    trackOutbound("auto");
-  }
-
-  playEl.href = WEB_URL;
   playEl.addEventListener("click", function () {
-    grantConsent(); // Grant consent on manual click
+    grantConsent();
     trackOutbound("click");
+    window.location.href = WEB_URL;
   });
 
-  if (isMetaInApp()) {
-    playEl.removeAttribute("target");
-    statusEl.textContent = "Opening…";
-    setTimeout(function () {
-      trackAutoOnce();
-      window.location.href = WEB_URL;
-    }, 150);
-  } else {
-    statusEl.textContent = "Opening…";
-${normalBrowserLogic}
-  }
 })();
 </script>
 
