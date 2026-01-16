@@ -859,10 +859,10 @@
 
 <body>
 
-  <p id="status">Ready to open.</p>
+  <p id="status">Click the button to open the link in a new tab.</p>
 
   <p>
-    <button id="play" class="cta">${buttonLabel}</button>
+    <a id="play" class="cta" href="${htmlEscape(webUrl)}" target="_blank">${buttonLabel}</a>
   </p>
 
   <p id="consent-info" class="consent-info" style="display:none;">
@@ -974,7 +974,6 @@
   playEl.addEventListener("click", function () {
     grantConsent();
     trackOutbound("click");
-    window.location.href = WEB_URL;
   });
 
 })();
