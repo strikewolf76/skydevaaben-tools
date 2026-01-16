@@ -1126,13 +1126,14 @@
           ? `${ogUrlAbs}?cid=${encodeURIComponent(utm_content)}`
           : ogUrlAbs;
 
+        // Always use destType 'web' for meta channel to avoid any app redirect logic
         const html = generateHtml({
           title,
           siteName,
           description,
           ogUrlAbs,
           ogImageAbs,
-          destType: dest.key === "spotify" ? "spotify" : "web",
+          destType: (ch.key === "meta" ? "web" : (dest.key === "spotify" ? "spotify" : "web")),
           spotifyTrackId: dest.spotifyId,
           webUrl,
           metaPixelId,
