@@ -94,7 +94,8 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   const CHANNELS = {
@@ -841,7 +842,6 @@
     description,
     ogUrlAbs,
     ogImageAbs,
-    destType,
     spotifyTrackId,
     webUrl,
     metaPixelId,
@@ -851,8 +851,6 @@
     utm_campaign,
     utm_content
   }) {
-    const isSpotify = destType === "spotify";
-
     // Button label logic
     const buttonLabel = destKey === "spotify" ? "Listen on Spotify" : destKey === "apple" ? "Listen on Apple Music" : destKey === "deezer" ? "Listen on Deezer" : "Listen";
 
@@ -880,7 +878,7 @@
 
   <style>
     body {
-      background: url('${htmlEscape(ogImageAbs.replace('.jpg', '-bg.jpg'))}') no-repeat center center;
+      background: url('${htmlEscape(ogImageAbs.replace(/\.jpg$/i, "-bg.jpg"))}') no-repeat center center;
       background-size: cover;
       margin: 0;
       padding: 20px;
@@ -934,8 +932,8 @@
 <body>
 
   <div class="content">
-    <img src="${htmlEscape(ogImageAbs.replace('.jpg', '-fg.jpg'))}" alt="" class="cover">
-    <a id="play" class="cta" href="${htmlEscape(webUrl)}" target="_blank">${buttonLabel}</a>
+    <img src="${htmlEscape(ogImageAbs.replace(/\.jpg$/i, "-fg.jpg"))}" alt="" class="cover">
+    <a id="play" class="cta" href="${htmlEscape(webUrl)}" rel="noopener noreferrer">${buttonLabel}</a>
   </div>
 
   <p id="consent-info" class="consent-info" style="display:none;">
@@ -944,9 +942,9 @@
 
 <script>
 (function () {
-  var WEB_URL = "${htmlEscape(webUrl)}";
-  WEB_URL = WEB_URL.replace(/&amp;/g, "&");
+  var WEB_URL = "${htmlEscape(webUrl)}".replace(/&amp;/g, "&");
   var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
+  var TRACK_ID = "${htmlEscape(spotifyTrackId || "")}";
   var TRACK_SLUG = "${htmlEscape(trackSlug || "")}";
   var DEST_KEY = "${htmlEscape(destKey || "")}";
   var CHANNEL = "${htmlEscape(channel || "")}";
@@ -960,7 +958,7 @@
 
   // Allow known social crawlers to fetch OG tags (no redirect)
   var ua = navigator.userAgent || "";
-  var isCrawler = /(facebookexternalhit|facebot|twitterbot|linkedinbot|discordbot|pinterest)/i.test(ua);
+  var isCrawler = /(facebookexternalhit|facebot|twitterbot|linkedinbot|discordbot|pinterest|slackbot|whatsapp|telegrambot|skypeuripreview)/i.test(ua);
   if (isCrawler) return;
 
   // Check existing consent
@@ -1018,17 +1016,13 @@
     }
   }
 
-  // If consent already granted (e.g., from previous click), flush queue
-  if (consentGranted) {
-    grantConsent();
-  }
-
   var playEl = document.getElementById("play");
   if (!playEl) return;
 
   function trackOutbound(kind) {
-    if (!window.fbq || !META_PIXEL_ID) return;
+    if (!META_PIXEL_ID) return;
     var fireEvent = function () {
+      if (typeof fbq !== "function") return;
       fbq("trackCustom", "OutboundSpotify", {
         kind: kind,
         cid: CID,
@@ -1048,9 +1042,30 @@
     }
   }
 
-  playEl.addEventListener("click", function () {
-    trackOutbound("click");
+  playEl.addEventListener("click", function (e) {
+    // Allow modified clicks (open in new tab etc.)
+    if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
+
+    if (e && e.preventDefault) e.preventDefault();
+
+    // Open immediately to preserve user gesture (avoids popup blocking)
+    var w = null;
+    try {
+      w = window.open("about:blank", "_blank");
+      if (w) w.opener = null;
+    } catch (_) {}
+
     grantConsent();
+    trackOutbound("click");
+
+    setTimeout(function () {
+      try {
+        if (w && !w.closed) w.location.href = WEB_URL;
+        else window.location.href = WEB_URL; // fallback
+      } catch (_) {
+        window.location.href = WEB_URL;
+      }
+    }, 150);
   });
 
 })();
@@ -1200,9 +1215,7 @@
           : `tracks/${slug}/${dest.key}/${utm_content}.html`;
         const ogUrlAbs = `${repoBase}/${relPath}`;
 
-        const pagesUrl = ch.key === "meta"
-          ? `${ogUrlAbs}?cid=${encodeURIComponent(utm_content)}`
-          : ogUrlAbs;
+        const pagesUrl = `${ogUrlAbs}?cid=${encodeURIComponent(utm_content)}`;
 
         // Always use destType 'web' for meta channel to avoid any app redirect logic
         const html = generateHtml({
@@ -1211,7 +1224,6 @@
           description,
           ogUrlAbs,
           ogImageAbs,
-          destType: (ch.key === "meta" ? "web" : (dest.key === "spotify" ? "spotify" : "web")),
           spotifyTrackId: dest.spotifyId,
           webUrl,
           metaPixelId,
@@ -1562,8 +1574,7 @@
         addLogItem({ title: "Adjusted utm_content", status: "INFO", lines: ["Collision avoided. Review and publish again."] });
         return;
       } else {
-        addLogItem({ title: "Already published", status: "WARN", lines: ["No changes made. Adjust utm_content or confirm overwrite."] });
-        return;
+        addLogItem({ title: "Overwriting existing", status: "WARN", lines: ["Proceeding with overwrite."] });
       }
     }
 
@@ -1602,7 +1613,7 @@
       // Prepare BG image upload
       const bgCanvas = drawBgCanvasFromBitmap();
       const bgJpgB64 = await canvasToJpegBase64(bgCanvas, 0.92);
-      const bgPath = batch.ogImageRel.replace('.jpg', '-bg.jpg');
+      const bgPath = batch.ogImageRel.replace(/\.jpg$/i, '-bg.jpg');
       const bgHash = hashString(bgJpgB64);
       const prevBgHash = hashStore[bgPath];
       if (prevBgHash && prevBgHash === bgHash) {
@@ -1612,7 +1623,7 @@
         pendingUploads.push({
           path: bgPath,
           hash: bgHash,
-          link: batch.ogImageAbs.replace('.jpg', '-bg.jpg'),
+          link: batch.ogImageAbs.replace(/\.jpg$/i, '-bg.jpg'),
           type: "BG",
           run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: bgPath, message: `BG image: ${batch.slug}`, contentBase64: bgJpgB64 })
         });
@@ -1620,7 +1631,7 @@
 
       // Prepare FG image upload
       const fgJpgB64 = await bitmapToJpegBase64(ogImageBitmap, 0.92);
-      const fgPath = batch.ogImageRel.replace('.jpg', '-fg.jpg');
+      const fgPath = batch.ogImageRel.replace(/\.jpg$/i, '-fg.jpg');
       const fgHash = hashString(fgJpgB64);
       const prevFgHash = hashStore[fgPath];
       if (prevFgHash && prevFgHash === fgHash) {
@@ -1630,7 +1641,7 @@
         pendingUploads.push({
           path: fgPath,
           hash: fgHash,
-          link: batch.ogImageAbs.replace('.jpg', '-fg.jpg'),
+          link: batch.ogImageAbs.replace(/\.jpg$/i, '-fg.jpg'),
           type: "FG",
           run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: fgPath, message: `FG image: ${batch.slug}`, contentBase64: fgJpgB64 })
         });
@@ -1879,8 +1890,8 @@
         status: "READY",
         lines: [
           `OG image: ${batch.ogImageRel}`,
-          `BG image: ${batch.ogImageRel.replace('.jpg', '-bg.jpg')}`,
-          `FG image: ${batch.ogImageRel.replace('.jpg', '-fg.jpg')}`,
+          `BG image: ${batch.ogImageRel.replace(/\.jpg$/i, '-bg.jpg')}`,
+          `FG image: ${batch.ogImageRel.replace(/\.jpg$/i, '-fg.jpg')}`,
           `HTML files (${batch.items.length}):`,
           ...batch.items.map(i => `- ${i.relPath}`),
           `QR files (${qrFiles.length}):`,
