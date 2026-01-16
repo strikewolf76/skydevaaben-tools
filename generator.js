@@ -826,7 +826,7 @@
     const isSpotify = destType === "spotify";
 
     // Button label logic
-    const buttonLabel = isSpotify ? "Open in Spotify" : destType === "apple" ? "Open in Apple Music" : destType === "deezer" ? "Open in Deezer" : "Open";
+    const buttonLabel = destKey === "spotify" ? "Listen on Spotify" : destKey === "apple" ? "Listen on Apple Music" : destKey === "deezer" ? "Listen on Deezer" : "Listen";
 
     return `<!doctype html>
 <html lang="en">
@@ -851,19 +851,47 @@
   <meta name="twitter:image" content="${htmlEscape(ogImageAbs)}">
 
   <style>
-    body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; margin: 16px; }
-    .cta { font-size: 18px; padding: 14px 22px; display: inline-block; text-decoration: none; }
-    .consent-info { font-size: 13px; opacity: 0.75; margin-top: 16px; max-width: 480px; line-height: 1.4; }
+    body {
+      background: url('${htmlEscape(ogImageAbs)}') no-repeat center center;
+      background-size: cover;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      color: white;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .cta {
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: 2px solid white;
+      text-decoration: none;
+      padding: 14px 22px;
+      font-size: 18px;
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+    .cta:hover {
+      background: rgba(0,0,0,0.9);
+    }
+    .consent-info {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 20px;
+      max-width: 480px;
+      line-height: 1.4;
+      text-align: center;
+    }
   </style>
 </head>
 
 <body>
 
-  <p id="status">Click the button to open the link in a new tab.</p>
-
-  <p>
-    <a id="play" class="cta" href="${htmlEscape(webUrl)}" target="_blank">${buttonLabel}</a>
-  </p>
+  <a id="play" class="cta" href="${htmlEscape(webUrl)}" target="_blank">${buttonLabel}</a>
 
   <p id="consent-info" class="consent-info" style="display:none;">
     This link uses measurement to improve campaigns. By continuing, you agree.
@@ -947,7 +975,7 @@
 
   var statusEl = document.getElementById("status");
   var playEl = document.getElementById("play");
-  if (!statusEl || !playEl) return;
+  if (!playEl) return;
 
   function trackOutbound(kind) {
     if (!window.fbq || !META_PIXEL_ID) return;
