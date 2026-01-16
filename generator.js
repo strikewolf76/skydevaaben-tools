@@ -1018,7 +1018,11 @@
     }
   }
 
-  var statusEl = document.getElementById("status");
+  // If consent already granted (e.g., from previous click), flush queue
+  if (consentGranted) {
+    grantConsent();
+  }
+
   var playEl = document.getElementById("play");
   if (!playEl) return;
 
@@ -1033,7 +1037,7 @@
         channel: CHANNEL,
         utm_campaign: UTM_CAMPAIGN,
         utm_content: UTM_CONTENT,
-        track_id: ""
+        track_id: TRACK_ID
       });
     };
     // If consent already granted, fire immediately; else queue
@@ -1045,8 +1049,8 @@
   }
 
   playEl.addEventListener("click", function () {
-    grantConsent();
     trackOutbound("click");
+    grantConsent();
   });
 
 })();
