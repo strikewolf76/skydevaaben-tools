@@ -571,6 +571,34 @@
     return arrayBufferToBase64(arr);
   }
 
+  function drawBgCanvasFromBitmap() {
+    const canvas = document.createElement("canvas");
+    canvas.width = TARGET_W;
+    canvas.height = TARGET_H;
+    const ctx = canvas.getContext("2d");
+    if (!ogImageBitmap) return canvas;
+    const srcW = ogImageBitmap.width, srcH = ogImageBitmap.height;
+    const coverScale = Math.max(TARGET_W / srcW, TARGET_H / srcH) * 1.35;
+    const bgW = srcW * coverScale;
+    const bgH = srcH * coverScale;
+    const bgX = (TARGET_W - bgW) / 2;
+    const bgY = (TARGET_H - bgH) / 2;
+    ctx.filter = "blur(50px) brightness(0.95)";
+    ctx.drawImage(ogImageBitmap, 0, 0, srcW, srcH, bgX, bgY, bgW, bgH);
+    return canvas;
+  }
+
+  async function bitmapToJpegBase64(bitmap, quality = JPEG_QUALITY) {
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
+    const arr = await blob.arrayBuffer();
+    return arrayBufferToBase64(arr);
+  }
+
   // ---------- base64 helpers ----------
   function utf8ToBase64(str) {
     // safe UTF-8 base64
@@ -852,18 +880,32 @@
 
   <style>
     body {
-      background: url('${htmlEscape(ogImageAbs)}') no-repeat center center;
+      background: url('${htmlEscape(ogImageAbs.replace('.jpg', '-bg.jpg'))}') no-repeat center center;
       background-size: cover;
       margin: 0;
       padding: 20px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: center;
       align-items: center;
       color: white;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .cover {
+      width: min(300px, 80vw);
+      height: min(300px, 80vw);
+      object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
     }
     .cta {
       background: rgba(0,0,0,0.7);
@@ -891,7 +933,10 @@
 
 <body>
 
-  <a id="play" class="cta" href="${htmlEscape(webUrl)}" target="_blank">${buttonLabel}</a>
+  <div class="content">
+    <img src="${htmlEscape(ogImageAbs.replace('.jpg', '-fg.jpg'))}" alt="" class="cover">
+    <a id="play" class="cta" href="${htmlEscape(webUrl)}" target="_blank">${buttonLabel}</a>
+  </div>
 
   <p id="consent-info" class="consent-info" style="display:none;">
     This link uses measurement to improve campaigns. By continuing, you agree.
@@ -1076,6 +1121,8 @@
       `<span class="ok">OK</span>\n` +
       `- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
+      `  - assets/og/${slug}-bg.jpg\n` +
+      `  - assets/og/${slug}-fg.jpg\n` +
       `  - tracks/${slug}/&lt;dest&gt;/meta.html (Meta)\n` +
       `  - tracks/${slug}/&lt;dest&gt;/&lt;utm_content&gt;.html (TikTok/YouTube)\n`;
     show(els.validationPanel);
@@ -1547,6 +1594,43 @@
           run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: batch.ogImageRel, message: `OG image: ${batch.slug}`, contentBase64: ogJpgB64 })
         });
       }
+
+      // Prepare BG image upload
+      const bgCanvas = drawBgCanvasFromBitmap();
+      const bgJpgB64 = await canvasToJpegBase64(bgCanvas, 0.92);
+      const bgPath = batch.ogImageRel.replace('.jpg', '-bg.jpg');
+      const bgHash = hashString(bgJpgB64);
+      const prevBgHash = hashStore[bgPath];
+      if (prevBgHash && prevBgHash === bgHash) {
+        addLogItem({ title: `UNCHANGED: ${bgPath}`, status: "UNCHANGED", lines: [bgPath] });
+      } else {
+        if (prevBgHash && prevBgHash !== bgHash) confirmNeeded = true;
+        pendingUploads.push({
+          path: bgPath,
+          hash: bgHash,
+          link: batch.ogImageAbs.replace('.jpg', '-bg.jpg'),
+          type: "BG",
+          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: bgPath, message: `BG image: ${batch.slug}`, contentBase64: bgJpgB64 })
+        });
+      }
+
+      // Prepare FG image upload
+      const fgJpgB64 = await bitmapToJpegBase64(ogImageBitmap, 0.92);
+      const fgPath = batch.ogImageRel.replace('.jpg', '-fg.jpg');
+      const fgHash = hashString(fgJpgB64);
+      const prevFgHash = hashStore[fgPath];
+      if (prevFgHash && prevFgHash === fgHash) {
+        addLogItem({ title: `UNCHANGED: ${fgPath}`, status: "UNCHANGED", lines: [fgPath] });
+      } else {
+        if (prevFgHash && prevFgHash !== fgHash) confirmNeeded = true;
+        pendingUploads.push({
+          path: fgPath,
+          hash: fgHash,
+          link: batch.ogImageAbs.replace('.jpg', '-fg.jpg'),
+          type: "FG",
+          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: fgPath, message: `FG image: ${batch.slug}`, contentBase64: fgJpgB64 })
+        });
+      }
     } catch (e) {
       addLogItem({ title: `FAIL: ${batch.ogImageRel}`, status: "ERROR", lines: [normalizeTokenError(e)] });
       return;
@@ -1791,6 +1875,8 @@
         status: "READY",
         lines: [
           `OG image: ${batch.ogImageRel}`,
+          `BG image: ${batch.ogImageRel.replace('.jpg', '-bg.jpg')}`,
+          `FG image: ${batch.ogImageRel.replace('.jpg', '-fg.jpg')}`,
           `HTML files (${batch.items.length}):`,
           ...batch.items.map(i => `- ${i.relPath}`),
           `QR files (${qrFiles.length}):`,
