@@ -130,29 +130,29 @@
             <div class="hint mono" id="ogFileInfo"></div>
             <div class="hint">Target file: <span class="mono" id="ogImageNamePreview"></span></div>
             <div class="hint">Drag & drop an image onto the preview to upload quickly.</div>
+          </div>
 
-            <div class="mt-12">
-              <div class="panel-head">
-                <div><strong>Destination(s)</strong></div>
-                <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
-              </div>
-              <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
-              <div class="row mt-8">
-                <button id="btnResolver" class="primary" data-tip="Search once and auto-fill Spotify, Apple, and Deezer via Odesli.">Odesli Song URL Resolver</button>
-                <div class="hint">Search Apple Music, then Odesli will fill Spotify URL when you pick a result.</div>
-              </div>
+          <div>
+            <div class="panel-head">
+              <div><strong>Destination(s)</strong></div>
+              <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
+            </div>
+            <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
+            <div class="row mt-8">
+              <button id="btnResolver" class="primary" data-tip="Search once and auto-fill Spotify, Apple, and Deezer via Odesli.">Odesli Song URL Resolver</button>
+              <div class="hint">Search Apple Music, then Odesli will fill Spotify URL when you pick a result.</div>
+            </div>
 
-              <div id="destEditor" class="grid mt-10">
-                <div class="chip">
-                  <input id="destSpotify" type="checkbox" checked>
-                  <div>
-                    <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
-                  </div>
-                </div>
+            <div id="destEditor" class="grid mt-10">
+              <div class="chip">
+                <input id="destSpotify" type="checkbox" checked>
                 <div>
-                  <label for="spotifyUrl">Spotify track URL</label>
-                  <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
+                  <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
                 </div>
+              </div>
+              <div>
+                <label for="spotifyUrl">Spotify track URL</label>
+                <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
               </div>
             </div>
           </div>
@@ -163,7 +163,9 @@
               <div class="section-hint">Link preview frame used by Meta/Messenger.</div>
               <canvas id="ogCanvas" width="1200" height="630" class="og-canvas"></canvas>
             </div>
+          </div>
 
+          <div>
             <div id="logPanel" class="panel hidden">
               <div class="panel-head">
                 <div><strong>Log</strong></div>
