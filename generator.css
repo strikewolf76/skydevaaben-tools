@@ -45,6 +45,7 @@ textarea { min-height: 100px; font-family: ui-monospace, SFMono-Regular, Menlo, 
 .gap-8 { gap: 8px !important; }
 .text-center { text-align: center; }
 button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button-border); background: var(--button-bg); cursor: pointer; color: var(--button-text); }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
 .row.between { justify-content: space-between; }
 .needs-input { border-color: #c33 !important; box-shadow: 0 0 0 1px rgba(204,51,51,0.35); }
 .status-ok { color:#0a7; font-weight:600; }
@@ -55,7 +56,7 @@ button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button
 .hint { font-size: 12px; opacity: 0.8; margin-top: 6px; }
 .ok { color: #0a7; }
 .bad { color: #c33; }
-.chip { border:1px solid rgba(127,127,127,0.25); border-radius:999px; padding:8px 10px; display:flex; gap:8px; align-items:center; }
+.chip { border:none; border-radius:999px; padding:8px 10px; display:flex; gap:8px; align-items:center; }
 .chip input { width:auto; }
 .small { font-size: 12px; opacity:.9; }
 .ogpreview { display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto; gap: 12px; }

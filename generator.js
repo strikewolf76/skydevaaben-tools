@@ -339,6 +339,7 @@
             });
           }
           if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !spotifyUrl;
+          if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = !!spotifyUrl;
           updated = true;
         }
       }
@@ -1518,6 +1519,7 @@
     els.destSpotify.checked = true;
     els.spotifyUrl.value = "";
     if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = true;
+    if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = true;
 
     els.ogFile.value = "";
     els.ogFileInfo.textContent = "";
@@ -1590,6 +1592,7 @@
     if (els.spotifyUrl) els.spotifyUrl.addEventListener("input", () => {
       const hasUrl = !!(els.spotifyUrl.value || "").trim();
       if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !hasUrl;
+      if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = hasUrl;
     });
 
     els.btnGenerate.addEventListener("click", () => {
