@@ -794,13 +794,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>${htmlEscape(title)}</title>
+  <title>${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
 
   <meta property="og:type" content="music.song">
   <meta property="og:site_name" content="${htmlEscape(siteName)}">
-  <meta property="og:title" content="${htmlEscape(title)}">
+  <meta property="og:title" content="${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}">
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:url" content="${htmlEscape(ogUrlAbs)}">
   <meta property="og:image" content="${htmlEscape(ogImageAbs)}">
@@ -808,7 +808,7 @@
   <meta property="og:image:height" content="630">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${htmlEscape(title)}">
+  <meta name="twitter:title" content="${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}">
   <meta name="twitter:description" content="${htmlEscape(description)}">
   <meta name="twitter:image" content="${htmlEscape(ogImageAbs)}">
 
