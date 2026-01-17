@@ -903,12 +903,18 @@
     } catch (_) {}
     if (window.fbq && META_PIXEL_ID) {
       fbq("consent", "grant");
+      firePageView();
       // Fire queued events
       while (pixelEventsQueued.length > 0) {
         var ev = pixelEventsQueued.shift();
         ev();
       }
     }
+  }
+
+  function firePageView() {
+    if (!window.fbq || !META_PIXEL_ID) return;
+    try { fbq("track", "PageView"); } catch (_) {}
   }
 
   // Initialize Meta Pixel (if ID present)
@@ -974,17 +980,20 @@
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
 
     grantConsent();
+    firePageView();
     trackOutbound(destKey, dest);
 
     // 1) Try Spotify app only for Spotify destination (and only if we have an ID)
     if (destKey === "spotify" && dest.spotifyId && !isInAppBrowser) {
-      window.location.href = "spotify:track:" + dest.spotifyId;
+      setTimeout(function () {
+        window.location.href = "spotify:track:" + dest.spotifyId;
+      }, 50);
     }
 
     // 2) Always fallback to web URL
     setTimeout(function () {
       window.location.href = webUrl;
-    }, 150);
+    }, 600);
   }
 
   // Attach click handlers
@@ -1108,7 +1117,7 @@
     const relPath = `tracks/${slug}/index.html`;
     const ogUrlAbs = `${repoBase}/${relPath}`;
 
-    const pagesUrl = `${ogUrlAbs}?cid=${encodeURIComponent(utm_campaign)}`; // use campaign as default cid?
+    const pagesUrl = ogUrlAbs; // no default cid
 
     const html = generateHtml({
       title,
