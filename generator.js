@@ -390,10 +390,11 @@
     toggle(els.tokenInputWrap, status !== "ok");
   }
 
-  function setMetaPixelStatus(status) {
+  function setMetaPixelStatus(status, value = "") {
     metaPixelStatus = status;
+    const displayText = value ? `Pixel: ${value}` : (status === "ok" ? "OK" : status === "pending" ? "Checking…" : "NOT SET");
     if (els.metaPixelStatusText) {
-      els.metaPixelStatusText.textContent = status === "ok" ? "OK" : status === "pending" ? "Checking…" : "NOT SET";
+      els.metaPixelStatusText.textContent = displayText;
       els.metaPixelStatusText.classList.remove("status-ok", "status-bad", "status-pending");
       if (status === "ok") els.metaPixelStatusText.classList.add("status-ok");
       else if (status === "pending") els.metaPixelStatusText.classList.add("status-pending");
@@ -756,7 +757,7 @@
   function updateMetaPixelStatus() {
     const val = (els.metaPixelId?.value || "").trim();
     console.log('metaPixelId value:', val);
-    setMetaPixelStatus(val.length > 0 ? "ok" : "bad");
+    setMetaPixelStatus(val.length > 0 ? "ok" : "bad", val);
   }
 
   // ---------- HTML generation ----------
@@ -961,7 +962,7 @@
         kind: "click",
         cid: CID || "",
         slug: TRACK_SLUG || "",
-        dest: destKey || "",
+        dest: destKey === "spotify" ? "spotify" : destKey,
         channel: "meta",
         track_id: (dest && dest.spotifyId) ? dest.spotifyId : ""
       }, { eventID: eventId });
@@ -987,6 +988,12 @@
     firePageView();
     trackOutbound(destKey, dest);
 
+    try {
+      if (navigator.sendBeacon && META_PIXEL_ID) {
+        navigator.sendBeacon("https://www.facebook.com/tr/", new Blob([], { type: "application/x-www-form-urlencoded" }));
+      }
+    } catch (_) {}
+
     // 1) Try Spotify app only for Spotify destination (and only if we have an ID)
     if (destKey === "spotify" && dest.spotifyId && !isInAppBrowser) {
       setTimeout(function () {
@@ -997,7 +1004,7 @@
     // 2) Always fallback to web URL
     setTimeout(function () {
       window.location.href = webUrl;
-    }, 900);
+    }, 1300);
   }
 
   // Attach click handlers
