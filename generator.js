@@ -272,10 +272,11 @@
     const wantsApple = !!els.destApple?.checked;
     if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
     try {
-      const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
+      const url = `${ODESLI_RESOLVER_API}?url=${encodeURIComponent(src)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { data } = await res.json();
+      console.log('Odesli data:', data);
       const links = data?.linksByPlatform || {};
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
       let updated = false;
@@ -290,6 +291,7 @@
 
       if (wantsSpotify) {
         const spotifyUrl = links.spotify?.url;
+        console.log('Spotify URL:', spotifyUrl);
         if (spotifyUrl && els.spotifyUrl) {
           els.spotifyUrl.value = spotifyUrl;
           updated = true;
