@@ -272,10 +272,12 @@
     const wantsApple = !!els.destApple?.checked;
     if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
     try {
-      const url = `${ODESLI_RESOLVER_API}?url=${encodeURIComponent(src)}`;
-      const res = await fetch(url);
+      const odesliUrl = `${ODESLI_RESOLVER_API}?url=${encodeURIComponent(src)}`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(odesliUrl)}`;
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const { data } = await res.json();
+      const proxyData = await res.json();
+      const { data } = JSON.parse(proxyData.contents);
       console.log('Odesli data:', data);
       const links = data?.linksByPlatform || {};
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
