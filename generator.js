@@ -722,7 +722,8 @@
 
   function updateMetaPixelStatus() {
     const val = (els.metaPixelId?.value || "").trim();
-    setMetaPixelStatus(val ? "ok" : "bad");
+    console.log('metaPixelId value:', val);
+    setMetaPixelStatus(val.length > 0 ? "ok" : "bad");
   }
 
   // ---------- HTML generation ----------
