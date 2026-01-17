@@ -884,26 +884,22 @@
   var isInAppBrowser = /(FBAN|FBAV|Instagram|Messenger|Line|TikTok)/i.test(ua);
   if (isCrawler) return;
 
-  // Check existing consent
-  var hasConsent = false;
-  try {
-    hasConsent = localStorage.getItem("sv_cookie_consent") === "granted";
-  } catch (_) {}
-
-  // Show consent info for new users
-  if (!hasConsent) {
-    var consentInfoEl = document.getElementById("consent-info");
-    if (consentInfoEl) consentInfoEl.style.display = "block";
+  // Helper functions
+  function hasConsent() {
+    try {
+      return localStorage.getItem("sv_cookie_consent") === "granted";
+    } catch (_) {
+      return false;
+    }
   }
 
-  // Grant consent (once only)
-  function grantConsent() {
+  function setConsentGranted() {
     if (consentGranted) return;
     consentGranted = true;
     try {
       localStorage.setItem("sv_cookie_consent", "granted");
     } catch (_) {}
-    if (window.fbq && META_PIXEL_ID) {
+    if (typeof window.fbq === "function" && META_PIXEL_ID) {
       fbq("consent", "grant");
       // Fire queued events
       while (pixelEventsQueued.length > 0) {
@@ -913,12 +909,22 @@
     }
   }
 
-  function firePageView() {
+  function showConsentNoticeIfNeeded() {
+    if (!hasConsent()) {
+      var consentInfoEl = document.getElementById("consent-info");
+      if (consentInfoEl) consentInfoEl.style.display = "block";
+    }
+  }
+
+  function firePageViewOnce() {
     if (pageViewFired) return;
-    if (!window.fbq || !META_PIXEL_ID) return;
+    if (typeof window.fbq !== "function" || !META_PIXEL_ID) return;
     pageViewFired = true;
     try { fbq("track", "PageView"); } catch (_) {}
   }
+
+  // Show consent notice for new users
+  showConsentNoticeIfNeeded();
 
   // Initialize Meta Pixel (if ID present)
   if (META_PIXEL_ID) {
@@ -933,16 +939,13 @@
 
     fbq("init", META_PIXEL_ID);
     
-    // TEMP DEBUG: always grant consent (remove when verified)
-    try { fbq("consent", "grant"); } catch (_) {}
-
-    // If returning user: grant immediately
-    if (hasConsent) {
-      grantConsent();
-      firePageView();
+    // If returning user: grant immediately and fire PageView
+    if (hasConsent()) {
+      setConsentGranted();
+      firePageViewOnce();
     } else {
       // Queue PageView until consent granted
-      pixelEventsQueued.push(function () { firePageView(); });
+      pixelEventsQueued.push(function () { firePageViewOnce(); });
     }
   }
 
@@ -954,17 +957,19 @@
     return u.toString();
   }
 
-  function trackOutbound(destKey, dest) {
-    if (!window.fbq || !META_PIXEL_ID) return;
+  function fireOutboundSpotify(kind, destKey, dest) {
+    if (typeof window.fbq !== "function" || !META_PIXEL_ID) return;
     try {
       var eventId = "ob_" + Date.now() + "_" + Math.random().toString(16).slice(2);
       fbq("trackCustom", "OutboundSpotify", {
-        kind: "click",
+        kind: kind,
         cid: CID || "",
         slug: TRACK_SLUG || "",
         dest: destKey === "spotify" ? "spotify" : destKey,
         channel: "meta",
-        track_id: (dest && dest.spotifyId) ? dest.spotifyId : ""
+        track_id: (dest && dest.spotifyId) ? dest.spotifyId : "",
+        utm_campaign: UTM_CAMPAIGN || "",
+        utm_content: CID || ""
       }, { eventID: eventId });
     } catch (_) {}
   }
@@ -984,9 +989,11 @@
 
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
 
-    grantConsent();
-    firePageView();
-    trackOutbound(destKey, dest);
+    if (!hasConsent()) {
+      setConsentGranted();
+    }
+    firePageViewOnce();
+    fireOutboundSpotify("click", destKey, dest);
 
     try {
       if (navigator.sendBeacon && META_PIXEL_ID) {
@@ -1004,7 +1011,7 @@
     // 2) Always fallback to web URL
     setTimeout(function () {
       window.location.href = webUrl;
-    }, 1300);
+    }, 1000);
   }
 
   // Attach click handlers
