@@ -668,6 +668,7 @@
 
   function applySettings() {
     const raw = safeGet(SETTINGS_KEY);
+    console.log('Raw from localStorage:', raw);
     if (!raw) return;
     try {
       const s = JSON.parse(raw);
@@ -693,6 +694,7 @@
     console.log('Persisting token:', token);
     currentToken = token && token.trim() ? token.trim() : "";
     const data = collectSettings();
+    console.log('Saving data:', data);
     safeSet(SETTINGS_KEY, JSON.stringify(data));
   }
 
