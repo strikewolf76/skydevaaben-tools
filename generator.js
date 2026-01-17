@@ -30,6 +30,7 @@
     destEditor: $("destEditor"),
 
     btnOpenSpotify: $("btnOpenSpotify"),
+    btnTestSpotify: $("btnTestSpotify"),
     btnSearchSpotify: $("btnSearchSpotify"),
 
     repoBaseDisplay: $("repoBaseDisplay"),
@@ -339,6 +340,7 @@
             });
           }
           if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !spotifyUrl;
+          if (els.btnTestSpotify) els.btnTestSpotify.disabled = !spotifyUrl;
           if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = !!spotifyUrl;
           updated = true;
         }
@@ -1519,6 +1521,7 @@
     els.destSpotify.checked = true;
     els.spotifyUrl.value = "";
     if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = true;
+    if (els.btnTestSpotify) els.btnTestSpotify.disabled = true;
     if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = true;
 
     els.ogFile.value = "";
@@ -1592,6 +1595,7 @@
     if (els.spotifyUrl) els.spotifyUrl.addEventListener("input", () => {
       const hasUrl = !!(els.spotifyUrl.value || "").trim();
       if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !hasUrl;
+      if (els.btnTestSpotify) els.btnTestSpotify.disabled = !hasUrl;
       if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = hasUrl;
     });
 
@@ -1637,6 +1641,10 @@
     if (els.btnResolverClose) els.btnResolverClose.addEventListener("click", () => hideResolver());
     if (els.resolverOverlay) els.resolverOverlay.addEventListener("click", (e) => { if (e.target === els.resolverOverlay) hideResolver(); });
     if (els.btnOpenSpotify) els.btnOpenSpotify.addEventListener("click", () => {
+      const url = (els.spotifyUrl?.value || "").trim();
+      if (url) window.open(url, '_blank');
+    });
+    if (els.btnTestSpotify) els.btnTestSpotify.addEventListener("click", () => {
       const url = (els.spotifyUrl?.value || "").trim();
       if (url) window.open(url, '_blank');
     });
