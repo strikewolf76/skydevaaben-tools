@@ -18,8 +18,6 @@
     spotifyUrl: $("spotifyUrl"),
     destApple: $("destApple"),
     appleUrl: $("appleUrl"),
-    destDeezer: $("destDeezer"),
-    deezerUrl: $("deezerUrl"),
 
     btnResolver: $("btnResolver"),
     resolverOverlay: $("resolverOverlay"),
@@ -86,7 +84,6 @@
   // Channels and UTM content logic removed
 
   const APPLE_SEARCH_API = "https://itunes.apple.com/search";
-  const DEEZER_SEARCH_API = "https://api.deezer.com/search";
   const ODESLI_RESOLVER_API = "https://api.song.link/v1-alpha.1/links";
 
   function addLogItem({ title, lines = [], linkText, linkHref, status }) {
@@ -126,10 +123,9 @@
     return null;
   }
 
-  function autoDescription({ hasSpotify, hasApple, hasDeezer }) {
+  function autoDescription({ hasSpotify, hasApple }) {
     if (hasSpotify) return "Tap to open in Spotify.";
     if (hasApple) return "Tap to open in Apple Music.";
-    if (hasDeezer) return "Tap to open in Deezer.";
     return "Tap to open.";
   }
 
@@ -158,12 +154,11 @@
     // ...existing code...
   }
 
-  let appleResolveTargets = { spotify: true, deezer: true };
+  let appleResolveTargets = { spotify: true };
 
   function setAppleResolveTargets(targets = {}) {
     appleResolveTargets = {
       spotify: !!targets.spotify,
-      deezer: !!targets.deezer,
     };
   }
 
@@ -182,7 +177,7 @@
 
   function showResolver() {
     console.log('showResolver called');
-    setAppleResolveTargets({ spotify: true, deezer: true });
+    setAppleResolveTargets({ spotify: true });
     if (!els.resolverOverlay) return;
     clearResolverResults();
     if (els.resolverStatus) els.resolverStatus.textContent = "Search by song or artist.";
@@ -265,9 +260,8 @@
     if (!src) return;
     // Populate every destination that is currently enabled
     const wantsSpotify = !!els.destSpotify?.checked;
-    const wantsDeezer = !!els.destDeezer?.checked;
     const wantsApple = !!els.destApple?.checked;
-    if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
+    if (!wantsSpotify && !wantsApple) return;
     try {
       const odesliUrl = `${ODESLI_RESOLVER_API}?url=${encodeURIComponent(src)}`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(odesliUrl)}`;
@@ -292,14 +286,6 @@
         console.log('Spotify URL:', spotifyUrl);
         if (els.spotifyUrl) {
           els.spotifyUrl.value = spotifyUrl || '';
-          updated = true;
-        }
-      }
-
-      if (wantsDeezer) {
-        const deezerUrl = links.deezer?.url;
-        if (els.deezerUrl) {
-          els.deezerUrl.value = deezerUrl || '';
           updated = true;
         }
       }
@@ -1026,7 +1012,7 @@
     const spotifyIdParsed = parseSpotifyTrackId(els.spotifyUrl.value || "");
 
     const hasSpotify = !!(els.destSpotify.checked && spotifyIdParsed);
-    const description = autoDescription({ hasSpotify, hasApple: false, hasDeezer: false });
+    const description = autoDescription({ hasSpotify, hasApple: false });
 
     const slug = sanitizeSlug(els.trackSlug.value);
     const utm_campaign = sanitizeSlug(els.utmCampaign.value);
