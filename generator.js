@@ -423,6 +423,7 @@
   let ogImageLoaded = false;
   let ogImageBitmap = null;
   let ogImageError = null;
+  let ogImageSlug = null;
 
   function drawOgCanvasFromBitmap() {
     const canvas = els.ogCanvas;
@@ -469,6 +470,7 @@
     ogImageLoaded = false;
     ogImageBitmap = null;
     ogImageError = null;
+    ogImageSlug = null;
 
     if (!file) {
       els.ogFileInfo.textContent = "";
@@ -490,6 +492,7 @@
       if (ogImageError) messages.push(`INVALID: ${ogImageError}`);
 
       ogImageLoaded = !ogImageError;
+      ogImageSlug = sanitizeSlug(file.name.replace(/\.[^.]*$/, ''));
       els.ogFileInfo.textContent = messages.join(" | ");
       drawOgCanvasFromBitmap();
       renderPreviewGrid();
@@ -497,6 +500,7 @@
       els.ogFileInfo.textContent = `Failed to read image: ${String(e)}`;
       ogImageLoaded = false;
       ogImageBitmap = null;
+      ogImageSlug = null;
       drawOgCanvasFromBitmap();
     }
   }
@@ -693,7 +697,8 @@
     const slug = sanitizeSlug(els.title.value || "");
     els.trackSlug.value = slug;
     els.utmCampaign.value = slug;
-    els.ogImageNamePreview.textContent = slug ? `assets/og/${slug}.jpg` : "";
+    const imageSlug = ogImageSlug || slug;
+    els.ogImageNamePreview.textContent = imageSlug ? `assets/og/${imageSlug}.jpg` : "";
   }
 
   function updateMetaPixelStatus() {
@@ -979,7 +984,8 @@
       if (ogImageError) errors.push(ogImageError);
     }
 
-    els.ogImageNamePreview.textContent = slug ? `assets/og/${slug}.jpg` : "";
+    const imageSlug = ogImageSlug || slug;
+    els.ogImageNamePreview.textContent = imageSlug ? `assets/og/${imageSlug}.jpg` : "";
 
     if (errors.length) {
       els.validation.innerHTML = `<span class="bad">FAIL</span>\n` + errors.map(e => `- ${e}`).join("\n");
@@ -1016,7 +1022,8 @@
     const slug = sanitizeSlug(els.trackSlug.value);
     const utm_campaign = sanitizeSlug(els.utmCampaign.value);
 
-    const ogImageRel = `assets/og/${slug}.jpg`;
+    const imageSlug = ogImageSlug || slug;
+    const ogImageRel = `assets/og/${imageSlug}.jpg`;
     const ogImageAbs = `${repoBase}/${ogImageRel}`;
 
     const destinations = [];
@@ -1464,6 +1471,7 @@
     els.ogFileInfo.textContent = "";
     ogImageLoaded = false;
     ogImageBitmap = null;
+    ogImageSlug = null;
     drawOgCanvasFromBitmap();
 
     clearLog();
