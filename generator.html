@@ -198,60 +198,6 @@
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel-head">
-            <div><strong>Channels</strong></div>
-            <span class="tip-marker" data-tip="Toggle ad channels and set utm_content presets; slot controls suffix numbering.">?</span>
-          </div>
-          <div class="section-hint">Checked channels are included; prefill to add sensible utm_content defaults.</div>
-          <div class="row mt-6 channel-row">
-            <button id="btnClearUtm" class="clear-btn">Clear all <span class="tip-marker" data-tip="Clears all utm_content fields across channels.">?</span></button>
-            <label class="label">Slot <span class="tip-marker" data-tip="Slot sets the numeric suffix used when applying presets. Use +/- to change manually.">?</span></label>
-            <button id="btnSlotDec">-</button>
-            <span id="creativeSlot" class="slot-pill">01</span>
-            <button id="btnSlotInc">+</button>
-            <button id="btnStory" class="preset-btn">story <span class="tip-marker" data-tip="Sets utm_content to meta-ads-story + slot for Meta ads.">?</span></button>
-            <button id="btnReel" class="preset-btn">reel <span class="tip-marker" data-tip="Sets utm_content to meta-ads-reel + slot for Meta ads.">?</span></button>
-            <button id="btnFeed" class="preset-btn">feed <span class="tip-marker" data-tip="Sets utm_content to meta-ads-feed + slot for Meta ads.">?</span></button>
-            <button id="btnInfeed" class="preset-btn">infeed <span class="tip-marker" data-tip="Sets utm_content to tt-ads-infeed + slot for TikTok ads.">?</span></button>
-            <button id="btnInstream" class="preset-btn">instream <span class="tip-marker" data-tip="Sets utm_content to yt-ads-instream + slot for YouTube ads.">?</span></button>
-          </div>
-
-          <div id="chEditor" class="grid mt-10">
-            <div class="chip">
-              <input id="chMeta" type="checkbox" checked>
-              <div>
-                <div><strong>Meta Ads</strong> <span class="small mono">meta / paid_social</span></div>
-              </div>
-            </div>
-            <div>
-              <label for="metaContent">utm_content (Meta)</label>
-              <input id="metaContent" placeholder="meta-ads-story01" />
-            </div>
-
-            <div class="chip">
-              <input id="chTikTok" type="checkbox">
-              <div>
-                <div><strong>TikTok Ads</strong> <span class="small mono">tiktok / paid_social</span></div>
-              </div>
-            </div>
-            <div>
-              <label for="ttContent">utm_content (TikTok)</label>
-              <input id="ttContent" placeholder="tt-ads-infeed01" />
-            </div>
-
-            <div class="chip">
-              <input id="chYouTube" type="checkbox">
-              <div>
-                <div><strong>YouTube Ads</strong> <span class="small mono">youtube / paid_video</span></div>
-              </div>
-            </div>
-            <div>
-              <label for="ytContent">utm_content (YouTube)</label>
-              <input id="ytContent" placeholder="yt-ads-instream01" />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>

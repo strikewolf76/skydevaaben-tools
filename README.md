@@ -4,8 +4,9 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 
 ## How it works
 - HTML UI: `generator.html` (serve locally or open directly in the browser).
-- Logic: `generator.js` handles validation, batch building, QR generation, and GitHub Content API writes.
-- Output: writes `assets/og/<slug>.jpg` and `tracks/<slug>/<dest>/<utm_content>.html` into the repo.
+
+Logic: `generator.js` handles validation, batch building, QR generation, and GitHub Content API writes.
+Output: writes `assets/og/<slug>.jpg` and `tracks/<slug>/index.html` into the repo (one landing page per campaign with platform buttons).
 
 ## Requirements
 - Fine-grained GitHub PAT with **Contents: Read & Write** scoped to the `skydevaaben` repo.
@@ -14,11 +15,10 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 ## Using the tool
 1) Open https://tools.skydevaaben.no (or open `generator.html` locally).
 2) Fill title and destination URLs; upload a square OG image (>630px high).
-3) Optional: click **Use prefilled values** in Channels to auto-fill utm_content defaults for the selected channels.
-4) Click **Preview** to validate and view the full grid of combinations (validation, preview, and log panels appear above the campaign section).
-5) Click **Publish** and paste your PAT when prompted; the tool writes the redirect HTMLs and OG image to the repo.
-6) Pages URLs and QR PNGs can be copied/generated from the UI.
-7) Use the **Theme** button in the top action row to cycle six palettes (Base, Ocean, Forest, Sunset, Sand, Slate, Mint). Choice persists in `localStorage` under `sv-generator-theme-v1`.
+3) Click **Preview** to validate and view the landing page details (validation, preview, and log panels appear above the campaign section).
+4) Click **Publish** and paste your PAT when prompted; the tool writes the landing page HTML and OG image to the repo.
+5) Pages URLs and QR PNGs can be copied/generated from the UI.
+6) Use the **Theme** button in the top action row to cycle six palettes (Base, Ocean, Forest, Sunset, Sand, Slate, Mint). Choice persists in `localStorage` under `sv-generator-theme-v1`.
 
 ## Domain defaults
 - Pages base URL is locked to https://skydevaaben.no.
@@ -29,9 +29,9 @@ A small, browser-only tool to generate and publish static redirect pages and OG 
 - Use the "Forget saved token" button or clear site storage to remove it.
 
 ## Themes
-- Six palettes: Base, Ocean, Forest, Sunset, Sand, Slate, Mint.
-- Set via the **Theme** button; the selection is stored in `localStorage` (`sv-generator-theme-v1`) and applied by `body[data-theme]`.
-- Colors are implemented through CSS variables in `generator.css`.
+Six palettes: Base, Ocean, Forest, Sunset, Sand, Slate, Mint.
+Set via the **Theme** button; the selection is stored in `localStorage` (`sv-generator-theme-v1`) and applied by `body[data-theme]`.
+Colors are implemented through CSS variables in `generator.css`.
 
 ## Local development
 - Open `generator.html` directly in a browser.
