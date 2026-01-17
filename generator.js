@@ -774,10 +774,10 @@
   }) {
     // Parse artist and song from title (assuming "Artist - Song")
     let artist = "", song = "";
-    const dashIdx = title.indexOf(" - ");
-    if (dashIdx > 0) {
-      artist = title.slice(0, dashIdx).trim();
-      song = title.slice(dashIdx + 3).trim();
+    const parts = title.split(" - ");
+    if (parts.length >= 2) {
+      artist = parts[0].trim();
+      song = parts.slice(1).join(" - ").trim();
     } else {
       song = title;
     }
