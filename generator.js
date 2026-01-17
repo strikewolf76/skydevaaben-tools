@@ -152,11 +152,7 @@
 
   function updateNeedsInput() {
     const spotifyMissing = els.destSpotify.checked && !parseSpotifyTrackId(els.spotifyUrl.value || "");
-    const appleMissing = els.destApple.checked && !(els.appleUrl.value || "").trim();
-    const deezerMissing = els.destDeezer.checked && !(els.deezerUrl.value || "").trim();
     markNeed(els.spotifyUrl, spotifyMissing);
-    markNeed(els.appleUrl, appleMissing);
-    markNeed(els.deezerUrl, deezerMissing);
 
     // ...existing code...
   }
@@ -660,10 +656,6 @@
       metaPixelId: els.metaPixelId.value,
       destSpotify: els.destSpotify.checked,
       spotifyUrl: els.spotifyUrl.value,
-      destApple: els.destApple.checked,
-      appleUrl: els.appleUrl.value,
-      destDeezer: els.destDeezer.checked,
-      deezerUrl: els.deezerUrl.value,
     };
   }
 
@@ -690,10 +682,6 @@
       assign(els.metaPixelId, s.metaPixelId);
       assign(els.destSpotify, s.destSpotify, true);
       assign(els.spotifyUrl, s.spotifyUrl);
-      assign(els.destApple, s.destApple, true);
-      assign(els.appleUrl, s.appleUrl);
-      assign(els.destDeezer, s.destDeezer, true);
-      assign(els.deezerUrl, s.deezerUrl);
       updateMetaPixelStatus();
     } catch { /* ignore */ }
   }
@@ -1489,10 +1477,6 @@
 
     els.destSpotify.checked = true;
     els.spotifyUrl.value = "";
-    els.destApple.checked = false;
-    els.appleUrl.value = "";
-    els.destDeezer.checked = false;
-    els.deezerUrl.value = "";
 
     els.ogFile.value = "";
     els.ogFileInfo.textContent = "";
@@ -1532,7 +1516,7 @@
       els.repoBase, els.siteName, els.metaPixelId,
       els.ghToken,
       els.title, els.trackSlug, els.utmCampaign,
-      els.destSpotify, els.spotifyUrl, els.destApple, els.appleUrl, els.destDeezer, els.deezerUrl
+      els.destSpotify, els.spotifyUrl
     ].forEach(el => el.addEventListener("input", () => {
       if (el === els.title) { syncSlugAndCampaignFromTitle(); }
       validateOnly();
