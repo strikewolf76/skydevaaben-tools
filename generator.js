@@ -273,7 +273,9 @@
     if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
     try {
       const url = `${ODESLI_RESOLVER_API}?platform=appleMusic&url=${encodeURIComponent(src)}`;
-      const { data } = await fetchJsonWithCors(url);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const { data } = await res.json();
       const links = data?.linksByPlatform || {};
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
       let updated = false;
