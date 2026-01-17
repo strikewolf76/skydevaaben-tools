@@ -474,6 +474,7 @@
       els.ogFileInfo.textContent = "";
       drawOgCanvasFromBitmap();
       validateOnly();
+      renderPreviewGrid();
       return;
     }
 
@@ -493,6 +494,7 @@
       els.ogFileInfo.textContent = messages.join(" | ");
       drawOgCanvasFromBitmap();
       validateOnly();
+      renderPreviewGrid();
     } catch (e) {
       els.ogFileInfo.textContent = `Failed to read image: ${String(e)}`;
       ogImageLoaded = false;
@@ -1523,7 +1525,7 @@
     [
       els.repoBase, els.siteName, els.metaPixelId,
       els.ghToken,
-      els.title,
+      els.title, els.trackSlug, els.utmCampaign,
       els.destSpotify, els.spotifyUrl, els.destApple, els.appleUrl, els.destDeezer, els.deezerUrl
     ].forEach(el => el.addEventListener("input", () => {
       if (el === els.title) { syncSlugAndCampaignFromTitle(); }
@@ -1534,6 +1536,7 @@
         scheduleTokenValidation();
       }
       updateNeedsInput();
+      renderPreviewGrid();
       if (el === els.metaPixelId) updateMetaPixelStatus();
     }));
 

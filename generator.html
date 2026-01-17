@@ -98,15 +98,6 @@
         </div>
       </div>
 
-      <div id="logPanel" class="full panel hidden">
-        <div class="panel-head">
-          <div><strong>Log</strong></div>
-          <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
-        </div>
-        <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
-        <div id="log" class="log mt-10"></div>
-      </div>
-
       <div class="row">
         <button class="primary" id="btnGenerate" data-tip="Generate preview grid without publishing.">Preview</button>
         <button class="primary" id="btnPublish" data-tip="Create/update redirect pages and OG image, then push to Pages.">Publish</button>
@@ -117,17 +108,17 @@
 
       <div class="full panel">
         <div class="panel-head">
-          <div><strong>OG (Open Graph) Assets</strong></div>
-          <span class="tip-marker" data-tip="Set title and upload OG image used for social previews; file saved as assets/og/&lt;slug&gt;.jpg on publish.">?</span>
+          <div><strong>Landing Page Details</strong></div>
+          <span class="tip-marker" data-tip="Set song title, upload album cover, and configure destinations for landing pages; cover saved as assets/og/&lt;slug&gt;.jpg on publish.">?</span>
         </div>
-        <div class="section-hint">Title and image define how the link preview looks when shared (Meta, Messenger, etc.).</div>
+        <div class="section-hint">Song Title and Original Album Cover define how the link preview looks when shared (Meta, Messenger, etc.). Destinations configure redirect pages with UTM-ready URLs.</div>
         <div class="ogpreview mt-8">
           <div>
-            <label for="title">Title (used for preview &amp; slug)</label>
+            <label for="title">Song Title</label>
             <input id="title" value="Born Again (Crimson Noise Remix)" />
             <div class="hint">Used for slug, page title, and utm_campaign.</div>
 
-            <div class="mt-12"><strong>OG image upload</strong></div>
+            <div class="mt-12"><strong>Original Album Cover</strong></div>
             <div class="hint">On publish, <span class="mono">assets/og/&lt;slug&gt;.jpg</span> is created automatically.</div>
             <div class="mt-10">
               <input id="ogFile" type="file" accept="image/*" />
@@ -145,10 +136,8 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="full two-col">
-        <div class="panel">
+        <div class="mt-12">
           <div class="panel-head">
             <div><strong>Destinations</strong></div>
             <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
@@ -197,9 +186,19 @@
             </div>
           </div>
         </div>
-
       </div>
+
+
     </div>
+  </div>
+
+  <div id="logPanel" class="full panel hidden">
+    <div class="panel-head">
+      <div><strong>Log</strong></div>
+      <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
+    </div>
+    <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
+    <div id="log" class="log mt-10"></div>
   </div>
 
   <div id="resolverOverlay" class="modal-overlay hidden">
