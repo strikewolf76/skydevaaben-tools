@@ -794,13 +794,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}</title>
+  <title>${artist ? htmlEscape(artist) + " - " + htmlEscape(title) : htmlEscape(title)}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
 
   <meta property="og:type" content="music.song">
   <meta property="og:site_name" content="${htmlEscape(siteName)}">
-  <meta property="og:title" content="${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}">
+  <meta property="og:title" content="${artist ? htmlEscape(artist) + " - " + htmlEscape(title) : htmlEscape(title)}">
   <meta property="og:description" content="${htmlEscape(description)}">
   <meta property="og:url" content="${htmlEscape(ogUrlAbs)}">
   <meta property="og:image" content="${htmlEscape(ogImageAbs)}">
@@ -808,7 +808,7 @@
   <meta property="og:image:height" content="630">
 
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}">
+  <meta name="twitter:title" content="${artist ? htmlEscape(artist) + " - " + htmlEscape(title) : htmlEscape(title)}">
   <meta name="twitter:description" content="${htmlEscape(description)}">
   <meta name="twitter:image" content="${htmlEscape(ogImageAbs)}">
 
@@ -921,7 +921,7 @@
 
   <div class="content">
     <img src="${htmlEscape(ogImageAbs.replace(/\.jpg$/i, "-fg.jpg"))}" alt="" class="cover">
-    <div class="track-title">${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}</div>
+    <div class="track-title">${artist ? htmlEscape(artist) + " - " + htmlEscape(title) : htmlEscape(title)}</div>
     <div class="track-subtitle">Choose your preferred music service</div>
     <div class="service-buttons">
       ${buttonsHtml}
