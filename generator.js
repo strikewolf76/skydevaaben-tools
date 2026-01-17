@@ -37,7 +37,7 @@
     tokenInputWrap: $("tokenInputWrap"),
 
     validationPanel: $("validationPanel"),
-    previewPanel: $("previewPanel"),
+    previewPanel: null, // removed
     logPanel: $("logPanel"),
 
     ogFile: $("ogFile"),
@@ -48,7 +48,6 @@
     validation: $("validation"),
     log: $("log"),
 
-    btnGenerate: $("btnGenerate"),
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
@@ -496,7 +495,6 @@
       ogImageSlug = sanitizeSlug(file.name.replace(/\.[^.]*$/, ''));
       els.ogFileInfo.textContent = messages.join(" | ");
       drawOgCanvasFromBitmap();
-      renderPreviewGrid();
     } catch (e) {
       els.ogFileInfo.textContent = `Failed to read image: ${String(e)}`;
       ogImageLoaded = false;
@@ -668,11 +666,9 @@
 
   function applySettings() {
     const raw = safeGet(SETTINGS_KEY);
-    console.log('Raw from localStorage:', raw);
     if (!raw) return;
     try {
       const s = JSON.parse(raw);
-      console.log('Loaded settings:', s);
       const assign = (el, val, isCheckbox) => {
         if (typeof val === "undefined") return;
         if (isCheckbox) el.checked = !!val; else el.value = val;
@@ -691,10 +687,8 @@
   }
 
   function persistToken(token) {
-    console.log('Persisting token:', token);
     currentToken = token && token.trim() ? token.trim() : "";
     const data = collectSettings();
-    console.log('Saving data:', data);
     safeSet(SETTINGS_KEY, JSON.stringify(data));
   }
 
@@ -1526,7 +1520,6 @@
         scheduleTokenValidation();
       }
       updateNeedsInput();
-      renderPreviewGrid();
       if (el === els.metaPixelId) updateMetaPixelStatus();
     }));
 
@@ -1553,7 +1546,6 @@
       clearLog();
       const batch = buildBatch({ requireOg: true });
       if (!batch || !batch.ok) return;
-      renderPreviewGrid();
 
       const qrFiles = [`qrs/${batch.slug}/index.png`];
 
@@ -1600,7 +1592,6 @@
     validateOnly();
     updateNeedsInput();
     updateMetaPixelStatus();
-    renderPreviewGrid();
     hideLogIfEmpty();
   }
 

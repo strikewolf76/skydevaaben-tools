@@ -66,40 +66,7 @@
         </div>
       </div>
 
-      <div id="validationPanel" class="full panel hidden">
-        <div class="panel-head">
-          <div><strong>Validation</strong></div>
-          <span class="tip-marker" data-tip="Runs safety checks for slug, required links, channels, and OG image readiness.">?</span>
-        </div>
-        <div class="section-hint">Checks slug safety, required links, channels, and OG image readiness.</div>
-        <div id="validation" class="mono"></div>
-      </div>
-
-      <div id="previewPanel" class="full panel hidden">
-        <div class="panel-head">
-          <div>
-            <div><strong>Preview grid (utm)</strong></div>
-            <div class="hint">See all combinations.</div>
-          </div>
-          <span class="tip-marker" data-tip="Shows every destination + channel combination with utm parameters and final redirect URL.">?</span>
-        </div>
-        <div class="table-label">Link Preview (Meta / Messenger)</div>
-        <div class="tablewrap mt-10">
-          <table class="preview">
-            <thead>
-              <tr>
-                <th>destination</th><th>channel</th><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>utm_content</th><th>pagesUrl</th><th>finalDestUrl</th>
-              </tr>
-            </thead>
-            <tbody id="previewBody">
-              <tr><td colspan="8" class="text-center">Click "Preview"</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       <div class="row">
-        <button class="primary" id="btnGenerate" data-tip="Generate preview grid without publishing.">Preview</button>
         <button class="primary" id="btnPublish" data-tip="Create/update redirect pages and OG image, then push to Pages.">Publish</button>
         <button class="primary" id="btnCopyCreds" data-tip="Copy current PAT and Meta Pixel ID to clipboard.">Copy token + pixel</button>
         <button id="btnTheme" data-tip="Cycle themes for preview; not persisted.">Theme: Base</button>
@@ -155,26 +122,25 @@
                 <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
               </div>
             </div>
-          </div>
 
-          <div>
-            <div><strong>Preview (cropped to 1200×630)</strong></div>
-            <div class="preview-box mt-8">
-              <div class="section-hint">Link preview frame used by Meta/Messenger.</div>
-              <canvas id="ogCanvas" width="1200" height="630" class="og-canvas"></canvas>
-            </div>
-          </div>
-
-          <div>
-            <div id="logPanel" class="panel hidden">
+            <div id="validationPanel" class="panel mt-10">
               <div class="panel-head">
-                <div><strong>Log</strong></div>
-                <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
+                <div><strong>Validation</strong></div>
+                <span class="tip-marker" data-tip="Runs safety checks for slug, required links, channels, and OG image readiness.">?</span>
               </div>
-              <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
-              <div id="log" class="log mt-10"></div>
+              <div class="section-hint">Checks slug safety, required links, channels, and OG image readiness.</div>
+              <div id="validation" class="mono"></div>
             </div>
           </div>
+        </div>
+
+        <div id="logPanel" class="panel hidden mt-10">
+          <div class="panel-head">
+            <div><strong>Log</strong></div>
+            <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
+          </div>
+          <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
+          <div id="log" class="log mt-10"></div>
         </div>
       </div>
 
