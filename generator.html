@@ -97,6 +97,10 @@
             <div class="hint mono" id="ogFileInfo"></div>
             <div class="hint">Target file: <span class="mono" id="ogImageNamePreview"></span></div>
             <div class="hint">Drag & drop an image onto the preview to upload quickly.</div>
+            <div class="preview-box mt-8">
+              <div class="section-hint">Link preview frame used by Meta/Messenger.</div>
+              <canvas id="ogCanvas" width="1200" height="630" class="og-canvas"></canvas>
+            </div>
           </div>
 
           <div>
@@ -133,8 +137,6 @@
             </div>
           </div>
         </div>
-
-        <canvas id="ogCanvas" width="1200" height="630" style="display:none;"></canvas>
 
         <div id="logPanel" class="panel hidden mt-10">
           <div class="panel-head">
