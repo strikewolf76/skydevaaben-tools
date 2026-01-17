@@ -273,11 +273,10 @@
     if (!wantsSpotify && !wantsDeezer && !wantsApple) return;
     try {
       const odesliUrl = `${ODESLI_RESOLVER_API}?url=${encodeURIComponent(src)}`;
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(odesliUrl)}`;
+      const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(odesliUrl)}`;
       const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const proxyData = await res.json();
-      const { data } = JSON.parse(proxyData.contents);
+      const data = await res.json();
       console.log('Odesli data:', data);
       const links = data?.linksByPlatform || {};
       const appleLink = links.appleMusic?.url || links.itunes?.url || src;
