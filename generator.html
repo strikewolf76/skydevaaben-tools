@@ -126,6 +126,31 @@
             <div class="hint mono" id="ogFileInfo"></div>
             <div class="hint">Target file: <span class="mono" id="ogImageNamePreview"></span></div>
             <div class="hint">Drag & drop an image onto the preview to upload quickly.</div>
+
+            <div class="mt-12">
+              <div class="panel-head">
+                <div><strong>Destination(s)</strong></div>
+                <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
+              </div>
+              <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
+              <div class="row mt-8">
+                <button id="btnResolver" class="primary" data-tip="Search once and auto-fill Spotify, Apple, and Deezer via Odesli.">Odesli Song URL Resolver</button>
+                <div class="hint">Search Apple Music, then Odesli will fill Spotify URL when you pick a result.</div>
+              </div>
+
+              <div id="destEditor" class="grid mt-10">
+                <div class="chip">
+                  <input id="destSpotify" type="checkbox" checked>
+                  <div>
+                    <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
+                  </div>
+                </div>
+                <div>
+                  <label for="spotifyUrl">Spotify track URL</label>
+                  <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -134,72 +159,18 @@
               <div class="section-hint">Link preview frame used by Meta/Messenger.</div>
               <canvas id="ogCanvas" width="1200" height="630" class="og-canvas"></canvas>
             </div>
-          </div>
-        </div>
 
-        <div class="mt-12">
-          <div class="panel-head">
-            <div><strong>Destinations</strong></div>
-            <span class="tip-marker" data-tip="Enable platforms to generate redirect pages; fill in their target URLs.">?</span>
-          </div>
-          <div class="section-hint">Checked destinations will get redirect pages with UTM-ready URLs.</div>
-          <div class="row mt-8">
-            <button id="btnResolver" class="primary" data-tip="Search once and auto-fill Spotify, Apple, and Deezer via Odesli.">Odesli Song URL Resolver</button>
-            <div class="hint">Search Apple Music, then Odesli will fill Spotify, Apple, and Deezer URLs when you pick a result.</div>
-          </div>
-
-          <div id="destEditor" class="grid mt-10">
-            <div class="chip">
-              <input id="destSpotify" type="checkbox" checked>
-              <div>
-                <div><strong>Spotify</strong> <span class="small">(parse from URL)</span></div>
-                <div class="hint mono">tracks/&lt;slug&gt;/spotify/…</div>
+            <div id="logPanel" class="panel hidden">
+              <div class="panel-head">
+                <div><strong>Log</strong></div>
+                <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
               </div>
-            </div>
-            <div>
-              <label for="spotifyUrl">Spotify track URL</label>
-              <input id="spotifyUrl" placeholder="https://open.spotify.com/track/..." />
-            </div>
-
-            <div class="chip">
-              <input id="destApple" type="checkbox">
-              <div>
-                <div><strong>Apple</strong> <span class="small">(requires URL)</span></div>
-                <div class="hint mono">tracks/&lt;slug&gt;/apple/…</div>
-              </div>
-            </div>
-            <div>
-              <label for="appleUrl">Apple URL</label>
-              <input id="appleUrl" placeholder="https://music.apple.com/..." />
-            </div>
-
-            <div class="chip">
-              <input id="destDeezer" type="checkbox">
-              <div>
-                <div><strong>Deezer</strong> <span class="small">(requires URL)</span></div>
-                <div class="hint mono">tracks/&lt;slug&gt;/deezer/…</div>
-              </div>
-            </div>
-            <div>
-              <label for="deezerUrl">Deezer URL</label>
-              <input id="deezerUrl" placeholder="https://www.deezer.com/..." />
+              <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
+              <div id="log" class="log mt-10"></div>
             </div>
           </div>
         </div>
       </div>
-
-
-    </div>
-  </div>
-
-  <div id="logPanel" class="full panel hidden">
-    <div class="panel-head">
-      <div><strong>Log</strong></div>
-      <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
-    </div>
-    <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
-    <div id="log" class="log mt-10"></div>
-  </div>
 
   <div id="resolverOverlay" class="modal-overlay hidden">
     <div class="modal">
