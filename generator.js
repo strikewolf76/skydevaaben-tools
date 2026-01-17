@@ -1167,6 +1167,7 @@
     const repoBase = normBaseUrl(els.repoBase.value);
     const siteName = (els.siteName.value || "").trim();
     const title = (els.title.value || "").trim();
+    const artist = (els.artist.value || "").trim();
     const metaPixelId = (els.metaPixelId.value || "").trim();
     const spotifyIdParsed = parseSpotifyTrackId(els.spotifyUrl.value || "");
 
