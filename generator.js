@@ -960,11 +960,11 @@
   }
 
   function handleClick(destKey, e) {
-    if (clickLocked) return;
-    clickLocked = true;
-
     // Allow modified clicks (open in new tab etc.)
     if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
+
+    if (clickLocked) return;
+    clickLocked = true;
 
     if (e && e.preventDefault) e.preventDefault();
 
