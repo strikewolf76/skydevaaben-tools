@@ -284,8 +284,30 @@
       }
 
       if (wantsSpotify) {
-        const spotifyUrl = links.spotify?.url;
-        console.log('Spotify URL:', spotifyUrl);
+        let spotifyUrl = links.spotify?.url;
+        console.log('Spotify URL from Apple:', spotifyUrl);
+        if (!spotifyUrl) {
+          // Fallback: search Odesli by song and artist name
+          const title = (els.title?.value || "").trim();
+          const artist = (els.artist?.value || "").trim();
+          if (title && artist) {
+            try {
+              const query = `${title} ${artist}`;
+              const fallbackUrl = `${ODESLI_RESOLVER_API}?q=${encodeURIComponent(query)}`;
+              const fallbackProxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(fallbackUrl)}`;
+              const fallbackRes = await fetch(fallbackProxy);
+              if (fallbackRes.ok) {
+                const fallbackData = await fallbackRes.json();
+                console.log('Fallback Odesli data:', fallbackData);
+                const fallbackLinks = fallbackData?.linksByPlatform || {};
+                spotifyUrl = fallbackLinks.spotify?.url;
+                console.log('Spotify URL from fallback:', spotifyUrl);
+              }
+            } catch (fallbackE) {
+              console.log('Fallback search failed:', fallbackE);
+            }
+          }
+        }
         if (els.spotifyUrl) {
           els.spotifyUrl.value = spotifyUrl || '';
           updated = true;
