@@ -290,16 +290,16 @@
       if (wantsSpotify) {
         const spotifyUrl = links.spotify?.url;
         console.log('Spotify URL:', spotifyUrl);
-        if (spotifyUrl && els.spotifyUrl) {
-          els.spotifyUrl.value = spotifyUrl;
+        if (els.spotifyUrl) {
+          els.spotifyUrl.value = spotifyUrl || '';
           updated = true;
         }
       }
 
       if (wantsDeezer) {
         const deezerUrl = links.deezer?.url;
-        if (deezerUrl && els.deezerUrl) {
-          els.deezerUrl.value = deezerUrl;
+        if (els.deezerUrl) {
+          els.deezerUrl.value = deezerUrl || '';
           updated = true;
         }
       }
