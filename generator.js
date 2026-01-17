@@ -48,6 +48,7 @@
     validation: $("validation"),
     log: $("log"),
 
+    btnGenerate: $("btnGenerate"),
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
@@ -1541,6 +1542,29 @@
     els.ogFile.addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
       onOgFileSelected(file);
+    });
+
+    els.btnGenerate.addEventListener("click", () => {
+      clearLog();
+      const batch = buildBatch({ requireOg: true });
+      if (!batch || !batch.ok) return;
+
+      const qrFiles = [`qrs/${batch.slug}/index.png`];
+
+      addLogItem({
+        title: "Preview (not published)",
+        status: "READY",
+        lines: [
+          `OG image: ${batch.ogImageRel}`,
+          `BG image: ${batch.ogImageRel.replace(/\.jpg$/i, '-bg.jpg')}`,
+          `FG image: ${batch.ogImageRel.replace(/\.jpg$/i, '-fg.jpg')}`,
+          `HTML file:`,
+          `- ${batch.items[0].relPath}`,
+          `QR file:`,
+          `- ${normBaseUrl(els.repoBase.value)}/${qrFiles[0]}`
+        ]
+      });
+      hideLogIfEmpty();
     });
 
     els.btnPublish.addEventListener("click", () => publishAll());
