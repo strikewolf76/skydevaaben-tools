@@ -772,10 +772,29 @@
     trackSlug,
     utm_campaign
   }) {
+    // Parse artist and song from title (assuming "Artist - Song")
+    let artist = "", song = "";
+    const dashIdx = title.indexOf(" - ");
+    if (dashIdx > 0) {
+      artist = title.slice(0, dashIdx).trim();
+      song = title.slice(dashIdx + 3).trim();
+    } else {
+      song = title;
+    }
+
     // Generate buttons for each destination
     const buttonsHtml = destinations.map(dest => {
-      const buttonLabel = dest.key === "spotify" ? "Listen on Spotify" : dest.key === "apple" ? "Listen on Apple Music" : dest.key === "deezer" ? "Listen on Deezer" : "Listen";
-      return `<a class="cta" href="#" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">${buttonLabel}</a>`;
+      if (dest.key === "spotify") {
+        return `<a class="cta spotify-btn" href="#" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">
+        <span class="spotify-logo">
+          <svg width="28" height="28" viewBox="0 0 168 168"><circle fill="#1ED760" cx="84" cy="84" r="84"/><path d="M120.1 116.6c-1.7 2.8-5.3 3.7-8.1 2-22.2-13.6-50.2-16.7-83.2-9.2-3.2.7-6.4-1.3-7.1-4.5-.7-3.2 1.3-6.4 4.5-7.1 35.7-7.9 66.1-4.4 90.2 10.5 2.8 1.7 3.7 5.3 2 8.3zm11.5-23.1c-2.1 3.4-6.5 4.5-9.9 2.4-25.5-15.6-64.5-20.1-94.7-11.1-3.8 1.1-7.8-1.1-8.9-4.9-1.1-3.8 1.1-7.8 4.9-8.9 33.9-9.8 76.1-5 104.7 12.2 3.4 2.1 4.5 6.5 2.4 9.9zm12.7-25.2c-30.1-18.1-79.7-19.8-108.1-11.1-4.4 1.3-9-1.2-10.3-5.6-1.3-4.4 1.2-9 5.6-10.3 31.9-9.5 85.2-7.6 119.6 12.3 4 2.4 5.3 7.7 2.9 11.7-2.4 4-7.7 5.3-11.7 2.9z" fill="#fff"/></svg>
+        </span>
+        <span class="spotify-text">Play</span>
+      </a>`;
+      } else {
+        const buttonLabel = dest.key === "apple" ? "Listen on Apple Music" : dest.key === "deezer" ? "Listen on Deezer" : "Listen";
+        return `<a class="cta" href="#" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">${buttonLabel}</a>`;
+      }
     }).join("");
 
     return `<!doctype html>
@@ -820,14 +839,37 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      background: rgba(0,0,0,0.35);
+      border-radius: 16px;
+      padding: 24px 24px 32px 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      max-width: 340px;
     }
     .cover {
-      width: min(300px, 80vw);
-      height: min(300px, 80vw);
+      width: 240px;
+      height: 240px;
       object-fit: cover;
       border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
       margin-bottom: 20px;
+    }
+    .track-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .track-subtitle {
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+    .service-buttons {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
     .cta {
       background: rgba(0,0,0,0.7);
@@ -838,9 +880,38 @@
       font-size: 18px;
       border-radius: 10px;
       transition: background 0.3s ease;
+      text-align: center;
     }
     .cta:hover {
       background: rgba(0,0,0,0.9);
+    }
+    .cta.spotify-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      color: #191414;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 12px 0;
+      box-shadow: 0 2px 8px rgba(30,215,96,0.10);
+      transition: background 0.2s;
+      gap: 10px;
+    }
+    .cta.spotify-btn:hover {
+      background: #1ed760;
+      color: #191414;
+    }
+    .spotify-logo {
+      display: flex;
+      align-items: center;
+    }
+    .spotify-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
     .consent-info {
       font-size: 13px;
@@ -857,7 +928,11 @@
 
   <div class="content">
     <img src="${htmlEscape(ogImageAbs.replace(/\.jpg$/i, "-fg.jpg"))}" alt="" class="cover">
-    ${buttonsHtml}
+    <div class="track-title">${htmlEscape(song)}${artist ? " by " + htmlEscape(artist) : ""}</div>
+    <div class="track-subtitle">Choose your preferred music service</div>
+    <div class="service-buttons">
+      ${buttonsHtml}
+    </div>
   </div>
 
   <p id="consent-info" class="consent-info" style="display:none;">
