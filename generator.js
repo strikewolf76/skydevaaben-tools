@@ -933,8 +933,8 @@
 
     fbq("init", META_PIXEL_ID);
     
-    // Default: consent revoked
-    try { fbq("consent", "revoke"); } catch (_) {}
+    // TEMP DEBUG: always grant consent (remove when verified)
+    try { fbq("consent", "grant"); } catch (_) {}
 
     // If returning user: grant immediately
     if (hasConsent) {
