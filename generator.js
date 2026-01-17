@@ -30,6 +30,7 @@
     destEditor: $("destEditor"),
 
     btnOpenSpotify: $("btnOpenSpotify"),
+    btnSearchSpotify: $("btnSearchSpotify"),
 
     repoBaseDisplay: $("repoBaseDisplay"),
     siteNameDisplay: $("siteNameDisplay"),
@@ -298,24 +299,28 @@
         let spotifyUrl = links.spotify?.url;
         console.log('Spotify URL from Apple:', spotifyUrl);
         if (!spotifyUrl) {
-          // Fallback: search Odesli by song and artist name
+          // Fallback: search Odesli by song and artist name with multiple query attempts
           const title = (els.title?.value || "").trim();
           const artist = (els.artist?.value || "").trim();
-          if (title && artist) {
+          const queries = [];
+          if (title && artist) queries.push(`${title} ${artist}`);
+          if (title) queries.push(title);
+          if (artist && title) queries.push(`${artist} ${title}`);
+          for (const query of queries) {
             try {
-              const query = `${title} ${artist}`;
               const fallbackUrl = `${ODESLI_RESOLVER_API}?q=${encodeURIComponent(query)}`;
               const fallbackProxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(fallbackUrl)}`;
               const fallbackRes = await fetch(fallbackProxy);
               if (fallbackRes.ok) {
                 const fallbackData = await fallbackRes.json();
-                console.log('Fallback Odesli data:', fallbackData);
+                console.log(`Fallback Odesli data for "${query}":`, fallbackData);
                 const fallbackLinks = fallbackData?.linksByPlatform || {};
                 spotifyUrl = fallbackLinks.spotify?.url;
-                console.log('Spotify URL from fallback:', spotifyUrl);
+                console.log(`Spotify URL from fallback "${query}":`, spotifyUrl);
+                if (spotifyUrl) break; // Stop on first success
               }
             } catch (fallbackE) {
-              console.log('Fallback search failed:', fallbackE);
+              console.log(`Fallback search failed for "${query}":`, fallbackE);
             }
           }
         }
@@ -325,6 +330,12 @@
             addLogItem({
               title: `Resolved to Spotify URL: ${spotifyUrl}`,
               status: "Success"
+            });
+          } else {
+            addLogItem({
+              title: "Spotify URL not found via resolver",
+              status: "Warning",
+              lines: ["Try the Search button to find manually on Spotify."]
             });
           }
           if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !spotifyUrl;
@@ -1625,6 +1636,15 @@
     if (els.btnOpenSpotify) els.btnOpenSpotify.addEventListener("click", () => {
       const url = (els.spotifyUrl?.value || "").trim();
       if (url) window.open(url, '_blank');
+    });
+    if (els.btnSearchSpotify) els.btnSearchSpotify.addEventListener("click", () => {
+      const title = (els.title?.value || "").trim();
+      const artist = (els.artist?.value || "").trim();
+      const query = [title, artist].filter(Boolean).join(" ");
+      if (query) {
+        const searchUrl = `https://open.spotify.com/search/${encodeURIComponent(query)}`;
+        window.open(searchUrl, '_blank');
+      }
     });
     document.addEventListener("keydown", (e) => {
       const resolverOpen = els.resolverOverlay && !els.resolverOverlay.classList.contains("hidden");
