@@ -671,6 +671,7 @@
     if (!raw) return;
     try {
       const s = JSON.parse(raw);
+      console.log('Loaded settings:', s);
       const assign = (el, val, isCheckbox) => {
         if (typeof val === "undefined") return;
         if (isCheckbox) el.checked = !!val; else el.value = val;
@@ -689,6 +690,7 @@
   }
 
   function persistToken(token) {
+    console.log('Persisting token:', token);
     currentToken = token && token.trim() ? token.trim() : "";
     const data = collectSettings();
     safeSet(SETTINGS_KEY, JSON.stringify(data));
@@ -1524,6 +1526,14 @@
       updateNeedsInput();
       renderPreviewGrid();
       if (el === els.metaPixelId) updateMetaPixelStatus();
+    }));
+
+    // Also listen for paste events, as they may not trigger input reliably
+    [els.ghToken].forEach(el => el.addEventListener("paste", () => {
+      setTimeout(() => {
+        persistToken(els.ghToken.value);
+        scheduleTokenValidation();
+      }, 0);
     }));
 
     els.ogFile.addEventListener("change", (e) => {
