@@ -956,6 +956,7 @@
   function trackOutbound(destKey, dest) {
     if (!window.fbq || !META_PIXEL_ID) return;
     try {
+      var eventId = "ob_" + Date.now() + "_" + Math.random().toString(16).slice(2);
       fbq("trackCustom", "OutboundSpotify", {
         kind: "click",
         cid: CID || "",
@@ -963,7 +964,7 @@
         dest: destKey || "",
         channel: "meta",
         track_id: (dest && dest.spotifyId) ? dest.spotifyId : ""
-      });
+      }, { eventID: eventId });
     } catch (_) {}
   }
 
@@ -972,12 +973,13 @@
     if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
 
     if (clickLocked) return;
-    clickLocked = true;
 
     if (e && e.preventDefault) e.preventDefault();
 
     var dest = DESTINATIONS.find(d => d.key === destKey);
     if (!dest) return;
+
+    clickLocked = true;
 
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
 
