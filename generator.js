@@ -875,6 +875,7 @@
   var consentGranted = false;
   var pixelEventsQueued = [];
   var clickLocked = false;
+  var pageViewFired = false;
 
   // Allow known social crawlers to fetch OG tags (no redirect)
   var ua = navigator.userAgent || "";
@@ -903,7 +904,6 @@
     } catch (_) {}
     if (window.fbq && META_PIXEL_ID) {
       fbq("consent", "grant");
-      firePageView();
       // Fire queued events
       while (pixelEventsQueued.length > 0) {
         var ev = pixelEventsQueued.shift();
@@ -913,7 +913,9 @@
   }
 
   function firePageView() {
+    if (pageViewFired) return;
     if (!window.fbq || !META_PIXEL_ID) return;
+    pageViewFired = true;
     try { fbq("track", "PageView"); } catch (_) {}
   }
 
@@ -936,10 +938,10 @@
     // If returning user: grant immediately
     if (hasConsent) {
       grantConsent();
-      fbq("track", "PageView");
+      firePageView();
     } else {
       // Queue PageView until consent granted
-      pixelEventsQueued.push(function () { fbq("track", "PageView"); });
+      pixelEventsQueued.push(function () { firePageView(); });
     }
   }
 
@@ -987,13 +989,13 @@
     if (destKey === "spotify" && dest.spotifyId && !isInAppBrowser) {
       setTimeout(function () {
         window.location.href = "spotify:track:" + dest.spotifyId;
-      }, 50);
+      }, 200);
     }
 
     // 2) Always fallback to web URL
     setTimeout(function () {
       window.location.href = webUrl;
-    }, 600);
+    }, 900);
   }
 
   // Attach click handlers
@@ -1159,17 +1161,14 @@
 
     if (!batch || !batch.ok) {
       els.previewBody.innerHTML = '<tr><td colspan="3" class="text-center">Fix validation to preview.</td></tr>';
-      hide(els.previewPanel);
       return;
     }
 
     if (!batch.items.length) {
       els.previewBody.innerHTML = '<tr><td colspan="3" class="text-center">No landing page.</td></tr>';
-      hide(els.previewPanel);
       return;
     }
 
-    show(els.previewPanel);
     els.previewBody.innerHTML = batch.items.map(i => `
       <tr>
         <td>${htmlEscape(i.relPath)}</td>
