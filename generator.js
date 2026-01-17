@@ -874,6 +874,7 @@
   var CID = params.get("cid") || "";
   var consentGranted = false;
   var pixelEventsQueued = [];
+  var clickLocked = false;
 
   // Allow known social crawlers to fetch OG tags (no redirect)
   var ua = navigator.userAgent || "";
@@ -944,7 +945,24 @@
     return u.toString();
   }
 
+  function trackOutbound(destKey, dest) {
+    if (!window.fbq || !META_PIXEL_ID) return;
+    try {
+      fbq("trackCustom", "OutboundSpotify", {
+        kind: "click",
+        cid: CID || "",
+        slug: TRACK_SLUG || "",
+        dest: destKey || "",
+        channel: "meta",
+        track_id: (dest && dest.spotifyId) ? dest.spotifyId : ""
+      });
+    } catch (_) {}
+  }
+
   function handleClick(destKey, e) {
+    if (clickLocked) return;
+    clickLocked = true;
+
     // Allow modified clicks (open in new tab etc.)
     if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
 
@@ -956,7 +974,7 @@
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
 
     grantConsent();
-    trackOutbound(destKey);
+    trackOutbound(destKey, dest);
 
     // 1) Try Spotify app only for Spotify destination (and only if we have an ID)
     if (destKey === "spotify" && dest.spotifyId && !isInAppBrowser) {
@@ -966,7 +984,7 @@
     // 2) Always fallback to web URL
     setTimeout(function () {
       window.location.href = webUrl;
-    }, 600);
+    }, 150);
   }
 
   // Attach click handlers
