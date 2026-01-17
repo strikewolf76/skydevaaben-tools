@@ -9,6 +9,7 @@
     metaPixelStatusText: $("metaPixelStatusText"),
     metaPixelInputWrap: $("metaPixelInputWrap"),
 
+    artist: $("artist"),
     title: $("title"),
     trackSlug: $("trackSlug"),
     utmCampaign: $("utmCampaign"),
@@ -652,6 +653,7 @@
   function collectSettings() {
     return {
       siteName: els.siteName.value,
+      artist: els.artist.value,
       title: els.title.value,
       metaPixelId: els.metaPixelId.value,
       destSpotify: els.destSpotify.checked,
@@ -678,6 +680,7 @@
         if (isCheckbox) el.checked = !!val; else el.value = val;
       };
       assign(els.siteName, s.siteName);
+      assign(els.artist, s.artist);
       assign(els.title, s.title);
       assign(els.metaPixelId, s.metaPixelId);
       assign(els.destSpotify, s.destSpotify, true);
@@ -966,6 +969,9 @@
     const title = (els.title.value || "").trim();
     required("Title", title, errors);
 
+    const artist = (els.artist.value || "").trim();
+    required("Artist", artist, errors);
+
     const slugRaw = (els.trackSlug.value || "");
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
@@ -974,7 +980,7 @@
     const utmCampaign = sanitizeSlug(els.utmCampaign.value);
     required("utm_campaign", utmCampaign, errors);
 
-    const anyDest = els.destSpotify.checked || els.destApple.checked || els.destDeezer.checked;
+    const anyDest = els.destSpotify.checked;
     if (!anyDest) errors.push("Select at least one destination.");
 
     let spotifyIdParsed = null;
@@ -982,8 +988,6 @@
       spotifyIdParsed = parseSpotifyTrackId(els.spotifyUrl.value || "");
       if (!spotifyIdParsed) errors.push("Spotify URL must contain a track ID");
     }
-    if (els.destApple.checked) required("Apple URL", (els.appleUrl.value || "").trim(), errors);
-    if (els.destDeezer.checked) required("Deezer URL", (els.deezerUrl.value || "").trim(), errors);
 
     if (requireOg) {
       if (!ogImageLoaded) errors.push("OG image not uploaded yet (required).");
@@ -1471,6 +1475,7 @@
   // ---------- reset ----------
   function resetForm() {
     // Keep repoBase, siteName (stable)
+    els.artist.value = "";
     els.title.value = "";
     els.trackSlug.value = "";
     els.utmCampaign.value = "";
@@ -1515,7 +1520,7 @@
     [
       els.repoBase, els.siteName, els.metaPixelId,
       els.ghToken,
-      els.title, els.trackSlug, els.utmCampaign,
+      els.artist, els.title, els.trackSlug, els.utmCampaign,
       els.destSpotify, els.spotifyUrl
     ].forEach(el => el.addEventListener("input", () => {
       if (el === els.title) { syncSlugAndCampaignFromTitle(); }
