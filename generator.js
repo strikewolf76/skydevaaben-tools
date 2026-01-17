@@ -618,7 +618,8 @@
 
   function persistTheme(theme) {
     currentTheme = normalizeTheme(theme);
-    persistSettingsSoon();
+    const data = collectSettings();
+    safeSet(SETTINGS_KEY, JSON.stringify(data));
   }
 
   function cycleTheme() {
@@ -661,11 +662,8 @@
 
   let saveTimer = null;
   function persistSettingsSoon() {
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      const data = collectSettings();
-      safeSet(SETTINGS_KEY, JSON.stringify(data));
-    }, 200);
+    const data = collectSettings();
+    safeSet(SETTINGS_KEY, JSON.stringify(data));
   }
 
   function applySettings() {
@@ -692,12 +690,14 @@
 
   function persistToken(token) {
     currentToken = token && token.trim() ? token.trim() : "";
-    persistSettingsSoon();
+    const data = collectSettings();
+    safeSet(SETTINGS_KEY, JSON.stringify(data));
   }
 
   function forgetToken() {
     currentToken = "";
-    persistSettingsSoon();
+    const data = collectSettings();
+    safeSet(SETTINGS_KEY, JSON.stringify(data));
     els.ghToken.value = "";
     setTokenStatus("bad");
   }
