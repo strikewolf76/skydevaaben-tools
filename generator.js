@@ -29,6 +29,8 @@
 
     destEditor: $("destEditor"),
 
+    btnOpenSpotify: $("btnOpenSpotify"),
+
     repoBaseDisplay: $("repoBaseDisplay"),
     siteNameDisplay: $("siteNameDisplay"),
     tokenStatusText: $("tokenStatusText"),
@@ -192,8 +194,15 @@
     }
   }
 
-  function applyResolverSelection(url) {
+  function applyResolverSelection(card) {
+    const url = card.dataset.appleUrl;
+    const track = card.dataset.track;
+    const artist = card.dataset.artist;
     if (!url) return;
+    addLogItem({
+      title: `Found song in Apple Search: ${track} - ${artist}`,
+      status: "Selected"
+    });
     const appleEnabled = !!els.destApple?.checked;
     if (appleEnabled && els.appleUrl) els.appleUrl.value = url;
     validateOnly();
@@ -216,6 +225,8 @@
       const album = htmlEscape(item.collectionName || "");
       const url = item.trackViewUrl || item.collectionViewUrl || "";
       card.dataset.appleUrl = url;
+      card.dataset.track = item.trackName || "Unknown track";
+      card.dataset.artist = item.artistName || "";
       card.innerHTML = `
         <img class="result-art" src="${art}" alt="" loading="lazy" />
         <div class="search-meta">
@@ -310,6 +321,13 @@
         }
         if (els.spotifyUrl) {
           els.spotifyUrl.value = spotifyUrl || '';
+          if (spotifyUrl) {
+            addLogItem({
+              title: `Resolved to Spotify URL: ${spotifyUrl}`,
+              status: "Success"
+            });
+          }
+          if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !spotifyUrl;
           updated = true;
         }
       }
@@ -1488,6 +1506,7 @@
 
     els.destSpotify.checked = true;
     els.spotifyUrl.value = "";
+    if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = true;
 
     els.ogFile.value = "";
     els.ogFileInfo.textContent = "";
@@ -1557,6 +1576,11 @@
       onOgFileSelected(file);
     });
 
+    if (els.spotifyUrl) els.spotifyUrl.addEventListener("input", () => {
+      const hasUrl = !!(els.spotifyUrl.value || "").trim();
+      if (els.btnOpenSpotify) els.btnOpenSpotify.disabled = !hasUrl;
+    });
+
     els.btnGenerate.addEventListener("click", () => {
       clearLog();
       const batch = buildBatch({ requireOg: true });
@@ -1594,10 +1618,14 @@
     if (els.resolverResults) els.resolverResults.addEventListener("click", (e) => {
       const card = e.target.closest("[data-apple-url]");
       if (!card) return;
-      applyResolverSelection(card.dataset.appleUrl);
+      applyResolverSelection(card);
     });
     if (els.btnResolverClose) els.btnResolverClose.addEventListener("click", () => hideResolver());
     if (els.resolverOverlay) els.resolverOverlay.addEventListener("click", (e) => { if (e.target === els.resolverOverlay) hideResolver(); });
+    if (els.btnOpenSpotify) els.btnOpenSpotify.addEventListener("click", () => {
+      const url = (els.spotifyUrl?.value || "").trim();
+      if (url) window.open(url, '_blank');
+    });
     document.addEventListener("keydown", (e) => {
       const resolverOpen = els.resolverOverlay && !els.resolverOverlay.classList.contains("hidden");
       if (resolverOpen && e.key === "Escape") hideResolver();
