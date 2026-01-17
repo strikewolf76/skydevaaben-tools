@@ -878,6 +878,7 @@
   // Allow known social crawlers to fetch OG tags (no redirect)
   var ua = navigator.userAgent || "";
   var isCrawler = /(facebookexternalhit|facebot|twitterbot|linkedinbot|discordbot|pinterest|slackbot|whatsapp|telegrambot|skypeuripreview)/i.test(ua);
+  var isInAppBrowser = /(FBAN|FBAV|Instagram|Messenger|Line|TikTok)/i.test(ua);
   if (isCrawler) return;
 
   // Check existing consent
@@ -953,16 +954,20 @@
     if (!dest) return;
 
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
+    var appUrl = "spotify:track:" + dest.spotifyId;
 
     grantConsent();
     trackOutbound(destKey);
 
-    try {
-      var w = window.open(webUrl, '_blank');
-      if (w) w.opener = null;
-    } catch (_) {
-      window.location.href = webUrl; // fallback
+    // 1) Try Spotify app (only if NOT in-app browser)
+    if (!isInAppBrowser) {
+      window.location.href = appUrl;
     }
+
+    // 2) Fallback to web Spotify
+    setTimeout(function () {
+      window.location.href = webUrl;
+    }, 600);
   }
 
   // Attach click handlers
