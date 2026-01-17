@@ -198,7 +198,6 @@
     if (!url) return;
     const appleEnabled = !!els.destApple?.checked;
     if (appleEnabled && els.appleUrl) els.appleUrl.value = url;
-    persistSettingsSoon();
     validateOnly();
     updateNeedsInput();
     hideResolver();
@@ -305,7 +304,6 @@
       }
 
       if (updated) {
-        persistSettingsSoon();
         validateOnly();
         updateNeedsInput();
       }
@@ -649,12 +647,7 @@
 
   function collectSettings() {
     return {
-      siteName: els.siteName.value,
-      artist: els.artist.value,
-      title: els.title.value,
       metaPixelId: els.metaPixelId.value,
-      destSpotify: els.destSpotify.checked,
-      spotifyUrl: els.spotifyUrl.value,
     };
   }
 
@@ -676,12 +669,7 @@
         if (typeof val === "undefined") return;
         if (isCheckbox) el.checked = !!val; else el.value = val;
       };
-      assign(els.siteName, s.siteName);
-      assign(els.artist, s.artist);
-      assign(els.title, s.title);
       assign(els.metaPixelId, s.metaPixelId);
-      assign(els.destSpotify, s.destSpotify, true);
-      assign(els.spotifyUrl, s.spotifyUrl);
       updateMetaPixelStatus();
     } catch { /* ignore */ }
   }
@@ -1485,7 +1473,6 @@
     syncSlugAndCampaignFromTitle();
     updateNeedsInput();
     updateMetaPixelStatus();
-    persistSettingsSoon();
   }
 
   // ---------- wire ----------
@@ -1514,8 +1501,8 @@
     ].forEach(el => el.addEventListener("input", () => {
       if (el === els.title) { syncSlugAndCampaignFromTitle(); }
       validateOnly();
-      if (el !== els.ghToken) persistSettingsSoon();
-      else {
+      if (el === els.metaPixelId) persistSettingsSoon();
+      if (el === els.ghToken) {
         persistToken(els.ghToken.value);
         scheduleTokenValidation();
       }
