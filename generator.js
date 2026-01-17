@@ -870,6 +870,7 @@
   var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
   var TRACK_SLUG = "${htmlEscape(trackSlug || "")}";
   var UTM_CAMPAIGN = "${htmlEscape(utm_campaign || "")}";
+  var UTM_CONTENT_DEFAULT = "meta";
 
   var params = new URLSearchParams(window.location.search || "");
   var CID = params.get("cid") || "";
@@ -969,7 +970,7 @@
         channel: "meta",
         track_id: (dest && dest.spotifyId) ? dest.spotifyId : "",
         utm_campaign: UTM_CAMPAIGN || "",
-        utm_content: CID || ""
+        utm_content: (CID || UTM_CONTENT_DEFAULT || "")
       }, { eventID: eventId });
     } catch (_) {}
   }
@@ -987,7 +988,7 @@
 
     clickLocked = true;
 
-    var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
+    var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: (CID || UTM_CONTENT_DEFAULT) });
 
     if (!hasConsent()) {
       setConsentGranted();
@@ -1001,14 +1002,7 @@
       }
     } catch (_) {}
 
-    // 1) Try Spotify app only for Spotify destination (and only if we have an ID)
-    if (destKey === "spotify" && dest.spotifyId && !isInAppBrowser) {
-      setTimeout(function () {
-        window.location.href = "spotify:track:" + dest.spotifyId;
-      }, 200);
-    }
-
-    // 2) Always fallback to web URL
+    // Always redirect to web URL
     setTimeout(function () {
       window.location.href = webUrl;
     }, 1000);
