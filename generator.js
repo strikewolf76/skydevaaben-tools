@@ -392,11 +392,12 @@
   const TARGET_H = 630;
 
   const SETTINGS_KEY = "sv-generator-settings-v1";
-  const TOKEN_KEY = "sv-generator-token";
-  const THEME_KEY = "sv-generator-theme-v1";
   const SLOT_KEY = "sv-slot-state-v1";
   const HASH_KEY = "sv-file-hash-v1";
   const PUBLISH_HISTORY_KEY = "sv-publish-history-v1";
+
+  let currentTheme = "base";
+  let currentToken = "";
 
   const REPO_BASE_LOCKED = "https://skydevaaben.no";
 
@@ -612,11 +613,12 @@
   }
 
   function loadTheme() {
-    return normalizeTheme(safeGet(THEME_KEY));
+    return normalizeTheme(currentTheme);
   }
 
   function persistTheme(theme) {
-    safeSet(THEME_KEY, normalizeTheme(theme));
+    currentTheme = normalizeTheme(theme);
+    persistSettingsSoon();
   }
 
   function cycleTheme() {
@@ -652,6 +654,8 @@
   function collectSettings() {
     return {
       metaPixelId: els.metaPixelId.value,
+      theme: currentTheme,
+      token: currentToken,
     };
   }
 
@@ -674,21 +678,26 @@
         if (isCheckbox) el.checked = !!val; else el.value = val;
       };
       assign(els.metaPixelId, s.metaPixelId);
+      currentTheme = s.theme || "base";
+      applyTheme(currentTheme);
+      currentToken = s.token || "";
+      els.ghToken.value = currentToken;
       updateMetaPixelStatus();
     } catch { /* ignore */ }
   }
 
   function loadToken() {
-    return safeGet(TOKEN_KEY) || "";
+    return currentToken || "";
   }
 
   function persistToken(token) {
-    if (token && token.trim()) safeSet(TOKEN_KEY, token.trim());
-    else safeSet(TOKEN_KEY, null);
+    currentToken = token && token.trim() ? token.trim() : "";
+    persistSettingsSoon();
   }
 
   function forgetToken() {
-    persistToken("");
+    currentToken = "";
+    persistSettingsSoon();
     els.ghToken.value = "";
     setTokenStatus("bad");
   }
@@ -1485,14 +1494,12 @@
 
   // ---------- wire ----------
   function wire() {
+    applySettings();
     const initialTheme = applyTheme(loadTheme());
     persistTheme(initialTheme);
 
     // Enforce locked base URL regardless of localStorage state
     els.repoBase.value = REPO_BASE_LOCKED;
-    applySettings();
-    const savedToken = loadToken();
-    if (savedToken) els.ghToken.value = savedToken;
     els.repoBase.value = REPO_BASE_LOCKED; // re-assert after applying other settings
     if (els.repoBaseDisplay) els.repoBaseDisplay.textContent = REPO_BASE_LOCKED;
     if (els.siteNameDisplay) els.siteNameDisplay.textContent = els.siteName.value || "";
