@@ -82,15 +82,15 @@
         <div class="section-hint">Song Title and Original Album Cover define how the link preview looks when shared (Meta, Messenger, etc.). Destinations configure redirect pages with UTM-ready URLs.</div>
         <div class="ogpreview mt-8">
           <div>
-            <h3>Artist Name</h3>
+            <div class="panel-head"><div><strong>Artist Name</strong></div></div>
             <input id="artist" />
             <div class="hint">Used for page metadata.</div>
 
-            <h3>Song Title</h3>
+            <div class="panel-head"><div><strong>Song Title</strong></div></div>
             <input id="title" value="Born Again (Crimson Noise Remix)" />
             <div class="hint">Used for slug, page title, and utm_campaign.</div>
 
-            <h3>Original Album Cover</h3>
+            <div class="panel-head"><div><strong>Original Album Cover</strong></div></div>
             <div class="hint">On publish, <span class="mono">assets/og/&lt;slug&gt;.jpg</span> is created automatically.</div>
             <div class="mt-10">
               <input id="ogFile" type="file" accept="image/*" />
@@ -137,16 +137,17 @@
               <div id="validation" class="mono"></div>
             </div>
           </div>
-
-          <div id="logPanel" class="panel hidden">
-            <div class="panel-head">
-              <div><strong>Log</strong></div>
-              <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
-            </div>
-            <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
-            <div id="log" class="log mt-10"></div>
-          </div>
         </div>
+
+        <div id="logPanel" class="panel hidden mt-10">
+          <div class="panel-head">
+            <div><strong>Log</strong></div>
+            <span class="tip-marker" data-tip="Lists generated file paths and deployed Pages URLs during preview/publish.">?</span>
+          </div>
+          <div class="hint">Shows which repo paths and Pages links are generated/published.</div>
+          <div id="log" class="log mt-10"></div>
+        </div>
+      </div>
       </div>
 
   <div id="resolverOverlay" class="modal-overlay hidden">
