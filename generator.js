@@ -475,7 +475,6 @@
     if (!file) {
       els.ogFileInfo.textContent = "";
       drawOgCanvasFromBitmap();
-      validateOnly();
       renderPreviewGrid();
       return;
     }
@@ -495,14 +494,12 @@
       ogImageLoaded = !ogImageError;
       els.ogFileInfo.textContent = messages.join(" | ");
       drawOgCanvasFromBitmap();
-      validateOnly();
       renderPreviewGrid();
     } catch (e) {
       els.ogFileInfo.textContent = `Failed to read image: ${String(e)}`;
       ogImageLoaded = false;
       ogImageBitmap = null;
       drawOgCanvasFromBitmap();
-      validateOnly();
     }
   }
 
