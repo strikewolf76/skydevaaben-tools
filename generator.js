@@ -1508,7 +1508,7 @@
     syncSlugAndCampaignFromTitle();
     updateNeedsInput();
     updateMetaPixelStatus();
-    if (savedToken) validateTokenStatus(true); else setTokenStatus("bad");
+    if (currentToken) validateTokenStatus(true); else setTokenStatus("bad");
 
     [
       els.repoBase, els.siteName, els.metaPixelId,
@@ -1535,6 +1535,12 @@
         scheduleTokenValidation();
       }, 0);
     }));
+
+    // Also on blur, to catch any missed changes
+    els.ghToken.addEventListener("blur", () => {
+      persistToken(els.ghToken.value);
+      scheduleTokenValidation();
+    });
 
     els.ogFile.addEventListener("change", (e) => {
       const file = e.target.files && e.target.files[0];
