@@ -763,6 +763,7 @@
   // ---------- HTML generation ----------
   function generateHtml({
     title,
+    artist,
     siteName,
     description,
     ogUrlAbs,
@@ -772,15 +773,7 @@
     trackSlug,
     utm_campaign
   }) {
-    // Parse artist and song from title (assuming "Artist - Song")
-    let artist = "", song = "";
-    const parts = title.split(" - ");
-    if (parts.length >= 2) {
-      artist = parts[0].trim();
-      song = parts.slice(1).join(" - ").trim();
-    } else {
-      song = title;
-    }
+    // title is song, artist is artist
 
     // Generate buttons for each destination
     const buttonsHtml = destinations.map(dest => {
@@ -928,7 +921,7 @@
 
   <div class="content">
     <img src="${htmlEscape(ogImageAbs.replace(/\.jpg$/i, "-fg.jpg"))}" alt="" class="cover">
-    <div class="track-title">${htmlEscape(song)}${artist ? " by " + htmlEscape(artist) : ""}</div>
+    <div class="track-title">${htmlEscape(title)}${artist ? " by " + htmlEscape(artist) : ""}</div>
     <div class="track-subtitle">Choose your preferred music service</div>
     <div class="service-buttons">
       ${buttonsHtml}
@@ -1208,6 +1201,7 @@
 
     const html = generateHtml({
       title,
+      artist,
       siteName,
       description,
       ogUrlAbs,
