@@ -180,10 +180,12 @@
     setAppleResolveTargets({ spotify: true });
     if (!els.resolverOverlay) return;
     clearResolverResults();
-    if (els.resolverStatus) els.resolverStatus.textContent = "Search by song or artist.";
+    if (els.resolverStatus) els.resolverStatus.textContent = "Search by song and artist.";
     show(els.resolverOverlay);
     if (els.resolverInput) {
-      const seed = (els.title?.value || "").trim();
+      const title = (els.title?.value || "").trim();
+      const artist = (els.artist?.value || "").trim();
+      const seed = [title, artist].filter(Boolean).join(" ");
       els.resolverInput.value = seed;
       els.resolverInput.focus();
       els.resolverInput.select();
@@ -229,7 +231,7 @@
   async function runResolverSearch(term) {
     const q = (term || "").trim();
     if (!q) {
-      if (els.resolverStatus) els.resolverStatus.textContent = "Enter a song or artist.";
+      if (els.resolverStatus) els.resolverStatus.textContent = "Enter a song and artist.";
       clearResolverResults();
       return;
     }
