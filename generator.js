@@ -180,6 +180,7 @@
   }
 
   function showResolver() {
+    console.log('showResolver called');
     setAppleResolveTargets({ spotify: true, deezer: true });
     if (!els.resolverOverlay) return;
     clearResolverResults();
@@ -1571,7 +1572,10 @@
     els.btnForgetToken.addEventListener("click", () => { forgetToken(); clearLog(); addLogItem({ title: "Token cleared", status: "OK", lines: ["Token removed from the browser."] }); });
     if (els.btnCopyCreds) els.btnCopyCreds.addEventListener("click", () => copyCredsToClipboard());
     if (els.btnTheme) els.btnTheme.addEventListener("click", () => cycleTheme());
-    if (els.btnResolver) els.btnResolver.addEventListener("click", () => showResolver());
+    if (els.btnResolver) {
+      console.log('Attaching resolver click listener');
+      els.btnResolver.addEventListener("click", () => showResolver());
+    }
     if (els.resolverForm) els.resolverForm.addEventListener("submit", (e) => { e.preventDefault(); runResolverSearch(els.resolverInput.value); });
     if (els.resolverResults) els.resolverResults.addEventListener("click", (e) => {
       const card = e.target.closest("[data-apple-url]");
