@@ -1023,9 +1023,7 @@
     const spotifyIdParsed = parseSpotifyTrackId(els.spotifyUrl.value || "");
 
     const hasSpotify = !!(els.destSpotify.checked && spotifyIdParsed);
-    const hasApple = !!els.destApple.checked;
-    const hasDeezer = !!els.destDeezer.checked;
-    const description = autoDescription({ hasSpotify, hasApple, hasDeezer });
+    const description = autoDescription({ hasSpotify, hasApple: false, hasDeezer: false });
 
     const slug = sanitizeSlug(els.trackSlug.value);
     const utm_campaign = sanitizeSlug(els.utmCampaign.value);
@@ -1042,12 +1040,6 @@
         baseUrl: `https://open.spotify.com/track/${encodeURIComponent(sid)}`,
         spotifyId: sid,
       });
-    }
-    if (els.destApple.checked) {
-      destinations.push({ key: "apple", type: "web", baseUrl: (els.appleUrl.value || "").trim(), spotifyId: "" });
-    }
-    if (els.destDeezer.checked) {
-      destinations.push({ key: "deezer", type: "web", baseUrl: (els.deezerUrl.value || "").trim(), spotifyId: "" });
     }
 
     const items = [];
