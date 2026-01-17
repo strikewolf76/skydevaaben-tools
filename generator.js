@@ -464,6 +464,7 @@
       els.ogFileInfo.textContent = "";
       drawOgCanvasFromBitmap();
       renderPreviewGrid();
+      validateOnly();
       return;
     }
 
@@ -483,12 +484,14 @@
       ogImageSlug = sanitizeSlug(file.name.replace(/\.[^.]*$/, ''));
       els.ogFileInfo.textContent = messages.join(" | ");
       drawOgCanvasFromBitmap();
+      validateOnly();
     } catch (e) {
       els.ogFileInfo.textContent = `Failed to read image: ${String(e)}`;
       ogImageLoaded = false;
       ogImageBitmap = null;
       ogImageSlug = null;
       drawOgCanvasFromBitmap();
+      validateOnly();
     }
   }
 

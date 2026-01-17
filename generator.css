@@ -51,7 +51,7 @@ button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--button
 .status-bad { color:#c33; font-weight:600; }
 .status-pending { color:#c88600; font-weight:600; }
 .token-input { margin-top:6px; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; white-space: pre-line; }
 .hint { font-size: 12px; opacity: 0.8; margin-top: 6px; }
 .ok { color: #0a7; }
 .bad { color: #c33; }
