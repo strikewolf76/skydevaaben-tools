@@ -954,17 +954,16 @@
     if (!dest) return;
 
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
-    var appUrl = "spotify:track:" + dest.spotifyId;
 
     grantConsent();
     trackOutbound(destKey);
 
-    // 1) Try Spotify app (only if NOT in-app browser)
-    if (!isInAppBrowser) {
-      window.location.href = appUrl;
+    // 1) Try Spotify app only for Spotify destination (and only if we have an ID)
+    if (destKey === "spotify" && dest.spotifyId && !isInAppBrowser) {
+      window.location.href = "spotify:track:" + dest.spotifyId;
     }
 
-    // 2) Fallback to web Spotify
+    // 2) Always fallback to web URL
     setTimeout(function () {
       window.location.href = webUrl;
     }, 600);
