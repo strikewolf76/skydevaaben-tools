@@ -956,24 +956,15 @@
 
     var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: CID });
 
-    // Open immediately to preserve user gesture (avoids popup blocking)
-    var w = null;
-    try {
-      w = window.open("about:blank", "_blank");
-      if (w) w.opener = null;
-    } catch (_) {}
-
     grantConsent();
     trackOutbound(destKey);
 
-    setTimeout(function () {
-      try {
-        if (w && !w.closed) w.location.href = webUrl;
-        else window.location.href = webUrl; // fallback
-      } catch (_) {
-        window.location.href = webUrl;
-      }
-    }, 150);
+    try {
+      var w = window.open(webUrl, '_blank');
+      if (w) w.opener = null;
+    } catch (_) {
+      window.location.href = webUrl; // fallback
+    }
   }
 
   // Attach click handlers
