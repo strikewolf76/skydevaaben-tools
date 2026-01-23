@@ -841,8 +841,8 @@
       max-width: 340px;
     }
     .cover {
-      width: 240px;
-      height: 240px;
+      width: 280px;
+      height: 280px;
       object-fit: cover;
       border-radius: 10px;
       box-shadow: 0 6px 24px rgba(0,0,0,0.5);
