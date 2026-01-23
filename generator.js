@@ -16,8 +16,6 @@
 
     destSpotify: $("destSpotify"),
     spotifyUrl: $("spotifyUrl"),
-    destApple: $("destApple"),
-    appleUrl: $("appleUrl"),
 
     btnResolver: $("btnResolver"),
     resolverOverlay: $("resolverOverlay"),
@@ -157,13 +155,7 @@
     // ...existing code...
   }
 
-  let appleResolveTargets = { spotify: true };
 
-  function setAppleResolveTargets(targets = {}) {
-    appleResolveTargets = {
-      spotify: !!targets.spotify,
-    };
-  }
 
   // ---------- Resolver (Apple search -> Odesli) ----------
   let resolverSearchAbort = null;
@@ -180,7 +172,6 @@
 
   function showResolver() {
     console.log('showResolver called');
-    setAppleResolveTargets({ spotify: true });
     if (!els.resolverOverlay) return;
     clearResolverResults();
     if (els.resolverStatus) els.resolverStatus.textContent = "Search by song and artist.";
@@ -434,7 +425,6 @@
   const TARGET_H = 630;
 
   const SETTINGS_KEY = "sv-generator-settings-v1";
-  const SLOT_KEY = "sv-slot-state-v1";
   const HASH_KEY = "sv-file-hash-v1";
   const PUBLISH_HISTORY_KEY = "sv-publish-history-v1";
 
@@ -444,20 +434,6 @@
   const REPO_BASE_LOCKED = "https://skydevaaben.no";
 
   const THEMES = ["base", "ocean", "forest", "sunset", "sand", "slate", "mint"];
-
-  const CHANNEL_INPUTS = {
-    meta: () => els.metaContent,
-    tiktok: () => els.ttContent,
-    youtube: () => els.ytContent
-  };
-
-  const PRESET_MAP = {
-    story:  { channel: "meta",   prefix: "meta-ads-story" },
-    reel:   { channel: "meta",   prefix: "meta-ads-reel" },
-    feed:   { channel: "meta",   prefix: "meta-ads-feed" },
-    infeed: { channel: "tiktok", prefix: "tt-ads-infeed" },
-    instream: { channel: "youtube", prefix: "yt-ads-instream" }
-  };
 
   const OWNER = "strikewolf76";
   const REPO = "skydevaaben";
@@ -704,7 +680,6 @@
     };
   }
 
-  let saveTimer = null;
   function persistSettingsSoon() {
     const data = collectSettings();
     safeSet(SETTINGS_KEY, JSON.stringify(data));
@@ -780,7 +755,7 @@
     // Generate buttons for each destination
     const buttonsHtml = destinations.map(dest => {
       if (dest.key === "spotify") {
-        return `<a class="cta spotify-btn" href="#" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">
+        return `<a class="cta spotify-btn" href="${htmlEscape(dest.baseUrl)}" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">
         <span class="spotify-logo">
           <svg width="28" height="28" viewBox="0 0 168 168"><circle fill="#1ED760" cx="84" cy="84" r="84"/><path d="M120.1 116.6c-1.7 2.8-5.3 3.7-8.1 2-22.2-13.6-50.2-16.7-83.2-9.2-3.2.7-6.4-1.3-7.1-4.5-.7-3.2 1.3-6.4 4.5-7.1 35.7-7.9 66.1-4.4 90.2 10.5 2.8 1.7 3.7 5.3 2 8.3zm11.5-23.1c-2.1 3.4-6.5 4.5-9.9 2.4-25.5-15.6-64.5-20.1-94.7-11.1-3.8 1.1-7.8-1.1-8.9-4.9-1.1-3.8 1.1-7.8 4.9-8.9 33.9-9.8 76.1-5 104.7 12.2 3.4 2.1 4.5 6.5 2.4 9.9zm12.7-25.2c-30.1-18.1-79.7-19.8-108.1-11.1-4.4 1.3-9-1.2-10.3-5.6-1.3-4.4 1.2-9 5.6-10.3 31.9-9.5 85.2-7.6 119.6 12.3 4 2.4 5.3 7.7 2.9 11.7-2.4 4-7.7 5.3-11.7 2.9z" fill="#fff"/></svg>
         </span>
@@ -788,7 +763,7 @@
       </a>`;
       } else {
         const buttonLabel = dest.key === "apple" ? "Listen on Apple Music" : dest.key === "deezer" ? "Listen on Deezer" : "Listen";
-        return `<a class="cta" href="#" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">${buttonLabel}</a>`;
+        return `<a class="cta" href="${htmlEscape(dest.baseUrl)}" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">${buttonLabel}</a>`;
       }
     }).join("");
 
@@ -1071,11 +1046,13 @@
         navigator.sendBeacon("https://www.facebook.com/tr/", new Blob([], { type: "application/x-www-form-urlencoded" }));
       }
     } catch (_) {}
-
-    // Always redirect to web URL
-    setTimeout(function () {
+    
+    // Always redirect to web URL (instant in in-app browsers; short delay elsewhere)
+    if (isInAppBrowser) {
       window.location.href = webUrl;
-    }, 1000);
+    } else {
+      setTimeout(function () { window.location.href = webUrl; }, 120);
+    }
   }
 
   // Attach click handlers
