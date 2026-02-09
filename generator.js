@@ -39,6 +39,14 @@
     previewPanel: null, // removed
     logPanel: $("logPanel"),
 
+    shortUrlPanel: $("shortUrlPanel"),
+    shortSlug: $("shortSlug"),
+    platformYt: $("platformYt"),
+    platformIg: $("platformIg"),
+    platformFb: $("platformFb"),
+    platformTt: $("platformTt"),
+    numReels: $("numReels"),
+
     ogFile: $("ogFile"),
     ogFileInfo: $("ogFileInfo"),
     ogCanvas: $("ogCanvas"),
@@ -1071,6 +1079,55 @@
 `;
   }
 
+  function generateShortUrlHtml(trackSlug) {
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Redirecting…</title>
+</head>
+<body>
+<script>
+(function () {
+  var targetBase = "https://skydevaaben.no/tracks/${htmlEscape(trackSlug)}/index.html";
+  var params = new URLSearchParams(window.location.search || "");
+
+  // Default cid if none provided
+  if (!params.has("cid")) params.set("cid", "notcidded");
+
+  window.location.replace(targetBase + "?" + params.toString());
+})();
+</script>
+</body>
+</html>`;
+  }
+
+  function generateRHtml(shortSlug, cid) {
+    return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Redirecting…</title>
+</head>
+<body>
+<script>
+(function () {
+  var targetBase = "https://skydevaaben.no/shorturl/${htmlEscape(shortSlug)}/";
+  var params = new URLSearchParams(window.location.search || "");
+
+  params.set("cid", "${htmlEscape(cid)}");
+
+  window.location.replace(targetBase + "?" + params.toString());
+})();
+</script>
+</body>
+</html>`;
+  }
+
   // ---------- validation + batch build ----------
   function validateOnly(requireOg = true) {
     syncSlugAndCampaignFromTitle();
@@ -1156,6 +1213,14 @@
     const slug = sanitizeSlug(els.trackSlug.value);
     const utm_campaign = sanitizeSlug(els.utmCampaign.value);
 
+    const shortSlug = sanitizeSlug(els.shortSlug.value || "");
+    const platforms = [];
+    if (els.platformYt.checked) platforms.push({key: 'yt', name: 'YouTube'});
+    if (els.platformIg.checked) platforms.push({key: 'ig', name: 'Instagram'});
+    if (els.platformFb.checked) platforms.push({key: 'fb', name: 'Facebook'});
+    if (els.platformTt.checked) platforms.push({key: 'tt', name: 'TikTok'});
+    const numReels = Math.max(1, Math.min(10, parseInt(els.numReels.value) || 3));
+
     const imageSlug = ogImageSlug || slug;
     const ogImageRel = `assets/og/${imageSlug}.jpg`;
     const ogImageAbs = `${repoBase}/${ogImageRel}`;
@@ -1199,7 +1264,31 @@
       html
     });
 
-    return { ok: true, slug, ogImageRel, ogImageAbs, items };
+    const shortUrlItems = [];
+    if (shortSlug) {
+      // shorturl
+      const shortUrlHtml = generateShortUrlHtml(slug);
+      shortUrlItems.push({
+        relPath: `shorturl/${shortSlug}/index.html`,
+        pagesUrl: `${repoBase}/shorturl/${shortSlug}/`,
+        html: shortUrlHtml
+      });
+
+      // r/ folders
+      for (const platform of platforms) {
+        for (let i = 1; i <= numReels; i++) {
+          const cid = `org-${platform.key}-${shortSlug}-r${i}`;
+          const rHtml = generateRHtml(shortSlug, cid);
+          shortUrlItems.push({
+            relPath: `r/${platform.key}${shortSlug}${i}/index.html`,
+            pagesUrl: `${repoBase}/r/${platform.key}${shortSlug}${i}/`,
+            html: rHtml
+          });
+        }
+      }
+    }
+
+    return { ok: true, slug, shortSlug, platforms, numReels, ogImageRel, ogImageAbs, items, shortUrlItems };
   }
 
   // ---------- drag & drop OG ----------
@@ -1375,7 +1464,8 @@
       lines: [
         `Target: ${OWNER}/${REPO} @ ${BRANCH}`,
         `OG image: ${batch.ogImageRel}`,
-        `Files: ${batch.items.length}`
+        `Files: ${batch.items.length}`,
+        `Short URLs: ${batch.shortUrlItems ? batch.shortUrlItems.length : 0}`
       ]
     });
 
@@ -1500,6 +1590,31 @@
             type: "HTML",
             item: it,
             run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Landing page: ${batch.slug}`, contentBase64: htmlB64 })
+          });
+        }
+      } catch (e) {
+        addLogItem({ title: `FAIL: ${it.relPath}`, status: "ERROR", lines: [normalizeTokenError(e)] });
+        failures += 1;
+      }
+    }
+
+    // Prepare short URL HTML uploads
+    for (const it of batch.shortUrlItems || []) {
+      try {
+        const htmlHash = hashString(it.html);
+        const prevHash = hashStore[it.relPath];
+        if (prevHash && prevHash === htmlHash) {
+          addLogItem({ title: `UNCHANGED: ${it.relPath}`, status: "UNCHANGED", lines: [`shorturl=${batch.shortSlug}`] });
+        } else {
+          if (prevHash && prevHash !== htmlHash) confirmNeeded = true;
+          const htmlB64 = utf8ToBase64(it.html);
+          pendingUploads.push({
+            path: it.relPath,
+            hash: htmlHash,
+            link: it.pagesUrl,
+            type: "SHORTURL",
+            item: it,
+            run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Short URL: ${batch.shortSlug}`, contentBase64: htmlB64 })
           });
         }
       } catch (e) {
