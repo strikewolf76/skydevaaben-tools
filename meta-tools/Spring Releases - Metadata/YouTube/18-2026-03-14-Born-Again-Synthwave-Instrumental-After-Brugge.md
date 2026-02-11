@@ -1,8 +1,6 @@
 🎧 Born Again (Synthwave Instrumental) — After Brügge
 
-⚠️ Pending lyric-/brief-informed writeup: the corresponding sunodoc entry for this track was not found in `meta-tools/sunodoc/` or in `meta-tools/sunodoc/index all songs.md` at generation time.
-
-Once the sunodoc file exists, this description will be updated to reflect whether it’s truly instrumental and what lane/brief it targets.
+This synthwave instrumental offers an upbeat, fast, retro take on the Born Again theme, inspired by grunge and garage punk origins, kept short and energetic. As a purely instrumental track, it focuses on melodic synth lines and driving rhythms without vocals, capturing the essence of rebirth through sound alone.
 
 🔗 Listen / Start here
 
@@ -18,8 +16,8 @@ After Brügge is the legacy catalog (1996–2007) — material originally made i
 ⚙️ Production / credits
 Catalog origin: After Brügge (1996–2007)
 Composer: Skydevaaben
-AI tool used as production instrument: Suno (version TBD from sunodoc)
-Release artist identity (DSP): (TBD from sunodoc)
+AI tool used as production instrument: Suno (version 5)
+Release artist identity (DSP): Sky.AI
 
 📌 Connect
 Instagram → https://instagram.com/skydevaaben
@@ -34,5 +32,5 @@ Linktree → https://linktr.ee/skydevaaben
 ---
 ## Resource index (sources used)
 - Schedule + shortlinks: meta-tools/templates/Release Plan - Music - Schedule.csv (row: 14.03.2026 / After Brügge / Born Again / Synthwave Instrumental)
-- Sunodoc: MISSING (please add a `meta-tools/sunodoc/*Born*Again*Synthwave*Instrumental*.md` entry)
+- Sunodoc: meta-tools/sunodoc/Born-Again-SW-Instrumental-Remastered-Skydevaaben-SkyAI-2025-12-09.md
 - YouTube shortlink used: https://skydevaaben.no/r/ytbaswi1

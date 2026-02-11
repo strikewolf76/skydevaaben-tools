@@ -1,8 +1,6 @@
 🎧 Born Again (Crimson Noise) — After Brügge
 
-⚠️ Pending lyric-informed writeup: the corresponding sunodoc entry for this track was not found in `meta-tools/sunodoc/` or in `meta-tools/sunodoc/index all songs.md` at generation time.
-
-Once the sunodoc file exists, this description will be updated to include a lyric-driven analysis consistent with the other releases.
+This Crimson Noise variant delivers a hard rock anthem in a minor key at a fast tempo, featuring raw, powerful male vocals that convey urgency and passion. The instrumentation builds on distorted electric guitars with aggressive riffs, a driving bass, and energetic drums, creating an intense, anthemic feel. Lyrically, the song explores themes of overwhelming life experiences, breaking points, and the desire for rebirth and self-pride, culminating in a repeated chorus of "I'm born again."
 
 🔗 Listen / Start here
 
@@ -18,8 +16,8 @@ After Brügge is the legacy catalog (1996–2007) — material originally made i
 ⚙️ Production / credits
 Catalog origin: After Brügge (1996–2007)
 Lyrics & creative direction: Skydevaaben
-AI tool used as production instrument: Suno (version TBD from sunodoc)
-Release artist identity (DSP): (TBD from sunodoc)
+AI tool used as production instrument: Suno (version 5)
+Release artist identity (DSP): Sky.AI
 
 📌 Connect
 Instagram → https://instagram.com/skydevaaben
@@ -29,10 +27,10 @@ Spotify → https://open.spotify.com/artist/3NqNiVvNvYg9j8wYSy6YQc
 Linktree → https://linktr.ee/skydevaaben
 
 #Tags
-#AfterBrugge #Skydevaaben #LegacyRestoration #AIEnhanced #Transparency #MusicVideo
+#AfterBrugge #Skydevaaben #HardRock #CrimsonNoise #LegacyRestoration #AIEnhanced #Transparency #MusicVideo
 
 ---
 ## Resource index (sources used)
 - Schedule + shortlinks: meta-tools/templates/Release Plan - Music - Schedule.csv (row: 10.03.2026 / After Brügge / Born Again / Crimson Noise)
-- Sunodoc: MISSING (please add a `meta-tools/sunodoc/*Born*Again*Crimson*Noise*.md` entry)
+- Sunodoc: meta-tools/sunodoc/Born-Again-Crimson-Noise-Remastered-Skydevaaben-SkyAI-2025-12-19.md
 - YouTube shortlink used: https://skydevaaben.no/r/ytbacn1

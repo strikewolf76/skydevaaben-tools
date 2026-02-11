@@ -1,8 +1,6 @@
 🎧 Born Again (Crimson Echo) — After Brügge
 
-⚠️ Pending lyric-informed writeup: the corresponding sunodoc entry for this track was not found in `meta-tools/sunodoc/` or in `meta-tools/sunodoc/index all songs.md` at generation time.
-
-Once the sunodoc file exists, this description will be updated to include a lyric-driven analysis consistent with the other releases.
+This Crimson Echo variant fuses high-energy electronic rock with a driving beat, prominent synth bass, distorted electric guitars, and a powerful drum presence. The male vocals deliver raw, emotional intensity with layered effects like delay and reverb, building tension through verses, choruses, and instrumental breaks. Lyrically, the song reflects on life's overwhelming fullness, breaking points, and the urgent call for rebirth and self-pride, echoed in the anthemic chorus "I'm born again."
 
 🔗 Listen / Start here
 
@@ -18,8 +16,8 @@ After Brügge is the legacy catalog (1996–2007) — material originally made i
 ⚙️ Production / credits
 Catalog origin: After Brügge (1996–2007)
 Lyrics & creative direction: Skydevaaben
-AI tool used as production instrument: Suno (version TBD from sunodoc)
-Release artist identity (DSP): (TBD from sunodoc)
+AI tool used as production instrument: Suno (version 5)
+Release artist identity (DSP): Sky.AI
 
 📌 Connect
 Instagram → https://instagram.com/skydevaaben
@@ -29,10 +27,10 @@ Spotify → https://open.spotify.com/artist/3NqNiVvNvYg9j8wYSy6YQc
 Linktree → https://linktr.ee/skydevaaben
 
 #Tags
-#AfterBrugge #Skydevaaben #LegacyRestoration #AIEnhanced #Transparency #MusicVideo
+#AfterBrugge #Skydevaaben #ElectronicRock #CrimsonEcho #LegacyRestoration #AIEnhanced #Transparency #MusicVideo
 
 ---
 ## Resource index (sources used)
 - Schedule + shortlinks: meta-tools/templates/Release Plan - Music - Schedule.csv (row: 12.03.2026 / After Brügge / Born Again / Crimson Echo)
-- Sunodoc: MISSING (please add a `meta-tools/sunodoc/*Born*Again*Crimson*Echo*.md` entry)
+- Sunodoc: meta-tools/sunodoc/Born-Again-Crimson-Echo-Remastered-Skydevaaben-SkyAI-2025-12-19.md
 - YouTube shortlink used: https://skydevaaben.no/r/ytbace1
