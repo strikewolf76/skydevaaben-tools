@@ -1584,7 +1584,7 @@ window.slugs = [${slugsString}];`;
 
     // Put the new content
     const sha = await getFileSha(OWNER, REPO, BRANCH, token, 'r/data.js');
-    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/data.js', message: `Update data.js with new song: ${songCode}`, content: btoa(newContent), sha });
+    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/data.js', message: `Update data.js with new song: ${songCode}`, contentBase64: btoa(newContent), sha });
   }
 
   // ---------- publish ----------
