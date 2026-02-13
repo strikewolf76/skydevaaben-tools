@@ -70,9 +70,15 @@
   function sanitizeSlug(s) {
     s = (s || "").trim().toLowerCase();
     s = s.replace(/[_\s]+/g, "-");
-    s = s.replace(/[^a-z0-9-]/g, "");
+    s = s.replace(/[^a-z0-9åæø-]/g, "");
     s = s.replace(/-+/g, "-");
     s = s.replace(/^-+|-+$/g, "");
+    return s;
+  }
+
+  function sanitizeShortSlug(s) {
+    s = (s || "").trim().toLowerCase();
+    s = s.replace(/[^a-z0-9åæø]/g, "");
     return s;
   }
 
@@ -455,7 +461,7 @@
     const titleWords = title.split(/\s+/).filter(word => word.length > 0);
     const titleFirsts = titleWords.slice(0, 3).map(word => word.charAt(0).toUpperCase()).join("");
     
-    return artistPart + titleFirsts;
+    return sanitizeShortSlug(artistPart + titleFirsts);
   }
 
   function drawOgCanvasFromBitmap() {
@@ -1188,7 +1194,7 @@
     }
 
     // Check short URL uniqueness
-    const shortSlug = (els.shortSlug.value || "").trim();
+    const shortSlug = sanitizeShortSlug(els.shortSlug.value || "");
     const platformsChecked = [els.platformYt, els.platformIg, els.platformFb, els.platformTt].filter(cb => cb.checked).length > 0;
     if (platformsChecked) {
       if (!shortSlug) {
@@ -1279,7 +1285,7 @@
     const slug = sanitizeSlug(els.trackSlug.value);
     const utm_campaign = sanitizeSlug(els.utmCampaign.value);
 
-    const shortSlug = sanitizeSlug(els.shortSlug.value || "");
+    const shortSlug = sanitizeShortSlug(els.shortSlug.value || "");
     const platforms = [];
     if (els.platformYt.checked) platforms.push({key: 'yt', name: 'YouTube'});
     if (els.platformIg.checked) platforms.push({key: 'ig', name: 'Instagram'});
