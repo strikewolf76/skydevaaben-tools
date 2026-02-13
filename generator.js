@@ -1067,7 +1067,7 @@
   });
 
 })();
-</script>
+<\/script>
 
 </body>
 </html>
@@ -1094,7 +1094,7 @@
 
   window.location.replace(targetBase + "?" + params.toString());
 })();
-</script>
+<\/script>
 </body>
 </html>`;
   }
@@ -1118,7 +1118,7 @@
 
   window.location.replace(targetBase + "?" + params.toString());
 })();
-</script>
+<\/script>
 </body>
 </html>`;
   }
