@@ -436,7 +436,7 @@
 
   const REPO_BASE_LOCKED = "https://skydevaaben.no";
 
-  const THEMES = ["base", "ocean", "forest", "sunset", "sand", "slate", "mint"];
+  const THEMES = ["base", "ocean", "forest", "sunset", "sand", "slate", "mint", "night", "aurora"];
 
   const OWNER = "strikewolf76";
   const REPO = "skydevaaben";

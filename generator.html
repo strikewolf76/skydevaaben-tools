@@ -56,7 +56,7 @@
         <div class="hidden">
           <label for="trackSlug">Track slug</label>
           <input id="trackSlug" value="born-again-crimson-noise" readonly />
-          <div class="hint">Auto-derived from title; not editable.</div>
+          <div class="hint">Auto-derived from title; sanitized to letters (a-z, åæø), numbers, and hyphens.</div>
         </div>
 
         <div class="hidden">
@@ -143,13 +143,13 @@
             <div id="shortUrlPanel" class="panel mt-10">
               <div class="panel-head">
                 <div><strong>Short URLs</strong></div>
-                <span class="tip-marker" data-tip="Generate ultra-short URL redirects for social media platforms and reels.">?</span>
+                <span class="tip-marker" data-tip="Generate ultra-short URL redirects for social media platforms and reels. Short slugs are sanitized to contain only letters (a-z, åæø) and numbers for clean URLs.">?</span>
               </div>
               <div class="section-hint">Create short URLs like skydevaaben.no/r/yt{shortslug}1 for YouTube, etc.</div>
               <div class="mt-8">
                 <label for="shortSlug">Short Slug (auto-generated)</label>
                 <input id="shortSlug" placeholder="sklcn" />
-                <div class="hint">Auto-generated from first 2 Artist letters + first 3 Title word initials (editable if needed).</div>
+                <div class="hint">Auto-generated from first 2 Artist letters + first 3 Title word initials (editable if needed). Sanitized to letters (a-z, åæø) and numbers only.</div>
               </div>
               <div class="mt-8">
                 <div class="label">Platforms</div>
