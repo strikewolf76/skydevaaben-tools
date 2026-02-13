@@ -1105,7 +1105,7 @@
 
   // ---------- validation + batch build ----------
   async function validateOnly(requireOg = true) {
-    syncSlugAndCampaignFromTitle();
+    // syncSlugAndCampaignFromTitle(); // Removed: validation should not modify form values
     const errors = [];
     const warnings = [];
     updateNeedsInput();
@@ -1867,7 +1867,7 @@
     if (els.title) els.title.addEventListener("input", () => { syncSlugAndCampaignFromTitle(); updateValidation(); });
     if (els.artist) els.artist.addEventListener("input", () => { syncSlugAndCampaignFromTitle(); updateValidation(); });
     if (els.shortSlug) els.shortSlug.addEventListener("input", updateValidation);
-    if (els.trackSlug) els.trackSlug.addEventListener("input", updateValidation);
+    if (els.trackSlug) els.trackSlug.addEventListener("input", () => { els.utmCampaign.value = els.trackSlug.value; updateValidation(); });
     if (els.utmCampaign) els.utmCampaign.addEventListener("input", updateValidation);
     if (els.destSpotify) els.destSpotify.addEventListener("change", updateValidation);
     if (els.spotifyUrl) els.spotifyUrl.addEventListener("input", updateValidation);
