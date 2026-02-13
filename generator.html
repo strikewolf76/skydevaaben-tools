@@ -174,8 +174,14 @@
                 </div>
               </div>
               <div class="mt-8">
-                <label for="numReels">Number of Reels per Platform</label>
-                <input id="numReels" type="number" min="1" max="10" value="3" />
+                <label>Number of Landing Pages per Platform</label>
+                <div class="radio-group">
+                  <label><input type="radio" name="numReels" value="1" checked /> 1</label>
+                  <label><input type="radio" name="numReels" value="2" /> 2</label>
+                  <label><input type="radio" name="numReels" value="3" /> 3</label>
+                  <label><input type="radio" name="numReels" value="4" /> 4</label>
+                  <label><input type="radio" name="numReels" value="5" /> 5</label>
+                </div>
                 <div class="hint">Creates r{1} to r{num} for each platform.</div>
               </div>
             </div>

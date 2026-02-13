@@ -1221,6 +1221,7 @@
         "  - qrs/" + slug + "/index.png\n";
       
       if (platformsChecked && shortSlug) {
+        const numReels = parseInt(document.querySelector('input[name="numReels"]:checked').value) || 1;
         const platforms = [];
         if (els.platformYt.checked) platforms.push('yt');
         if (els.platformIg.checked) platforms.push('ig');
@@ -1228,7 +1229,8 @@
         if (els.platformTt.checked) platforms.push('tt');
         
         const shortUrls = platforms.reduce(function(acc, platform) {
-          return acc.concat(['1', '2', '3', '4'].map(function(version) {
+          const versions = Array.from({length: numReels}, (_, i) => (i + 1).toString());
+          return acc.concat(versions.map(function(version) {
             return "r/" + platform + shortSlug + version + ".html";
           }));
         }, []);
@@ -1276,7 +1278,7 @@
     if (els.platformIg.checked) platforms.push({key: 'ig', name: 'Instagram'});
     if (els.platformFb.checked) platforms.push({key: 'fb', name: 'Facebook'});
     if (els.platformTt.checked) platforms.push({key: 'tt', name: 'TikTok'});
-    const numReels = Math.max(1, Math.min(10, parseInt(els.numReels.value) || 3));
+    const numReels = parseInt(document.querySelector('input[name="numReels"]:checked').value) || 1;
 
     const imageSlug = ogImageSlug || slug;
     const ogImageRel = `assets/og/${imageSlug}.jpg`;
