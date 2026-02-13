@@ -1251,13 +1251,13 @@
   }
 
   async function updateValidation() {
-    const v = await validateOnly(false); // Don't require OG for real-time
+    const v = await validateOnly(true); // Require OG for button state
     els.btnPublish.disabled = !v.ok;
   }
 
   async function buildBatch({ requireOg = true } = {}) {
     const v = await validateOnly(requireOg);
-    if (!v.ok) return null;
+    if (!v.ok) return { ok: false, error: "Validation failed. Please check the requirements above." };
 
     const repoBase = normBaseUrl(els.repoBase.value);
     const siteName = (els.siteName.value || "").trim();
