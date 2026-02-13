@@ -452,16 +452,9 @@
 
   // Generate short slug from artist and title
   function generateShortSlug(artist, title) {
-    if (!artist || !title) return "";
+    if (!title) return "";
     
-    // Get first 2 letters of artist
-    const artistPart = artist.substring(0, 2).toUpperCase();
-    
-    // Get first letter of first 3 words in title
-    const titleWords = title.split(/\s+/).filter(word => word.length > 0);
-    const titleFirsts = titleWords.slice(0, 3).map(word => word.charAt(0).toUpperCase()).join("");
-    
-    return sanitizeShortSlug(artistPart + titleFirsts);
+    return sanitizeSlug(title);
   }
 
   function drawOgCanvasFromBitmap() {
@@ -1511,13 +1504,11 @@
   async function fetchIndexHtml() {
     try {
       const content = await getRepoFileContents('r/index.html');
-      console.log('Fetched content length:', content.length);
       // Extract the slugs array using regex (assumes it's defined as const slugs = [ ... ]; on one or more lines)
       const slugsMatch = content.match(/const slugs = \[([^\]]*)\];/s); // 's' flag for multiline
       if (slugsMatch) {
         // Parse the array string into an array (split by commas, trim quotes)
         allSlugs = slugsMatch[1].split(',').map(s => s.trim().replace(/['"]/g, '')).filter(s => s);
-        console.log('Parsed slugs:', allSlugs.length);
       } else {
         console.log('Slugs match failed');
         throw new Error('Could not parse slugs array from index.html');
@@ -1536,7 +1527,6 @@
             songNames[key] = value;
           }
         });
-        console.log('Parsed songNames:', Object.keys(songNames).length);
       } else {
         console.log('songNames match failed');
         songNames = {}; // Fallback
