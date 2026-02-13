@@ -1535,8 +1535,8 @@
   }
 
   // Function to update and publish r/index.html with new slugs
-  async function updateIndexHtml(newSlugs, token) {
-    console.log('updateIndexHtml called with:', newSlugs);
+  async function updateIndexHtml(newSlugs, token, songCode, songName, songImageUrl) {
+    console.log('updateIndexHtml called with:', newSlugs, songCode, songName);
     // Fetch current content
     const currentContent = await fetchIndexHtml();
     if (!currentContent) {
@@ -1544,29 +1544,98 @@
       return; // Skip if fetch failed
     }
 
+    // Parse existing songs array
+    const songsMatch = currentContent.match(/const songs = \[([^\]]*)\];/s);
+    let allSongs = [];
+    if (songsMatch) {
+      allSongs = songsMatch[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+    }
+
+    // Parse existing songNames object
+    const songNamesMatch = currentContent.match(/const songNames = \{([^\}]*)\};/s);
+    let allSongNames = {};
+    if (songNamesMatch) {
+      const pairs = songNamesMatch[1].split(',').map(s => s.trim());
+      pairs.forEach(pair => {
+        const [key, value] = pair.split(':').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+        if (key && value) allSongNames[key] = value;
+      });
+    }
+
+    // Parse existing songImages object
+    const songImagesMatch = currentContent.match(/const songImages = \{([^\}]*)\};/s);
+    let allSongImages = {};
+    if (songImagesMatch) {
+      const pairs = songImagesMatch[1].split(',').map(s => s.trim());
+      pairs.forEach(pair => {
+        const [key, value] = pair.split(':').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+        if (key && value) allSongImages[key] = value;
+      });
+    }
+
     // Append new slugs, avoiding duplicates
     const uniqueNewSlugs = newSlugs.filter(slug => !allSlugs.includes(slug));
     console.log('Unique new slugs:', uniqueNewSlugs);
     allSlugs.push(...uniqueNewSlugs);
 
-    // Regenerate the slugs array string (format as multiline for readability)
-    const slugsString = allSlugs.map(slug => `'${slug}'`).join(',\n      ');
+    // Add song if not present
+    let songAdded = false;
+    if (songCode && !allSongs.includes(songCode)) {
+      allSongs.push(songCode);
+      songAdded = true;
+    }
 
-    // Replace the slugs array in the content
-    const updatedContent = currentContent.replace(
+    // Add songName if not present
+    if (songCode && songName && !allSongNames[songCode]) {
+      allSongNames[songCode] = songName;
+    }
+
+    // Add songImage if not present
+    if (songCode && songImageUrl && !allSongImages[songCode]) {
+      allSongImages[songCode] = songImageUrl;
+    }
+
+    // Regenerate the arrays/objects strings
+    const slugsString = allSlugs.map(slug => `'${slug}'`).join(',\n      ');
+    const songsString = allSongs.map(song => `'${song}'`).join(', ');
+    const songNamesString = Object.entries(allSongNames).map(([k, v]) => `${k}: '${v}'`).join(', ');
+    const songImagesString = Object.entries(allSongImages).map(([k, v]) => `${k}: '${v}'`).join(', ');
+
+    let updatedContent = currentContent.replace(
       /const slugs = \[([^\]]*)\];/s,
       `const slugs = [\n      ${slugsString}\n    ];`
     );
+    updatedContent = updatedContent.replace(
+      /const songs = \[([^\]]*)\];/s,
+      `const songs = [${songsString}];`
+    );
+    updatedContent = updatedContent.replace(
+      /const songNames = \{([^\}]*)\};/s,
+      `const songNames = { ${songNamesString} };`
+    );
+    updatedContent = updatedContent.replace(
+      /const songImages = \{([^\}]*)\};/s,
+      `const songImages = { ${songImagesString} };`
+    );
+
+    // Add option to songFilter
+    if (songAdded && songCode && songName) {
+      const optionHtml = `        <option value="${songCode}">${songName}</option>`;
+      updatedContent = updatedContent.replace(
+        /(<option value="[^"]*">[^<]*<\/option>\s*)<\/select>/s,
+        `$1${optionHtml}\n      </select>`
+      );
+    }
 
     console.log('Publishing updated index.html');
     // Publish the updated file
-    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/index.html', message: `Update slugs: added ${uniqueNewSlugs.join(', ')}`, contentBase64: utf8ToBase64(updatedContent) });
+    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/index.html', message: `Update index: added ${uniqueNewSlugs.join(', ')}${songAdded ? ` and song ${songCode}` : ''}`, contentBase64: utf8ToBase64(updatedContent) });
 
     // Log the update
     addLogItem({
       title: `Updated r/index.html`,
       status: "PUBLISHED",
-      lines: [`Added ${uniqueNewSlugs.length} new slugs: ${uniqueNewSlugs.join(', ')}; total: ${allSlugs.length}`]
+      lines: [`Added ${uniqueNewSlugs.length} new slugs: ${uniqueNewSlugs.join(', ')}; total: ${allSlugs.length}${songAdded ? `; added song ${songCode}` : ''}`]
     });
   }
 
@@ -1742,7 +1811,7 @@
     const newSlugs = batch.items.slice(1).map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
-      await updateIndexHtml(newSlugs, token);
+      await updateIndexHtml(newSlugs, token, batch.slug, els.title.value.trim(), batch.ogImageAbs);
     } catch (error) {
       console.error('Index update error:', error);
       addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
