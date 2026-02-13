@@ -662,9 +662,14 @@
 
   function applySettings() {
     const raw = safeGet(SETTINGS_KEY);
-    if (!raw) return;
+    console.log('Loading settings:', SETTINGS_KEY, raw);
+    if (!raw) {
+      console.log('No settings found');
+      return;
+    }
     try {
       const s = JSON.parse(raw);
+      console.log('Parsed settings:', s);
       const assign = (el, val, isCheckbox) => {
         if (typeof val === "undefined") return;
         if (isCheckbox) el.checked = !!val; else el.value = val;
@@ -675,7 +680,11 @@
       currentToken = s.token || "";
       els.ghToken.value = currentToken;
       updateMetaPixelStatus();
-    } catch { /* ignore */ }
+      console.log('Settings applied successfully');
+    } catch (e) {
+      console.log('Error applying settings:', e);
+      /* ignore */
+    }
   }
 
   function loadToken() {
@@ -1607,11 +1616,10 @@
       const qrPath = `qrs/${batch.slug}/index.png`;
       pendingUploads.push({
         path: qrPath,
-          link: `${repoBase}/${qrPath}`,
-          type: "QR",
-          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: qrPath, message: `QR: ${batch.slug}`, contentBase64: base64 })
-        });
-      }
+        link: `${repoBase}/${qrPath}`,
+        type: "QR",
+        run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: qrPath, message: `QR: ${batch.slug}`, contentBase64: base64 })
+      });
     } catch (e) {
       addLogItem({ title: "QR publish failed", status: "ERROR", lines: [normalizeTokenError(e)] });
       failures += 1;
