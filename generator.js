@@ -457,10 +457,10 @@
     // Get first 2 letters of artist
     const artistPart = artist.substring(0, 2).toUpperCase();
     
-    // Get first letter of first 3 words in title, cleaning punctuation
+    // Get first letter of words in title, cleaning punctuation
     const titleWords = title.split(/\s+/).filter(word => word.length > 0);
     const cleanedWords = titleWords.map(word => word.replace(/[^\w]/g, ''));
-    const titleFirsts = cleanedWords.slice(0, 3).map(word => word.charAt(0).toUpperCase()).join("");
+    const titleFirsts = cleanedWords.map(word => word.charAt(0).toUpperCase()).join("");
     
     return sanitizeShortSlug(artistPart + titleFirsts);
   }
@@ -1152,8 +1152,6 @@
       } catch (e) {
         console.warn('Could not check song uniqueness:', e);
       }
-    }
-
     const slugRaw = (els.trackSlug.value || "");
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
