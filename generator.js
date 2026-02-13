@@ -1808,7 +1808,7 @@
     const newSlugs = batch.items.slice(1).map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
-      await updateIndexHtml(newSlugs, token, batch.slug, els.title.value.trim(), batch.ogImageAbs);
+      await updateIndexHtml(newSlugs, token, batch.shortSlug, els.title.value.trim(), batch.ogImageAbs);
     } catch (error) {
       console.error('Index update error:', error);
       addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
