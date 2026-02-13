@@ -1891,7 +1891,9 @@
     if (els.platformIg) els.platformIg.addEventListener("change", updateValidation);
     if (els.platformFb) els.platformFb.addEventListener("change", updateValidation);
     if (els.platformTt) els.platformTt.addEventListener("change", updateValidation);
-    if (els.numReels) els.numReels.addEventListener("input", updateValidation);
+    document.querySelectorAll('input[name="numReels"]').forEach(radio => {
+      radio.addEventListener('change', updateValidation);
+    });
 
     els.btnPublish.addEventListener("click", () => publishAll());
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
