@@ -1172,6 +1172,7 @@
         try {
           await fetchIndexHtml();
           const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
+          console.log('shortSlug check:', shortSlug, used, allSlugs.filter(slug => slug.substring(2, slug.length - 1) === shortSlug));
           if (used) {
             errors.push("Short slug \"" + shortSlug + "\" is already in use. Please change it manually.");
           }
