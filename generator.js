@@ -444,6 +444,20 @@
   let songNames = {};
   let resolverStatus = ""; // Track resolver status for validation
 
+  // Generate short slug from artist and title
+  function generateShortSlug(artist, title) {
+    if (!artist || !title) return "";
+    
+    // Get first letter of artist
+    const artistFirst = artist.charAt(0).toUpperCase();
+    
+    // Get first letter of each word in title
+    const titleWords = title.split(/\s+/).filter(word => word.length > 0);
+    const titleFirsts = titleWords.map(word => word.charAt(0).toUpperCase()).join("");
+    
+    return artistFirst + titleFirsts;
+  }
+
   function drawOgCanvasFromBitmap() {
     const canvas = els.ogCanvas;
     const ctx = canvas.getContext("2d");
@@ -695,6 +709,18 @@
     const slug = sanitizeSlug(els.title.value || "");
     els.trackSlug.value = slug;
     els.utmCampaign.value = slug;
+    
+    // Auto-generate short slug if field is empty
+    const currentShortSlug = (els.shortSlug.value || "").trim();
+    if (!currentShortSlug) {
+      const artist = (els.artist.value || "").trim();
+      const title = (els.title.value || "").trim();
+      const autoShortSlug = generateShortSlug(artist, title);
+      if (autoShortSlug) {
+        els.shortSlug.value = autoShortSlug.toLowerCase();
+      }
+    }
+    
     const imageSlug = ogImageSlug || slug;
     els.ogImageNamePreview.textContent = imageSlug ? `assets/og/${imageSlug}.jpg` : "";
   }
@@ -1164,15 +1190,19 @@
     // Check short URL uniqueness
     const shortSlug = (els.shortSlug.value || "").trim();
     const platformsChecked = [els.platformYt, els.platformIg, els.platformFb, els.platformTt].filter(cb => cb.checked).length > 0;
-    if (platformsChecked && shortSlug) {
-      try {
-        await fetchIndexHtml();
-        const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
-        if (used) {
-          errors.push(`Short slug "${shortSlug}" is already in use.`);
+    if (platformsChecked) {
+      if (!shortSlug) {
+        errors.push("Short slug is required when platforms are selected.");
+      } else {
+        try {
+          await fetchIndexHtml();
+          const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
+          if (used) {
+            errors.push(`Short slug "${shortSlug}" is already in use. Please change it manually.`);
+          }
+        } catch (e) {
+          console.warn('Could not check short slug uniqueness:', e);
         }
-      } catch (e) {
-        console.warn('Could not check short slug uniqueness:', e);
       }
     }
 
@@ -1860,8 +1890,8 @@
     });
 
     // Real-time validation
-    if (els.title) els.title.addEventListener("input", updateValidation);
-    if (els.artist) els.artist.addEventListener("input", updateValidation);
+    if (els.title) els.title.addEventListener("input", () => { syncSlugAndCampaignFromTitle(); updateValidation(); });
+    if (els.artist) els.artist.addEventListener("input", () => { syncSlugAndCampaignFromTitle(); updateValidation(); });
     if (els.shortSlug) els.shortSlug.addEventListener("input", updateValidation);
     if (els.trackSlug) els.trackSlug.addEventListener("input", updateValidation);
     if (els.utmCampaign) els.utmCampaign.addEventListener("input", updateValidation);
