@@ -1100,27 +1100,7 @@
   }
 
   function generateRHtml(shortSlug, cid) {
-    return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="robots" content="noindex,nofollow" />
-  <title>Redirecting…</title>
-</head>
-<body>
-<script>
-(function () {
-  var targetBase = "https://skydevaaben.no/shorturl/${htmlEscape(shortSlug)}/";
-  var params = new URLSearchParams(window.location.search || "");
-
-  params.set("cid", "${htmlEscape(cid)}");
-
-  window.location.replace(targetBase + "?" + params.toString());
-})();
-<\/script>
-</body>
-</html>`;
+    return "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <meta name=\"robots\" content=\"noindex,nofollow\" />\n  <title>Redirecting…</title>\n</head>\n<body>\n<script>\n(function () {\n  var targetBase = \"https://skydevaaben.no/shorturl/" + htmlEscape(shortSlug) + "/\";\n  var params = new URLSearchParams(window.location.search || \"\");\n  params.set(\"cid\", \"" + htmlEscape(cid) + "\");\n  window.location.replace(targetBase + \"?\" + params.toString());\n})();\n</script>\n</body>\n</html>";
   }
 
   // ---------- validation + batch build ----------
@@ -1141,7 +1121,7 @@
       return { ok: false, errors, warnings };
     }
 
-    const slugRaw = (els.trackSlug.value || "");
+    const slugRaw = (els.trackSlug.value || "");;
 
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
@@ -1152,7 +1132,7 @@
       try {
         await fetchIndexHtml();
         if (allSlugs.includes(slug)) {
-          errors.push(`Slug "${slug}" already exists. Choose a different slug.`);
+          errors.push("Slug \"" + slug + "\" already exists. Choose a different slug.");
         }
       } catch (e) {
         console.warn('Could not check slug uniqueness:', e);
@@ -1193,7 +1173,7 @@
           await fetchIndexHtml();
           const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
           if (used) {
-            errors.push(`Short slug "${shortSlug}" is already in use. Please change it manually.`);
+            errors.push("Short slug \"" + shortSlug + "\" is already in use. Please change it manually.");
           }
         } catch (e) {
           console.warn('Could not check short slug uniqueness:', e);
@@ -1210,27 +1190,26 @@
     els.ogImageNamePreview.textContent = imageSlug ? `assets/og/${imageSlug}.jpg` : "";
 
     if (errors.length) {
-      els.validation.innerHTML = `<span class="bad">FAIL</span>\n` + errors.map(e => `- ${e}`).join("\n");
+      els.validation.innerHTML = "<span class=\"bad\">FAIL</span>\n" + errors.map(function(e) { return "- " + e; }).join("\n");
       show(els.validationPanel);
       return { ok: false, errors, warnings };
     }
 
-    let status = `<span class="ok">OK</span>`;
+    let status = "<span class=\"ok\">OK</span>";
     if (warnings.length) {
-      status += `\n<span class="warn">WARNINGS</span>\n` + warnings.map(w => `- ${w}`).join("\n");
+      status += "\n<span class=\"warn\">WARNINGS</span>\n" + warnings.map(function(w) { return "- " + w; }).join("\n");
     }
     
-    // Add resolver status
     if (resolverStatus) {
-      status += `\n${resolverStatus}`;
+      status += "\n" + resolverStatus;
     }
     
-    status += `\n- Publish will create/update:\n` +
-      `  - assets/og/${imageSlug}.jpg\n` +
-      `  - assets/og/${imageSlug}-bg.jpg\n` +
-      `  - assets/og/${imageSlug}-fg.jpg\n` +
-      `  - tracks/${slug}/index.html\n` +
-      `  - qrs/${slug}/index.png\n`;
+    status += "\n- Publish will create/update:\n" +
+      "  - assets/og/" + imageSlug + ".jpg\n" +
+      "  - assets/og/" + imageSlug + "-bg.jpg\n" +
+      "  - assets/og/" + imageSlug + "-fg.jpg\n" +
+      "  - tracks/" + slug + "/index.html\n" +
+      "  - qrs/" + slug + "/index.png\n";
     
     if (platformsChecked && shortSlug) {
       const platforms = [];
@@ -1239,11 +1218,13 @@
       if (els.platformFb.checked) platforms.push('fb');
       if (els.platformTt.checked) platforms.push('tt');
       
-      const shortUrls = platforms.flatMap(platform => 
-        ['1', '2', '3', '4'].map(version => `r/${platform}${shortSlug}${version}.html`)
-      );
+      const shortUrls = platforms.reduce(function(acc, platform) {
+        return acc.concat(['1', '2', '3', '4'].map(function(version) {
+          return "r/" + platform + shortSlug + version + ".html";
+        }));
+      }, []);
       
-      status += `  - ${shortUrls.join('\n  - ')}\n`;
+      status += "  - " + shortUrls.join('\n  - ') + "\n";
     }
     
     els.validation.innerHTML = status;
