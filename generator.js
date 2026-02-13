@@ -339,6 +339,7 @@
           if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = !!spotifyUrl;
           updated = true;
         }
+        await updateValidation();
       }
 
       if (updated) {
