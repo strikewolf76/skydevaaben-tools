@@ -198,10 +198,6 @@
     const track = card.dataset.track;
     const artist = card.dataset.artist;
     if (!url) return;
-    addLogItem({
-      title: `Found song in Apple Search: ${track} - ${artist}`,
-      status: "Selected"
-    });
     const appleEnabled = !!els.destApple?.checked;
     if (appleEnabled && els.appleUrl) els.appleUrl.value = url;
     validateOnly();
@@ -274,6 +270,10 @@
     const wantsSpotify = !!els.destSpotify?.checked;
     const wantsApple = !!els.destApple?.checked;
     if (!wantsSpotify && !wantsApple) return;
+    
+    resolverStatus = `<span class="info">Trying to resolve...</span>`;
+    validateOnly();
+    
     try {
       const odesliUrl = `${ODESLI_RESOLVER_API}?url=${encodeURIComponent(src)}`;
       const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(odesliUrl)}`;
@@ -325,16 +325,9 @@
         if (els.spotifyUrl) {
           els.spotifyUrl.value = spotifyUrl || '';
           if (spotifyUrl) {
-            addLogItem({
-              title: `Resolved to Spotify URL: ${spotifyUrl}`,
-              status: "Success"
-            });
+            resolverStatus = `<span class="ok">✓ Resolved to Spotify URL: ${spotifyUrl}</span>`;
           } else {
-            addLogItem({
-              title: "Spotify URL not found via resolver",
-              status: "Warning",
-              lines: ["Try the Search button to find manually on Spotify."]
-            });
+            resolverStatus = `<span class="warn">⚠ Spotify URL not found. Try the Search button to find manually on Spotify.</span>`;
           }
           if (els.btnTestSpotify) els.btnTestSpotify.disabled = !spotifyUrl;
           if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = !!spotifyUrl;
@@ -347,9 +340,8 @@
         updateNeedsInput();
       }
     } catch (e) {
-      if (els.resolverStatus) {
-        els.resolverStatus.textContent = "Resolver failed. Fill manually.";
-      }
+      resolverStatus = `<span class="bad">✗ Resolver failed. Fill manually or try again.</span>`;
+      validateOnly();
     }
   }
 
@@ -450,6 +442,7 @@
   let ogImageSlug = null;
   let allSlugs = [];
   let songNames = {};
+  let resolverStatus = ""; // Track resolver status for validation
 
   function drawOgCanvasFromBitmap() {
     const canvas = els.ogCanvas;
@@ -1103,6 +1096,7 @@
     const errors = [];
     const warnings = [];
     updateNeedsInput();
+    resolverStatus = ""; // Clear resolver status on validation
 
     const title = (els.title.value || "").trim();
     const artist = (els.artist.value || "").trim();
@@ -1131,6 +1125,18 @@
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
     required("Track slug", slug, errors);
+
+    // Check slug uniqueness
+    if (slug) {
+      try {
+        await fetchIndexHtml();
+        if (allSlugs.includes(slug)) {
+          errors.push(`Slug "${slug}" already exists. Choose a different slug.`);
+        }
+      } catch (e) {
+        console.warn('Could not check slug uniqueness:', e);
+      }
+    }
 
     const utmCampaign = sanitizeSlug(els.utmCampaign.value);
     required("utm_campaign", utmCampaign, errors);
@@ -1188,15 +1194,33 @@
     if (warnings.length) {
       status += `\n<span class="warn">WARNINGS</span>\n` + warnings.map(w => `- ${w}`).join("\n");
     }
+    
+    // Add resolver status
+    if (resolverStatus) {
+      status += `\n${resolverStatus}`;
+    }
+    
     status += `\n- Publish will create/update:\n` +
-      `  - assets/og/${slug}.jpg\n` +
-      `  - assets/og/${slug}-bg.jpg\n` +
-      `  - assets/og/${slug}-fg.jpg\n` +
+      `  - assets/og/${imageSlug}.jpg\n` +
+      `  - assets/og/${imageSlug}-bg.jpg\n` +
+      `  - assets/og/${imageSlug}-fg.jpg\n` +
       `  - tracks/${slug}/index.html\n` +
       `  - qrs/${slug}/index.png\n`;
+    
     if (platformsChecked && shortSlug) {
-      status += `  - r/yt${shortSlug}1.html (and others)\n`;
+      const platforms = [];
+      if (els.platformYt.checked) platforms.push('yt');
+      if (els.platformIg.checked) platforms.push('ig');
+      if (els.platformFb.checked) platforms.push('fb');
+      if (els.platformTt.checked) platforms.push('tt');
+      
+      const shortUrls = platforms.flatMap(platform => 
+        ['1', '2', '3', '4'].map(version => `r/${platform}${shortSlug}${version}.html`)
+      );
+      
+      status += `  - ${shortUrls.join('\n  - ')}\n`;
     }
+    
     els.validation.innerHTML = status;
     show(els.validationPanel);
 
