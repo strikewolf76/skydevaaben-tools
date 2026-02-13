@@ -725,13 +725,17 @@
       els.shortSlug.value = autoShortSlug.toLowerCase();
     }
     
+    updateTitleDisabled();
+    
     const imageSlug = ogImageSlug || slug;
     els.ogImageNamePreview.textContent = imageSlug ? `assets/og/${imageSlug}.jpg` : "";
   }
 
-  function updateMetaPixelStatus() {
-    const val = (els.metaPixelId?.value || "").trim();
-    setMetaPixelStatus(val.length > 0 ? "ok" : "bad", val);
+  function updateTitleDisabled() {
+    const artist = (els.artist.value || "").trim();
+    if (els.title) {
+      els.title.disabled = !artist;
+    }
   }
 
   // ---------- HTML generation ----------
@@ -1915,6 +1919,7 @@
     validateOnly();
     updateNeedsInput();
     updateMetaPixelStatus();
+    updateTitleDisabled();
     hideLogIfEmpty();
   }
 
