@@ -1526,6 +1526,27 @@
       return;
     }
 
+    // Validate short slug if short URLs are being generated
+    if (batch.shortUrlItems && batch.shortUrlItems.length > 0) {
+      const shortSlug = els.shortSlug.value.trim();
+      if (!shortSlug) {
+        window.alert('Please fill in the short slug first.');
+        return;
+      }
+      // Check if short slug is already in use
+      try {
+        await fetchIndexHtml(); // Sets allSlugs
+        const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
+        if (used) {
+          window.alert(`Short slug "${shortSlug}" is already in use. Please choose a different one.`);
+          return;
+        }
+      } catch (e) {
+        console.warn('Could not check existing slugs:', e);
+        // Proceed anyway to avoid blocking if fetch fails
+      }
+    }
+
     addLogItem({
       title: "Publishing…",
       status: "RUNNING",
