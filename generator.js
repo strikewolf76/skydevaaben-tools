@@ -1739,7 +1739,7 @@
     }
 
     // Update index.html with new slugs
-    const newSlugs = batch.items.map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
+    const newSlugs = batch.items.slice(1).map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
       await updateIndexHtml(newSlugs, token);
