@@ -1565,7 +1565,11 @@
     }
 
     // Sort songs alphabetically by name
-    allSongs.sort((a, b) => allSongNames[a].localeCompare(allSongNames[b]));
+    allSongs.sort((a, b) => {
+      const nameA = allSongNames[a] || a;
+      const nameB = allSongNames[b] || b;
+      return nameA.localeCompare(nameB);
+    });
 
     // Add songName if not present
     if (songCode && songName && !allSongNames[songCode]) {
