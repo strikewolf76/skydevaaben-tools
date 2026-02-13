@@ -55,7 +55,6 @@
     validation: $("validation"),
     log: $("log"),
 
-    btnGenerate: $("btnGenerate"),
     btnPublish: $("btnPublish"),
     btnReset: $("btnReset"),
     btnForgetToken: $("btnForgetToken"),
@@ -433,8 +432,6 @@
   const TARGET_H = 630;
 
   const SETTINGS_KEY = "sv-generator-settings-v1";
-  const HASH_KEY = "sv-file-hash-v1";
-  const PUBLISH_HISTORY_KEY = "sv-publish-history-v1";
 
   let currentTheme = "base";
   let currentToken = "";
@@ -587,16 +584,6 @@
     return btoa(binary);
   }
 
-  function hashString(str) {
-    // Lightweight, stable hash (djb2-ish)
-    let hash = 5381;
-    for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
-      hash = hash >>> 0; // force uint32
-    }
-    return hash.toString(16);
-  }
-
   // ---------- persistence (localStorage) ----------
   function safeGet(key) {
     try { return localStorage.getItem(key); } catch { return null; }
@@ -659,26 +646,6 @@
   }
 
   // ---------- slots + history ---------- (removed slot functions)
-
-  function loadHashStore() {
-    return safeGetJson(HASH_KEY, {});
-  }
-
-  function persistHashStore(store) {
-    safeSetJson(HASH_KEY, store || {});
-  }
-
-  function loadPublishHistory() {
-    return safeGetJson(PUBLISH_HISTORY_KEY, {});
-  }
-
-  function persistPublishHistory(history) {
-    safeSetJson(PUBLISH_HISTORY_KEY, history || {});
-  }
-
-  function histKey({ slug, dest, channel, utm_content }) {
-    return `${slug || ""}::${dest || ""}::${channel || ""}::${utm_content || ""}`;
-  }
 
   function collectSettings() {
     return {
@@ -1129,28 +1096,34 @@
   }
 
   // ---------- validation + batch build ----------
-  function validateOnly(requireOg = true) {
+  async function validateOnly(requireOg = true) {
     syncSlugAndCampaignFromTitle();
     const errors = [];
+    const warnings = [];
     updateNeedsInput();
 
-    const repoBase = normBaseUrl(els.repoBase.value);
-    required("Pages base URL", repoBase, errors);
-    if (repoBase) {
-      try {
-        const u = new URL(repoBase);
-        if (u.protocol !== "https:") errors.push("Pages base URL must be https");
-        if (!u.hostname) errors.push("Pages base URL must include a host");
-      } catch {
-        errors.push("Pages base URL is not a valid URL");
-      }
+    const title = (els.title.value || "").trim();
+    const artist = (els.artist.value || "").trim();
+
+    // If no basic inputs, show nothing
+    if (!title && !artist) {
+      els.validation.innerHTML = '';
+      hide(els.validationPanel);
+      return { ok: false, errors, warnings };
     }
 
-    const title = (els.title.value || "").trim();
-    required("Title", title, errors);
-
-    const artist = (els.artist.value || "").trim();
-    required("Artist", artist, errors);
+    // Check song name uniqueness
+    if (title) {
+      try {
+        await fetchIndexHtml();
+        const existingTitles = Object.values(songNames);
+        if (existingTitles.includes(title)) {
+          errors.push(`Song name "${title}" already exists. Must be unique.`);
+        }
+      } catch (e) {
+        console.warn('Could not check song uniqueness:', e);
+      }
+    }
 
     const slugRaw = (els.trackSlug.value || "");
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
@@ -1169,6 +1142,32 @@
       if (!spotifyIdParsed) errors.push("Spotify URL must contain a track ID");
     }
 
+    // Check cover exists
+    if (slug) {
+      try {
+        const ogPath = `assets/og/${slug}.jpg`;
+        await ghFetch(`/repos/${OWNER}/${REPO}/contents/${ogPath}`, { token });
+        warnings.push(`Cover exists at ${ogPath}, existing cover will be used.`);
+      } catch (e) {
+        // File does not exist, that's fine
+      }
+    }
+
+    // Check short URL uniqueness
+    const shortSlug = (els.shortSlug.value || "").trim();
+    const platformsChecked = [els.platformYt, els.platformIg, els.platformFb, els.platformTt].filter(cb => cb.checked).length > 0;
+    if (platformsChecked && shortSlug) {
+      try {
+        await fetchIndexHtml();
+        const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
+        if (used) {
+          errors.push(`Short slug "${shortSlug}" is already in use.`);
+        }
+      } catch (e) {
+        console.warn('Could not check short slug uniqueness:', e);
+      }
+    }
+
     if (requireOg) {
       if (!ogImageLoaded) errors.push("OG image not uploaded yet (required).");
       if (ogImageError) errors.push(ogImageError);
@@ -1180,24 +1179,35 @@
     if (errors.length) {
       els.validation.innerHTML = `<span class="bad">FAIL</span>\n` + errors.map(e => `- ${e}`).join("\n");
       show(els.validationPanel);
-      return { ok: false, errors };
+      return { ok: false, errors, warnings };
     }
 
-    els.validation.innerHTML =
-      `<span class="ok">OK</span>\n` +
-      `- Publish will create/update:\n` +
+    let status = `<span class="ok">OK</span>`;
+    if (warnings.length) {
+      status += `\n<span class="warn">WARNINGS</span>\n` + warnings.map(w => `- ${w}`).join("\n");
+    }
+    status += `\n- Publish will create/update:\n` +
       `  - assets/og/${slug}.jpg\n` +
       `  - assets/og/${slug}-bg.jpg\n` +
       `  - assets/og/${slug}-fg.jpg\n` +
       `  - tracks/${slug}/index.html\n` +
       `  - qrs/${slug}/index.png\n`;
+    if (platformsChecked && shortSlug) {
+      status += `  - r/yt${shortSlug}1.html (and others)\n`;
+    }
+    els.validation.innerHTML = status;
     show(els.validationPanel);
 
-    return { ok: true };
+    return { ok: true, errors, warnings };
   }
 
-  function buildBatch({ requireOg = true } = {}) {
-    const v = validateOnly(requireOg);
+  async function updateValidation() {
+    const v = await validateOnly(false); // Don't require OG for real-time
+    els.btnPublish.disabled = !v.ok;
+  }
+
+  async function buildBatch({ requireOg = true } = {}) {
+    const v = await validateOnly(requireOg);
     if (!v.ok) return null;
 
     const repoBase = normBaseUrl(els.repoBase.value);
@@ -1498,12 +1508,10 @@
   async function publishAll() {
     clearLog();
 
-    const v = validateOnly();
+    const v = await validateOnly();
     if (!v.ok) return;
 
     const repoBase = normBaseUrl(els.repoBase.value);
-    const publishHistory = loadPublishHistory();
-    const hashStore = loadHashStore();
 
     const token = (els.ghToken.value || "").trim();
     if (!token) {
@@ -1526,27 +1534,6 @@
       return;
     }
 
-    // Validate short slug if short URLs are being generated
-    if (batch.shortUrlItems && batch.shortUrlItems.length > 0) {
-      const shortSlug = els.shortSlug.value.trim();
-      if (!shortSlug) {
-        window.alert('Please fill in the short slug first.');
-        return;
-      }
-      // Check if short slug is already in use
-      try {
-        await fetchIndexHtml(); // Sets allSlugs
-        const used = allSlugs.some(slug => slug.substring(2, slug.length - 1) === shortSlug);
-        if (used) {
-          window.alert(`Short slug "${shortSlug}" is already in use. Please choose a different one.`);
-          return;
-        }
-      } catch (e) {
-        console.warn('Could not check existing slugs:', e);
-        // Proceed anyway to avoid blocking if fetch fails
-      }
-    }
-
     addLogItem({
       title: "Publishing…",
       status: "RUNNING",
@@ -1560,62 +1547,37 @@
 
     let failures = 0;
     const pendingUploads = [];
-    let confirmNeeded = false;
 
-    // Prepare OG image upload (hash-aware)
+    // Prepare OG image upload
     try {
       const ogJpgB64 = await canvasToJpegBase64(els.ogCanvas, 0.92);
-      const ogHash = hashString(ogJpgB64);
-      const prevHash = hashStore[batch.ogImageRel];
-      if (prevHash && prevHash === ogHash) {
-        addLogItem({ title: `UNCHANGED: ${batch.ogImageRel}`, status: "UNCHANGED", lines: [batch.ogImageRel] });
-      } else {
-        if (prevHash && prevHash !== ogHash) confirmNeeded = true;
-        pendingUploads.push({
-          path: batch.ogImageRel,
-          hash: ogHash,
-          link: batch.ogImageAbs,
-          type: "OG",
-          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: batch.ogImageRel, message: `OG image: ${batch.slug}`, contentBase64: ogJpgB64 })
-        });
-      }
+      pendingUploads.push({
+        path: batch.ogImageRel,
+        link: batch.ogImageAbs,
+        type: "OG",
+        run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: batch.ogImageRel, message: `OG image: ${batch.slug}`, contentBase64: ogJpgB64 })
+      });
 
       // Prepare BG image upload
       const bgCanvas = drawBgCanvasFromBitmap();
       const bgJpgB64 = await canvasToJpegBase64(bgCanvas, 0.92);
       const bgPath = batch.ogImageRel.replace(/\.jpg$/i, '-bg.jpg');
-      const bgHash = hashString(bgJpgB64);
-      const prevBgHash = hashStore[bgPath];
-      if (prevBgHash && prevBgHash === bgHash) {
-        addLogItem({ title: `UNCHANGED: ${bgPath}`, status: "UNCHANGED", lines: [bgPath] });
-      } else {
-        if (prevBgHash && prevBgHash !== bgHash) confirmNeeded = true;
-        pendingUploads.push({
-          path: bgPath,
-          hash: bgHash,
-          link: batch.ogImageAbs.replace(/\.jpg$/i, '-bg.jpg'),
-          type: "BG",
-          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: bgPath, message: `BG image: ${batch.slug}`, contentBase64: bgJpgB64 })
-        });
-      }
+      pendingUploads.push({
+        path: bgPath,
+        link: batch.ogImageAbs.replace(/\.jpg$/i, '-bg.jpg'),
+        type: "BG",
+        run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: bgPath, message: `BG image: ${batch.slug}`, contentBase64: bgJpgB64 })
+      });
 
       // Prepare FG image upload
       const fgJpgB64 = await bitmapToJpegBase64(ogImageBitmap, 0.92);
       const fgPath = batch.ogImageRel.replace(/\.jpg$/i, '-fg.jpg');
-      const fgHash = hashString(fgJpgB64);
-      const prevFgHash = hashStore[fgPath];
-      if (prevFgHash && prevFgHash === fgHash) {
-        addLogItem({ title: `UNCHANGED: ${fgPath}`, status: "UNCHANGED", lines: [fgPath] });
-      } else {
-        if (prevFgHash && prevFgHash !== fgHash) confirmNeeded = true;
-        pendingUploads.push({
-          path: fgPath,
-          hash: fgHash,
-          link: batch.ogImageAbs.replace(/\.jpg$/i, '-fg.jpg'),
-          type: "FG",
-          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: fgPath, message: `FG image: ${batch.slug}`, contentBase64: fgJpgB64 })
-        });
-      }
+      pendingUploads.push({
+        path: fgPath,
+        link: batch.ogImageAbs.replace(/\.jpg$/i, '-fg.jpg'),
+        type: "FG",
+        run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: fgPath, message: `FG image: ${batch.slug}`, contentBase64: fgJpgB64 })
+      });
     } catch (e) {
       addLogItem({ title: `FAIL: ${batch.ogImageRel}`, status: "ERROR", lines: [normalizeTokenError(e)] });
       return;
@@ -1643,15 +1605,8 @@
 
       const base64 = dataUrlToBase64(dataUrl);
       const qrPath = `qrs/${batch.slug}/index.png`;
-      const qrHash = hashString(base64);
-      const prevHash = hashStore[qrPath];
-      if (prevHash && prevHash === qrHash) {
-        addLogItem({ title: `UNCHANGED: ${qrPath}`, status: "UNCHANGED", lines: [`${repoBase}/${qrPath}`] });
-      } else {
-        if (prevHash && prevHash !== qrHash) confirmNeeded = true;
-        pendingUploads.push({
-          path: qrPath,
-          hash: qrHash,
+      pendingUploads.push({
+        path: qrPath,
           link: `${repoBase}/${qrPath}`,
           type: "QR",
           run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: qrPath, message: `QR: ${batch.slug}`, contentBase64: base64 })
@@ -1665,22 +1620,14 @@
     // Prepare HTML uploads
     for (const it of batch.items) {
       try {
-        const htmlHash = hashString(it.html);
-        const prevHash = hashStore[it.relPath];
-        if (prevHash && prevHash === htmlHash) {
-          addLogItem({ title: `UNCHANGED: ${it.relPath}`, status: "UNCHANGED", lines: [`slug=${batch.slug}`] });
-        } else {
-          if (prevHash && prevHash !== htmlHash) confirmNeeded = true;
-          const htmlB64 = utf8ToBase64(it.html);
-          pendingUploads.push({
-            path: it.relPath,
-            hash: htmlHash,
-            link: it.pagesUrl,
-            type: "HTML",
-            item: it,
-            run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Landing page: ${batch.slug}`, contentBase64: htmlB64 })
-          });
-        }
+        const htmlB64 = utf8ToBase64(it.html);
+        pendingUploads.push({
+          path: it.relPath,
+          link: it.pagesUrl,
+          type: "HTML",
+          item: it,
+          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Landing page: ${batch.slug}`, contentBase64: htmlB64 })
+        });
       } catch (e) {
         addLogItem({ title: `FAIL: ${it.relPath}`, status: "ERROR", lines: [normalizeTokenError(e)] });
         failures += 1;
@@ -1690,40 +1637,23 @@
     // Prepare short URL HTML uploads
     for (const it of batch.shortUrlItems || []) {
       try {
-        const htmlHash = hashString(it.html);
-        const prevHash = hashStore[it.relPath];
-        if (prevHash && prevHash === htmlHash) {
-          addLogItem({ title: `UNCHANGED: ${it.relPath}`, status: "UNCHANGED", lines: [`shorturl=${batch.shortSlug}`] });
-        } else {
-          if (prevHash && prevHash !== htmlHash) confirmNeeded = true;
-          const htmlB64 = utf8ToBase64(it.html);
-          pendingUploads.push({
-            path: it.relPath,
-            hash: htmlHash,
-            link: it.pagesUrl,
-            type: "SHORTURL",
-            item: it,
-            run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Short URL: ${batch.shortSlug}`, contentBase64: htmlB64 })
-          });
-        }
+        const htmlB64 = utf8ToBase64(it.html);
+        pendingUploads.push({
+          path: it.relPath,
+          link: it.pagesUrl,
+          type: "SHORTURL",
+          item: it,
+          run: async () => putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: it.relPath, message: `Short URL: ${batch.shortSlug}`, contentBase64: htmlB64 })
+        });
       } catch (e) {
         addLogItem({ title: `FAIL: ${it.relPath}`, status: "ERROR", lines: [normalizeTokenError(e)] });
         failures += 1;
       }
     }
 
-    if (confirmNeeded) {
-      const ok = window.confirm(`Overwrite ${pendingUploads.length} file(s)?`);
-      if (!ok) {
-        addLogItem({ title: "Canceled", status: "CANCEL", lines: ["User canceled overwrite."] });
-        return;
-      }
-    }
-
     for (const job of pendingUploads) {
       try {
         await job.run();
-        hashStore[job.path] = job.hash;
         addLogItem({
           title: `${job.type} OK: ${job.path}`,
           status: "PUBLISHED",
@@ -1747,12 +1677,6 @@
       addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
       failures += 1;
     }
-
-    persistHashStore(hashStore);
-    batch.items.forEach(it => {
-      publishHistory[histKey({ slug: batch.slug, dest: "", channel: "", utm_content: "" })] = true;
-    });
-    persistPublishHistory(publishHistory);
 
     if (failures > 0) {
       addLogItem({
@@ -1890,28 +1814,19 @@
       if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = hasUrl;
     });
 
-    els.btnGenerate.addEventListener("click", () => {
-      clearLog();
-      const batch = buildBatch({ requireOg: true });
-      if (!batch || !batch.ok) return;
-
-      const qrFiles = [`qrs/${batch.slug}/index.png`];
-
-      addLogItem({
-        title: "Preview (not published)",
-        status: "READY",
-        lines: [
-          `OG image: ${batch.ogImageRel}`,
-          `BG image: ${batch.ogImageRel.replace(/\.jpg$/i, '-bg.jpg')}`,
-          `FG image: ${batch.ogImageRel.replace(/\.jpg$/i, '-fg.jpg')}`,
-          `HTML file:`,
-          `- ${batch.items[0].relPath}`,
-          `QR file:`,
-          `- ${normBaseUrl(els.repoBase.value)}/${qrFiles[0]}`
-        ]
-      });
-      hideLogIfEmpty();
-    });
+    // Real-time validation
+    if (els.title) els.title.addEventListener("input", updateValidation);
+    if (els.artist) els.artist.addEventListener("input", updateValidation);
+    if (els.shortSlug) els.shortSlug.addEventListener("input", updateValidation);
+    if (els.trackSlug) els.trackSlug.addEventListener("input", updateValidation);
+    if (els.utmCampaign) els.utmCampaign.addEventListener("input", updateValidation);
+    if (els.destSpotify) els.destSpotify.addEventListener("change", updateValidation);
+    if (els.spotifyUrl) els.spotifyUrl.addEventListener("input", updateValidation);
+    if (els.platformYt) els.platformYt.addEventListener("change", updateValidation);
+    if (els.platformIg) els.platformIg.addEventListener("change", updateValidation);
+    if (els.platformFb) els.platformFb.addEventListener("change", updateValidation);
+    if (els.platformTt) els.platformTt.addEventListener("change", updateValidation);
+    if (els.numReels) els.numReels.addEventListener("input", updateValidation);
 
     els.btnPublish.addEventListener("click", () => publishAll());
     if (els.btnReset) els.btnReset.addEventListener("click", () => resetForm());
