@@ -1756,7 +1756,7 @@ window.slugs = [${slugsString}];`;
     }
 
     // Update data.js with new slugs
-    const newSlugs = batch.items.slice(1).map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
+    const newSlugs = batch.shortUrlItems.map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
       await updateDataJs(newSlugs, token, batch.shortSlug, els.title.value.trim(), batch.ogImageAbs);
