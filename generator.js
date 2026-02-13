@@ -1141,10 +1141,7 @@
       return { ok: false, errors, warnings };
     }
 
-    }
-
     const slugRaw = (els.trackSlug.value || "");
-    }
 
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
