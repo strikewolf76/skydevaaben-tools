@@ -1439,12 +1439,15 @@
   async function fetchIndexHtml() {
     try {
       const content = await getRepoFileContents('r/index.html');
+      console.log('Fetched content length:', content.length);
       // Extract the slugs array using regex (assumes it's defined as const slugs = [ ... ]; on one or more lines)
       const slugsMatch = content.match(/const slugs = \[([^\]]*)\];/s); // 's' flag for multiline
       if (slugsMatch) {
         // Parse the array string into an array (split by commas, trim quotes)
         allSlugs = slugsMatch[1].split(',').map(s => s.trim().replace(/['"]/g, '')).filter(s => s);
+        console.log('Parsed slugs:', allSlugs.length);
       } else {
+        console.log('Slugs match failed');
         throw new Error('Could not parse slugs array from index.html');
       }
       return content;
@@ -1457,12 +1460,17 @@
 
   // Function to update and publish r/index.html with new slugs
   async function updateIndexHtml(newSlugs) {
+    console.log('updateIndexHtml called with:', newSlugs);
     // Fetch current content
     const currentContent = await fetchIndexHtml();
-    if (!currentContent) return; // Skip if fetch failed
+    if (!currentContent) {
+      console.log('No current content fetched');
+      return; // Skip if fetch failed
+    }
 
     // Append new slugs, avoiding duplicates
     const uniqueNewSlugs = newSlugs.filter(slug => !allSlugs.includes(slug));
+    console.log('Unique new slugs:', uniqueNewSlugs);
     allSlugs.push(...uniqueNewSlugs);
 
     // Regenerate the slugs array string (format as multiline for readability)
@@ -1474,6 +1482,7 @@
       `const slugs = [\n      ${slugsString}\n    ];`
     );
 
+    console.log('Publishing updated index.html');
     // Publish the updated file
     await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/index.html', message: `Update slugs: added ${uniqueNewSlugs.join(', ')}`, contentBase64: utf8ToBase64(updatedContent) });
 
@@ -1709,9 +1718,11 @@
 
     // Update index.html with new slugs
     const newSlugs = (batch.shortUrlItems || []).map(it => it.relPath.replace(/^r\//, '').replace(/\.html$/, ''));
+    console.log('New slugs to add:', newSlugs);
     try {
       await updateIndexHtml(newSlugs);
     } catch (error) {
+      console.error('Index update error:', error);
       addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
       failures += 1;
     }
