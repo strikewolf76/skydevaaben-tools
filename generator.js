@@ -1594,9 +1594,14 @@
     }
     persistToken(token);
 
-    const batch = buildBatch();
-    if (!batch || !batch.ok) {
-      addLogItem({ title: "Batch build failed", status: "FAIL", lines: [batch?.error || "Unknown error"] });
+    try {
+      const batch = await buildBatch();
+      if (!batch || !batch.ok) {
+        addLogItem({ title: "Batch build failed", status: "FAIL", lines: [batch?.error || "Validation failed"] });
+        return;
+      }
+    } catch (e) {
+      addLogItem({ title: "Batch build failed", status: "FAIL", lines: ["Unexpected error: " + e.message] });
       return;
     }
 
