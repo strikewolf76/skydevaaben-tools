@@ -1594,8 +1594,9 @@
     }
     persistToken(token);
 
+    let batch;
     try {
-      const batch = await buildBatch();
+      batch = await buildBatch();
       if (!batch || !batch.ok) {
         addLogItem({ title: "Batch build failed", status: "FAIL", lines: [batch?.error || "Validation failed"] });
         return;
