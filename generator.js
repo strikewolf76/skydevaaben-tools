@@ -1444,6 +1444,8 @@
     let json = null;
     try { json = text ? JSON.parse(text) : null; } catch { /* ignore */ }
     if (!res.ok) {
+      // For GET requests, 404 is expected for new files, don't throw
+      if (method === "GET" && res.status === 404) return null;
       const msg = json?.message || `${res.status} ${res.statusText}`;
       throw new Error(`${msg}`);
     }
@@ -1451,14 +1453,8 @@
   }
 
   async function getFileSha({ owner, repo, path, branch, token }) {
-    // If file doesn't exist, GitHub returns 404 -> we catch and return null
-    try {
-      const data = await ghFetch(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}`, { token });
-      return data?.sha || null;
-    } catch (e) {
-      if (String(e.message || "").includes("Not Found")) return null;
-      throw e;
-    }
+    const data = await ghFetch(`/repos/${owner}/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}`, { token });
+    return data?.sha || null;
   }
 
   async function putFile({ owner, repo, path, branch, token, message, contentBase64 }) {
