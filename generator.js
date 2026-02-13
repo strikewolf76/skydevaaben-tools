@@ -1492,64 +1492,35 @@
   }
 
   // Function to fetch and parse the current r/index.html
-  async function fetchIndexHtml() {
+  async function fetchDataJs() {
     try {
-      const content = await getRepoFileContents('r/index.html');
-      // Extract the slugs array using regex (assumes it's defined as const slugs = [ ... ]; on one or more lines)
-      const slugsMatch = content.match(/const slugs = \[([^\]]*)\];/s); // 's' flag for multiline
-      if (slugsMatch) {
-        // Parse the array string into an array (split by commas, trim quotes)
-        allSlugs = slugsMatch[1].split(',').map(s => s.trim().replace(/['"]/g, '')).filter(s => s);
-      } else {
-        console.log('Slugs match failed');
-        throw new Error('Could not parse slugs array from index.html');
-      }
-      // Extract the songNames object
-      const songNamesMatch = content.match(/const songNames = \{([^}]*)\};/s);
-      if (songNamesMatch) {
-        // Parse the object string into a simple object
-        const songNamesStr = songNamesMatch[1];
-        songNames = {};
-        // Simple parsing of key: 'value' pairs
-        const pairs = songNamesStr.split(',').map(s => s.trim());
-        pairs.forEach(pair => {
-          const [key, value] = pair.split(':').map(s => s.trim().replace(/['"]/g, ''));
-          if (key && value) {
-            songNames[key] = value;
-          }
-        });
-      } else {
-        console.log('songNames match failed');
-        songNames = {}; // Fallback
-      }
+      const content = await getRepoFileContents('r/data.js');
       return content;
     } catch (error) {
-      console.warn('Failed to fetch index.html:', error);
-      allSlugs = []; // Fallback to empty
-      songNames = {}; // Fallback
+      console.error('Error fetching data.js:', error);
       return null;
     }
   }
 
-  // Function to update and publish r/index.html with new slugs
-  async function updateIndexHtml(newSlugs, token, songCode, songName, songImageUrl) {
-    console.log('updateIndexHtml called with:', newSlugs, songCode, songName);
+  // Function to update and publish r/data.js with new slugs
+  async function updateDataJs(newSlugs, token, songCode, songName, songImageUrl) {
+    console.log('updateDataJs called with:', newSlugs, songCode, songName);
     // Fetch current content
-    const currentContent = await fetchIndexHtml();
+    const currentContent = await fetchDataJs();
     if (!currentContent) {
       console.log('No current content fetched');
       return; // Skip if fetch failed
     }
 
     // Parse existing songs array
-    const songsMatch = currentContent.match(/const songs = \[([^\]]*)\];/s);
+    const songsMatch = currentContent.match(/window\.songs = \[([^\]]*)\];/s);
     let allSongs = [];
     if (songsMatch) {
       allSongs = songsMatch[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
     }
 
     // Parse existing songNames object
-    const songNamesMatch = currentContent.match(/const songNames = \{([^\}]*)\};/s);
+    const songNamesMatch = currentContent.match(/window\.songNames = \{([^\}]*)\};/s);
     let allSongNames = {};
     if (songNamesMatch) {
       const pairs = songNamesMatch[1].split(',').map(s => s.trim());
@@ -1560,7 +1531,7 @@
     }
 
     // Parse existing songImages object
-    const songImagesMatch = currentContent.match(/const songImages = \{([^\}]*)\};/s);
+    const songImagesMatch = currentContent.match(/window\.songImages = \{([^\}]*)\};/s);
     let allSongImages = {};
     if (songImagesMatch) {
       const pairs = songImagesMatch[1].split(',').map(s => s.trim());
@@ -1568,6 +1539,13 @@
         const [key, value] = pair.split(':').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
         if (key && value) allSongImages[key] = value;
       });
+    }
+
+    // Parse existing slugs array
+    const slugsMatch = currentContent.match(/window\.slugs = \[([^\]]*)\];/s);
+    let allSlugs = [];
+    if (slugsMatch) {
+      allSlugs = slugsMatch[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
     }
 
     // Append new slugs, avoiding duplicates
@@ -1592,11 +1570,22 @@
       allSongImages[songCode] = songImageUrl;
     }
 
-    // Regenerate the arrays/objects strings
-    const slugsString = allSlugs.map(slug => `'${slug}'`).join(',\n      ');
+    // Regenerate the content
     const songsString = allSongs.map(song => `'${song}'`).join(', ');
     const songNamesString = Object.entries(allSongNames).map(([k, v]) => `'${k}': '${v.replace(/'/g, "\\'")}'`).join(', ');
     const songImagesString = Object.entries(allSongImages).map(([k, v]) => `'${k}': '${v.replace(/'/g, "\\'")}'`).join(', ');
+    const slugsString = allSlugs.map(slug => `\n  '${slug}'`).join(',') + '\n';
+
+    const newContent = `// Data for Skydevaaben redirects
+window.songs = [${songsString}];
+window.songNames = { ${songNamesString} };
+window.songImages = { ${songImagesString} };
+window.slugs = [${slugsString}];`;
+
+    // Put the new content
+    const sha = await getFileSha(OWNER, REPO, BRANCH, token, 'r/data.js');
+    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/data.js', message: `Update data.js with new song: ${songCode}`, content: btoa(newContent), sha });
+  }
 
     let updatedContent = currentContent.replace(
       /const slugs = \[([^\]]*)\];/s,
@@ -1804,14 +1793,14 @@
       }
     }
 
-    // Update index.html with new slugs
+    // Update data.js with new slugs
     const newSlugs = batch.items.slice(1).map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
-      await updateIndexHtml(newSlugs, token, batch.shortSlug, els.title.value.trim(), batch.ogImageAbs);
+      await updateDataJs(newSlugs, token, batch.shortSlug, els.title.value.trim(), batch.ogImageAbs);
     } catch (error) {
-      console.error('Index update error:', error);
-      addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
+      console.error('Data update error:', error);
+      addLogItem({ title: "Data update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
       failures += 1;
     }
 
