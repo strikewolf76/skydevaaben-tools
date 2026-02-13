@@ -1108,6 +1108,7 @@
     // syncSlugAndCampaignFromTitle(); // Removed: validation should not modify form values
     const errors = [];
     const warnings = [];
+    const requiredMissing = [];
     updateNeedsInput();
     resolverStatus = ""; // Clear resolver status on validation
 
@@ -1125,7 +1126,7 @@
 
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
-    required("Track slug", slug, errors);
+    if (!slug) requiredMissing.push("Track slug is required");
 
     // Check slug uniqueness
     if (slug) {
@@ -1140,15 +1141,15 @@
     }
 
     const utmCampaign = sanitizeSlug(els.utmCampaign.value);
-    required("utm_campaign", utmCampaign, errors);
+    if (!utmCampaign) requiredMissing.push("utm_campaign is required");
 
     const anyDest = els.destSpotify.checked;
-    if (!anyDest) errors.push("Select at least one destination.");
+    if (!anyDest) requiredMissing.push("Select at least one destination.");
 
     let spotifyIdParsed = null;
     if (els.destSpotify.checked) {
       spotifyIdParsed = parseSpotifyTrackId(els.spotifyUrl.value || "");
-      if (!spotifyIdParsed) errors.push("Spotify URL must contain a track ID");
+      if (!spotifyIdParsed) requiredMissing.push("Spotify URL must contain a track ID");
     }
 
     // Check cover exists
@@ -1167,7 +1168,7 @@
     const platformsChecked = [els.platformYt, els.platformIg, els.platformFb, els.platformTt].filter(cb => cb.checked).length > 0;
     if (platformsChecked) {
       if (!shortSlug) {
-        errors.push("Short slug is required when platforms are selected.");
+        requiredMissing.push("Short slug is required when platforms are selected.");
       } else {
         try {
           await fetchIndexHtml();
@@ -1182,55 +1183,64 @@
     }
 
     if (requireOg) {
-      if (!ogImageLoaded) errors.push("OG image not uploaded yet (required).");
-      if (ogImageError) errors.push(ogImageError);
+      if (!ogImageLoaded) requiredMissing.push("OG image not uploaded yet (required).");
+      if (ogImageError) requiredMissing.push(ogImageError);
     }
 
     const imageSlug = ogImageSlug || slug;
     els.ogImageNamePreview.textContent = imageSlug ? `assets/og/${imageSlug}.jpg` : "";
 
+    let status = "";
+    if (requiredMissing.length) {
+      status += "<span class=\"ok\">Requires Following Info</span>\n" + requiredMissing.map(function(r) { return "- " + r; }).join("\n");
+    }
     if (errors.length) {
-      els.validation.innerHTML = "<span class=\"bad\">FAIL</span>\n" + errors.map(function(e) { return "- " + e; }).join("\n");
+      if (status) status += "\n\n";
+      status += "<span class=\"bad\">FAIL</span>\n" + errors.map(function(e) { return "- " + e; }).join("\n");
+    }
+    if (!requiredMissing.length && !errors.length) {
+      status = "<span class=\"ok\">OK</span>";
+      if (warnings.length) {
+        status += "\n<span class=\"warn\">WARNINGS</span>\n" + warnings.map(function(w) { return "- " + w; }).join("\n");
+      }
+      
+      if (resolverStatus) {
+        status += "\n" + resolverStatus;
+      }
+      
+      status += "\n- Publish will create/update:\n" +
+        "  - assets/og/" + imageSlug + ".jpg\n" +
+        "  - assets/og/" + imageSlug + "-bg.jpg\n" +
+        "  - assets/og/" + imageSlug + "-fg.jpg\n" +
+        "  - tracks/" + slug + "/index.html\n" +
+        "  - qrs/" + slug + "/index.png\n";
+      
+      if (platformsChecked && shortSlug) {
+        const platforms = [];
+        if (els.platformYt.checked) platforms.push('yt');
+        if (els.platformIg.checked) platforms.push('ig');
+        if (els.platformFb.checked) platforms.push('fb');
+        if (els.platformTt.checked) platforms.push('tt');
+        
+        const shortUrls = platforms.reduce(function(acc, platform) {
+          return acc.concat(['1', '2', '3', '4'].map(function(version) {
+            return "r/" + platform + shortSlug + version + ".html";
+          }));
+        }, []);
+        
+        status += "  - " + shortUrls.join('\n  - ') + "\n";
+      }
+    }
+
+    if (status) {
+      els.validation.innerHTML = status;
       show(els.validationPanel);
-      return { ok: false, errors, warnings };
+    } else {
+      els.validation.innerHTML = '';
+      hide(els.validationPanel);
     }
 
-    let status = "<span class=\"ok\">OK</span>";
-    if (warnings.length) {
-      status += "\n<span class=\"warn\">WARNINGS</span>\n" + warnings.map(function(w) { return "- " + w; }).join("\n");
-    }
-    
-    if (resolverStatus) {
-      status += "\n" + resolverStatus;
-    }
-    
-    status += "\n- Publish will create/update:\n" +
-      "  - assets/og/" + imageSlug + ".jpg\n" +
-      "  - assets/og/" + imageSlug + "-bg.jpg\n" +
-      "  - assets/og/" + imageSlug + "-fg.jpg\n" +
-      "  - tracks/" + slug + "/index.html\n" +
-      "  - qrs/" + slug + "/index.png\n";
-    
-    if (platformsChecked && shortSlug) {
-      const platforms = [];
-      if (els.platformYt.checked) platforms.push('yt');
-      if (els.platformIg.checked) platforms.push('ig');
-      if (els.platformFb.checked) platforms.push('fb');
-      if (els.platformTt.checked) platforms.push('tt');
-      
-      const shortUrls = platforms.reduce(function(acc, platform) {
-        return acc.concat(['1', '2', '3', '4'].map(function(version) {
-          return "r/" + platform + shortSlug + version + ".html";
-        }));
-      }, []);
-      
-      status += "  - " + shortUrls.join('\n  - ') + "\n";
-    }
-    
-    els.validation.innerHTML = status;
-    show(els.validationPanel);
-
-    return { ok: true, errors, warnings };
+    return { ok: !requiredMissing.length && !errors.length, errors, warnings };
   }
 
   async function updateValidation() {
