@@ -1595,8 +1595,8 @@
     // Regenerate the arrays/objects strings
     const slugsString = allSlugs.map(slug => `'${slug}'`).join(',\n      ');
     const songsString = allSongs.map(song => `'${song}'`).join(', ');
-    const songNamesString = Object.entries(allSongNames).map(([k, v]) => `${k}: '${v}'`).join(', ');
-    const songImagesString = Object.entries(allSongImages).map(([k, v]) => `${k}: '${v}'`).join(', ');
+    const songNamesString = Object.entries(allSongNames).map(([k, v]) => `${k}: '${v.replace(/'/g, "\\'")}'`).join(', ');
+    const songImagesString = Object.entries(allSongImages).map(([k, v]) => `${k}: '${v.replace(/'/g, "\\'")}'`).join(', ');
 
     let updatedContent = currentContent.replace(
       /const slugs = \[([^\]]*)\];/s,
