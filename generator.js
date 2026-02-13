@@ -448,6 +448,8 @@
   let ogImageBitmap = null;
   let ogImageError = null;
   let ogImageSlug = null;
+  let allSlugs = [];
+  let songNames = {};
 
   function drawOgCanvasFromBitmap() {
     const canvas = els.ogCanvas;
@@ -662,14 +664,9 @@
 
   function applySettings() {
     const raw = safeGet(SETTINGS_KEY);
-    console.log('Loading settings:', SETTINGS_KEY, raw);
-    if (!raw) {
-      console.log('No settings found');
-      return;
-    }
+    if (!raw) return;
     try {
       const s = JSON.parse(raw);
-      console.log('Parsed settings:', s);
       const assign = (el, val, isCheckbox) => {
         if (typeof val === "undefined") return;
         if (isCheckbox) el.checked = !!val; else el.value = val;
@@ -680,11 +677,7 @@
       currentToken = s.token || "";
       els.ghToken.value = currentToken;
       updateMetaPixelStatus();
-      console.log('Settings applied successfully');
-    } catch (e) {
-      console.log('Error applying settings:', e);
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   }
 
   function loadToken() {
@@ -1447,7 +1440,7 @@
 
   // Helper to get file content from repo
   async function getRepoFileContents(path) {
-    const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${path}`, { token });
+    const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${path}`, { token: currentToken });
     if (res.content) {
       return atob(res.content.replace(/\s/g, ''));
     }
@@ -1469,10 +1462,30 @@
         console.log('Slugs match failed');
         throw new Error('Could not parse slugs array from index.html');
       }
+      // Extract the songNames object
+      const songNamesMatch = content.match(/const songNames = \{([^}]*)\};/s);
+      if (songNamesMatch) {
+        // Parse the object string into a simple object
+        const songNamesStr = songNamesMatch[1];
+        songNames = {};
+        // Simple parsing of key: 'value' pairs
+        const pairs = songNamesStr.split(',').map(s => s.trim());
+        pairs.forEach(pair => {
+          const [key, value] = pair.split(':').map(s => s.trim().replace(/['"]/g, ''));
+          if (key && value) {
+            songNames[key] = value;
+          }
+        });
+        console.log('Parsed songNames:', Object.keys(songNames).length);
+      } else {
+        console.log('songNames match failed');
+        songNames = {}; // Fallback
+      }
       return content;
     } catch (error) {
       console.warn('Failed to fetch index.html:', error);
       allSlugs = []; // Fallback to empty
+      songNames = {}; // Fallback
       return null;
     }
   }
