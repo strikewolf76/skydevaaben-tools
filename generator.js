@@ -1564,17 +1564,17 @@
       songAdded = true;
     }
 
+    // Add songName if not present
+    if (songCode && songName && !allSongNames[songCode]) {
+      allSongNames[songCode] = songName;
+    }
+
     // Sort songs alphabetically by name
     allSongs.sort((a, b) => {
       const nameA = allSongNames[a] || a;
       const nameB = allSongNames[b] || b;
       return nameA.localeCompare(nameB);
     });
-
-    // Add songName if not present
-    if (songCode && songName && !allSongNames[songCode]) {
-      allSongNames[songCode] = songName;
-    }
 
     // Add songImage if not present
     if (songCode && songImageUrl && !allSongImages[songCode]) {
