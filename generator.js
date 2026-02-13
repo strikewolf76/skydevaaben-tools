@@ -448,12 +448,12 @@
   function generateShortSlug(artist, title) {
     if (!artist || !title) return "";
     
-    // Get first 3 letters of artist
-    const artistPart = artist.substring(0, 3).toUpperCase();
+    // Get first 2 letters of artist
+    const artistPart = artist.substring(0, 2).toUpperCase();
     
-    // Get first letter of each word in title
+    // Get first letter of first 3 words in title
     const titleWords = title.split(/\s+/).filter(word => word.length > 0);
-    const titleFirsts = titleWords.map(word => word.charAt(0).toUpperCase()).join("");
+    const titleFirsts = titleWords.slice(0, 3).map(word => word.charAt(0).toUpperCase()).join("");
     
     return artistPart + titleFirsts;
   }
