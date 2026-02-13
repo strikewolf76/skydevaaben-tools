@@ -68,17 +68,11 @@
   function normBaseUrl(s) { return (s || "").trim().replace(/\/+$/, ""); }
 
   function sanitizeSlug(s) {
-    console.log('sanitizeSlug input:', s);
     s = (s || "").trim().toLowerCase();
-    console.log('after trim lowercase:', s);
     s = s.replace(/[_\s]+/g, "-");
-    console.log('after replace spaces:', s);
     s = s.replace(/[^a-z0-9åæø-]/g, "");
-    console.log('after remove invalid chars:', s);
     s = s.replace(/-+/g, "-");
-    console.log('after replace multiple dashes:', s);
     s = s.replace(/^-+|-+$/g, "");
-    console.log('after trim dashes:', s);
     return s;
   }
 
@@ -719,21 +713,16 @@
   }
 
   function syncSlugAndCampaignFromTitle() {
-    console.log('syncSlugAndCampaignFromTitle called, title value:', els.title.value);
     const slug = sanitizeSlug(els.title.value || "");
-    console.log('generated slug:', slug);
     els.trackSlug.value = slug;
     els.utmCampaign.value = slug;
     
-    // Auto-generate short slug if field is empty
-    const currentShortSlug = (els.shortSlug.value || "").trim();
-    if (!currentShortSlug) {
-      const artist = (els.artist.value || "").trim();
-      const title = (els.title.value || "").trim();
-      const autoShortSlug = generateShortSlug(artist, title);
-      if (autoShortSlug) {
-        els.shortSlug.value = autoShortSlug.toLowerCase();
-      }
+    // Auto-generate short slug
+    const artist = (els.artist.value || "").trim();
+    const title = (els.title.value || "").trim();
+    const autoShortSlug = generateShortSlug(artist, title);
+    if (autoShortSlug) {
+      els.shortSlug.value = autoShortSlug.toLowerCase();
     }
     
     const imageSlug = ogImageSlug || slug;
@@ -1870,7 +1859,7 @@
     });
 
     // Real-time validation
-    if (els.title) els.title.addEventListener("input", () => { console.log('title input event fired'); syncSlugAndCampaignFromTitle(); updateValidation(); });
+    if (els.title) els.title.addEventListener("input", () => { syncSlugAndCampaignFromTitle(); updateValidation(); });
     if (els.artist) els.artist.addEventListener("input", () => { syncSlugAndCampaignFromTitle(); updateValidation(); });
     if (els.shortSlug) els.shortSlug.addEventListener("input", updateValidation);
     if (els.trackSlug) els.trackSlug.addEventListener("input", () => { els.utmCampaign.value = els.trackSlug.value; updateValidation(); });
