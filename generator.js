@@ -1587,44 +1587,6 @@ window.slugs = [${slugsString}];`;
     await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/data.js', message: `Update data.js with new song: ${songCode}`, content: btoa(newContent), sha });
   }
 
-    let updatedContent = currentContent.replace(
-      /const slugs = \[([^\]]*)\];/s,
-      `const slugs = [\n      ${slugsString}\n    ];`
-    );
-    updatedContent = updatedContent.replace(
-      /const songs = \[([^\]]*)\];/s,
-      `const songs = [${songsString}];`
-    );
-    updatedContent = updatedContent.replace(
-      /const songNames = \{([^\}]*)\};/s,
-      `const songNames = { ${songNamesString} };`
-    );
-    updatedContent = updatedContent.replace(
-      /const songImages = \{([^\}]*)\};/s,
-      `const songImages = { ${songImagesString} };`
-    );
-
-    // Add option to songFilter
-    if (songAdded && songCode && songName) {
-      const optionHtml = `        <option value="${songCode}">${songName}</option>`;
-      updatedContent = updatedContent.replace(
-        /(<option value="[^"]*">[^<]*<\/option>\s*)<\/select>/s,
-        `$1${optionHtml}\n      </select>`
-      );
-    }
-
-    console.log('Publishing updated index.html');
-    // Publish the updated file
-    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/index.html', message: `Update index: added ${uniqueNewSlugs.join(', ')}${songAdded ? ` and song ${songCode}` : ''}`, contentBase64: utf8ToBase64(updatedContent) });
-
-    // Log the update
-    addLogItem({
-      title: `Updated r/index.html`,
-      status: "PUBLISHED",
-      lines: [`Added ${uniqueNewSlugs.length} new slugs: ${uniqueNewSlugs.join(', ')}; total: ${allSlugs.length}${songAdded ? `; added song ${songCode}` : ''}`]
-    });
-  }
-
   // ---------- publish ----------
   async function publishAll() {
     clearLog();
