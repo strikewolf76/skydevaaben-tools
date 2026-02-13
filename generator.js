@@ -1535,7 +1535,7 @@
   }
 
   // Function to update and publish r/index.html with new slugs
-  async function updateIndexHtml(newSlugs) {
+  async function updateIndexHtml(newSlugs, token) {
     console.log('updateIndexHtml called with:', newSlugs);
     // Fetch current content
     const currentContent = await fetchIndexHtml();
@@ -1742,7 +1742,7 @@
     const newSlugs = (batch.shortUrlItems || []).map(it => it.relPath.replace(/^r\//, '').replace(/\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
-      await updateIndexHtml(newSlugs);
+      await updateIndexHtml(newSlugs, token);
     } catch (error) {
       console.error('Index update error:', error);
       addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
