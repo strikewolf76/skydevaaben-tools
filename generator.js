@@ -1141,29 +1141,11 @@
       return { ok: false, errors, warnings };
     }
 
-    // Check song name uniqueness
-    if (title) {
-      try {
-        await fetchIndexHtml();
-        const existingTitles = Object.values(songNames);
-        if (existingTitles.includes(title)) {
-          errors.push(`Song name "${title}" already exists. Must be unique.`);
-        }
-      } catch (e) {
-        console.warn('Could not check song uniqueness:', e);
-      }
-    // Check song name uniqueness
-    if (title) {
-      try {
-        await fetchIndexHtml();
-        const existingTitles = Object.values(songNames);
-        if (existingTitles.some(t => t.toLowerCase() === title.toLowerCase())) {
-          errors.push(`Song name "${title}" already exists. Must be unique.`);
-        }
-      } catch (e) {
-        console.warn('Could not check song uniqueness:', e);
-      }
     }
+
+    const slugRaw = (els.trackSlug.value || "");
+    }
+
     if (/_/.test(slugRaw)) errors.push("Track slug contains '_' (underscore). Use hyphens only.");
     const slug = sanitizeSlug(slugRaw);
     required("Track slug", slug, errors);
