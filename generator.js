@@ -1553,7 +1553,7 @@
     }
 
     // Append new slugs, avoiding duplicates
-    const uniqueNewSlugs = newSlugs.filter(slug => !allSlugs.includes(slug));
+    const uniqueNewSlugs = newSlugs.filter(slug => !slug.startsWith('shorturl/')).filter(slug => !allSlugs.includes(slug));
     console.log('Unique new slugs:', uniqueNewSlugs);
     allSlugs.push(...uniqueNewSlugs);
 
