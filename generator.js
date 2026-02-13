@@ -1426,6 +1426,65 @@
     return extra ? `${msg} | ${extra}` : msg;
   }
 
+  // Helper to get file content from repo
+  async function getRepoFileContents(path) {
+    const res = await ghFetch(`/repos/${OWNER}/${REPO}/contents/${path}`, { token });
+    if (res.content) {
+      return atob(res.content.replace(/\s/g, ''));
+    }
+    throw new Error(`File not found: ${path}`);
+  }
+
+  // Function to fetch and parse the current r/index.html
+  async function fetchIndexHtml() {
+    try {
+      const content = await getRepoFileContents('r/index.html');
+      // Extract the slugs array using regex (assumes it's defined as const slugs = [ ... ]; on one or more lines)
+      const slugsMatch = content.match(/const slugs = \[([^\]]*)\];/s); // 's' flag for multiline
+      if (slugsMatch) {
+        // Parse the array string into an array (split by commas, trim quotes)
+        allSlugs = slugsMatch[1].split(',').map(s => s.trim().replace(/['"]/g, '')).filter(s => s);
+      } else {
+        throw new Error('Could not parse slugs array from index.html');
+      }
+      return content;
+    } catch (error) {
+      console.warn('Failed to fetch index.html:', error);
+      allSlugs = []; // Fallback to empty
+      return null;
+    }
+  }
+
+  // Function to update and publish r/index.html with new slugs
+  async function updateIndexHtml(newSlugs) {
+    // Fetch current content
+    const currentContent = await fetchIndexHtml();
+    if (!currentContent) return; // Skip if fetch failed
+
+    // Append new slugs, avoiding duplicates
+    const uniqueNewSlugs = newSlugs.filter(slug => !allSlugs.includes(slug));
+    allSlugs.push(...uniqueNewSlugs);
+
+    // Regenerate the slugs array string (format as multiline for readability)
+    const slugsString = allSlugs.map(slug => `'${slug}'`).join(',\n      ');
+
+    // Replace the slugs array in the content
+    const updatedContent = currentContent.replace(
+      /const slugs = \[([^\]]*)\];/s,
+      `const slugs = [\n      ${slugsString}\n    ];`
+    );
+
+    // Publish the updated file
+    await putFile({ owner: OWNER, repo: REPO, branch: BRANCH, token, path: 'r/index.html', message: `Update slugs: added ${uniqueNewSlugs.join(', ')}`, contentBase64: utf8ToBase64(updatedContent) });
+
+    // Log the update
+    addLogItem({
+      title: `Updated r/index.html`,
+      status: "PUBLISHED",
+      lines: [`Added ${uniqueNewSlugs.length} new slugs: ${uniqueNewSlugs.join(', ')}; total: ${allSlugs.length}`]
+    });
+  }
+
   // ---------- publish ----------
   async function publishAll() {
     clearLog();
@@ -1646,6 +1705,15 @@
         addLogItem({ title: `FAIL: ${job.path}`, status: "ERROR", lines: [normalizeTokenError(e)] });
         failures += 1;
       }
+    }
+
+    // Update index.html with new slugs
+    const newSlugs = (batch.shortUrlItems || []).map(it => it.relPath.replace(/^r\//, '').replace(/\.html$/, ''));
+    try {
+      await updateIndexHtml(newSlugs);
+    } catch (error) {
+      addLogItem({ title: "Index update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
+      failures += 1;
     }
 
     persistHashStore(hashStore);
