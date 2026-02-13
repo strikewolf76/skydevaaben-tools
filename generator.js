@@ -1739,7 +1739,7 @@
     }
 
     // Update index.html with new slugs
-    const newSlugs = (batch.shortUrlItems || []).map(it => it.relPath.replace(/^r\//, '').replace(/\.html$/, ''));
+    const newSlugs = batch.items.map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
       await updateIndexHtml(newSlugs, token);
