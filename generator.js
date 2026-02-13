@@ -1523,22 +1523,26 @@
     const songNamesMatch = currentContent.match(/window\.songNames = \{([^\}]*)\};/s);
     let allSongNames = {};
     if (songNamesMatch) {
-      const pairs = songNamesMatch[1].split(',').map(s => s.trim());
-      pairs.forEach(pair => {
-        const [key, value] = pair.split(':').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
-        if (key && value) allSongNames[key] = value;
-      });
+      const pairs = songNamesMatch[1].match(/'(\w+)': '([^']+)'/g);
+      if (pairs) {
+        pairs.forEach(pair => {
+          const match = pair.match(/'(\w+)': '([^']+)'/);
+          if (match) allSongNames[match[1]] = match[2];
+        });
+      }
     }
 
     // Parse existing songImages object
     const songImagesMatch = currentContent.match(/window\.songImages = \{([^\}]*)\};/s);
     let allSongImages = {};
     if (songImagesMatch) {
-      const pairs = songImagesMatch[1].split(',').map(s => s.trim());
-      pairs.forEach(pair => {
-        const [key, value] = pair.split(':').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
-        if (key && value) allSongImages[key] = value;
-      });
+      const pairs = songImagesMatch[1].match(/'(\w+)': '([^']+)'/g);
+      if (pairs) {
+        pairs.forEach(pair => {
+          const match = pair.match(/'(\w+)': '([^']+)'/);
+          if (match) allSongImages[match[1]] = match[2];
+        });
+      }
     }
 
     // Parse existing slugs array
@@ -1560,6 +1564,9 @@
       songAdded = true;
     }
 
+    // Sort songs alphabetically by name
+    allSongs.sort((a, b) => allSongNames[a].localeCompare(allSongNames[b]));
+
     // Add songName if not present
     if (songCode && songName && !allSongNames[songCode]) {
       allSongNames[songCode] = songName;
@@ -1569,6 +1576,9 @@
     if (songCode && songImageUrl && !allSongImages[songCode]) {
       allSongImages[songCode] = songImageUrl;
     }
+
+    // Sort slugs alphabetically
+    allSlugs.sort();
 
     // Regenerate the content
     const songsString = allSongs.map(song => `'${song}'`).join(', ');
