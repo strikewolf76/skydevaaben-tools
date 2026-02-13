@@ -446,16 +446,13 @@
 
   // Generate short slug from artist and title
   function generateShortSlug(artist, title) {
-    if (!artist || !title) return "";
-    
-    // Get first letter of artist
-    const artistFirst = artist.charAt(0).toUpperCase();
+    if (!title) return "";
     
     // Get first letter of each word in title
     const titleWords = title.split(/\s+/).filter(word => word.length > 0);
     const titleFirsts = titleWords.map(word => word.charAt(0).toUpperCase()).join("");
     
-    return artistFirst + titleFirsts;
+    return titleFirsts;
   }
 
   function drawOgCanvasFromBitmap() {
