@@ -452,7 +452,7 @@
 
   // Generate short slug from artist and title
   function generateShortSlug(artist, title) {
-    if (!artist || !title) return "";
+    if (!artist) return "";
     
     // Get first 2 letters of artist
     const artistPart = artist.substring(0, 2).toUpperCase();
