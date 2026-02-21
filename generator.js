@@ -798,107 +798,11 @@
   <meta name="twitter:description" content="${htmlEscape(description)}">
   <meta name="twitter:image" content="${htmlEscape(ogImageAbs)}">
 
+  <link rel="stylesheet" href="../scripts/common.css">
   <style>
     body {
       background: url('${htmlEscape(ogImageAbs.replace(/\.jpg$/i, "-bg.jpg"))}') no-repeat center center;
       background-size: cover;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      text-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    .content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.35);
-      border-radius: 16px;
-      padding: 24px 24px 32px 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      max-width: 340px;
-    }
-    .cover {
-      width: 280px;
-      height: 280px;
-      object-fit: cover;
-      border-radius: 10px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-      margin-bottom: 20px;
-    }
-    .track-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      text-align: center;
-    }
-    .track-subtitle {
-      font-size: 1rem;
-      opacity: 0.85;
-      margin-bottom: 18px;
-      text-align: center;
-    }
-    .service-buttons {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .cta {
-      background: rgba(0,0,0,0.7);
-      color: white;
-      border: 2px solid white;
-      text-decoration: none;
-      padding: 14px 22px;
-      font-size: 18px;
-      border-radius: 10px;
-      transition: background 0.3s ease;
-      text-align: center;
-    }
-    .cta:hover {
-      background: rgba(0,0,0,0.9);
-    }
-    .cta.spotify-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      color: #191414;
-      border: none;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-radius: 8px;
-      padding: 12px 0;
-      box-shadow: 0 2px 8px rgba(30,215,96,0.10);
-      transition: background 0.2s;
-      gap: 10px;
-    }
-    .cta.spotify-btn:hover {
-      background: #1ed760;
-      color: #191414;
-    }
-    .spotify-logo {
-      display: flex;
-      align-items: center;
-    }
-    .spotify-text {
-      font-size: 1.1rem;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-    }
-    .consent-info {
-      font-size: 13px;
-      opacity: 0.9;
-      margin-top: 20px;
-      max-width: 480px;
-      line-height: 1.4;
-      text-align: center;
     }
   </style>
 </head>
@@ -919,162 +823,13 @@
   </p>
 
 <script>
-(function () {
   var DESTINATIONS = ${JSON.stringify(destinations.map(d => ({ key: d.key, baseUrl: d.baseUrl, spotifyId: d.spotifyId })))};
   var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
   var TRACK_SLUG = "${htmlEscape(trackSlug || "")}";
   var UTM_CAMPAIGN = "${htmlEscape(utm_campaign || "")}";
-  var UTM_CONTENT_DEFAULT = "meta";
 
-  var params = new URLSearchParams(window.location.search || "");
-  var CID = params.get("cid") || "";
-  var consentGranted = false;
-  var pixelEventsQueued = [];
-  var clickLocked = false;
-  var pageViewFired = false;
-
-  // Allow known social crawlers to fetch OG tags (no redirect)
-  var ua = navigator.userAgent || "";
-  var isCrawler = /(facebookexternalhit|facebot|twitterbot|linkedinbot|discordbot|pinterest|slackbot|whatsapp|telegrambot|skypeuripreview)/i.test(ua);
-  var isInAppBrowser = /(FBAN|FBAV|Instagram|Messenger|Line|TikTok)/i.test(ua);
-  if (isCrawler) return;
-
-  // Helper functions
-  function hasConsent() {
-    try {
-      return localStorage.getItem("sv_cookie_consent") === "granted";
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function setConsentGranted() {
-    if (consentGranted) return;
-    consentGranted = true;
-    try {
-      localStorage.setItem("sv_cookie_consent", "granted");
-    } catch (_) {}
-    if (typeof window.fbq === "function" && META_PIXEL_ID) {
-      fbq("consent", "grant");
-      // Fire queued events
-      while (pixelEventsQueued.length > 0) {
-        var ev = pixelEventsQueued.shift();
-        ev();
-      }
-    }
-  }
-
-  function showConsentNoticeIfNeeded() {
-    if (!hasConsent()) {
-      var consentInfoEl = document.getElementById("consent-info");
-      if (consentInfoEl) consentInfoEl.style.display = "block";
-    }
-  }
-
-  function firePageViewOnce() {
-    if (pageViewFired) return;
-    if (typeof window.fbq !== "function" || !META_PIXEL_ID) return;
-    pageViewFired = true;
-    try { fbq("track", "PageView"); } catch (_) {}
-  }
-
-  // Show consent notice for new users
-  showConsentNoticeIfNeeded();
-
-  // Initialize Meta Pixel (if ID present)
-  if (META_PIXEL_ID) {
-    !(function (f, b, e, v, n, t, s) {
-      if (f.fbq) return;
-      n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
-      if (!f._fbq) f._fbq = n;
-      n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = [];
-      t = b.createElement(e); t.async = !0; t.src = v;
-      s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
-    })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-
-    fbq("init", META_PIXEL_ID);
-    
-    // If returning user: grant immediately and fire PageView
-    if (hasConsent()) {
-      setConsentGranted();
-      firePageViewOnce();
-    } else {
-      // Queue PageView until consent granted
-      pixelEventsQueued.push(function () { firePageViewOnce(); });
-    }
-  }
-
-  function appendUtms(url, utms) {
-    var u = new URL(url);
-    Object.keys(utms).forEach(function(k) {
-      if (utms[k]) u.searchParams.set(k, utms[k]);
-    });
-    return u.toString();
-  }
-
-  function fireOutboundSpotify(kind, destKey, dest) {
-    if (typeof window.fbq !== "function" || !META_PIXEL_ID) return;
-    try {
-      var eventId = "ob_" + Date.now() + "_" + Math.random().toString(16).slice(2);
-      fbq("trackCustom", "OutboundSpotify", {
-        kind: kind,
-        cid: CID || "",
-        slug: TRACK_SLUG || "",
-        dest: destKey === "spotify" ? "spotify" : destKey,
-        channel: "meta",
-        track_id: (dest && dest.spotifyId) ? dest.spotifyId : "",
-        utm_campaign: UTM_CAMPAIGN || "",
-        utm_content: (CID || UTM_CONTENT_DEFAULT || "")
-      }, { eventID: eventId });
-    } catch (_) {}
-  }
-
-  function handleClick(destKey, e) {
-    // Allow modified clicks (open in new tab etc.)
-    if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1)) return;
-
-    if (clickLocked) return;
-
-    if (e && e.preventDefault) e.preventDefault();
-
-    var dest = DESTINATIONS.find(d => d.key === destKey);
-    if (!dest) return;
-
-    clickLocked = true;
-
-    var webUrl = appendUtms(dest.baseUrl, { utm_campaign: UTM_CAMPAIGN, utm_content: (CID || UTM_CONTENT_DEFAULT) });
-
-    if (!hasConsent()) {
-      setConsentGranted();
-    }
-    firePageViewOnce();
-    fireOutboundSpotify("click", destKey, dest);
-
-    try {
-      if (navigator.sendBeacon && META_PIXEL_ID) {
-        navigator.sendBeacon("https://www.facebook.com/tr/", new Blob([], { type: "application/x-www-form-urlencoded" }));
-      }
-    } catch (_) {}
-    
-    // Always redirect to web URL (instant in in-app browsers; short delay elsewhere)
-    if (isInAppBrowser) {
-      window.location.href = webUrl;
-    } else {
-      setTimeout(function () { window.location.href = webUrl; }, 120);
-    }
-  }
-
-  // Attach click handlers
-  document.querySelectorAll('.cta').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      var destKey = this.getAttribute('data-dest');
-      handleClick(destKey, e);
-    });
-  });
-
-})();
-<\/script>
-
+</script>
+<script src="../scripts/common.js"></script>
 </body>
 </html>
 `;
@@ -1106,7 +861,8 @@
   }
 
   function generateRHtml(shortSlug, cid) {
-    return "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <meta name=\"robots\" content=\"noindex,nofollow\" />\n  <title>Redirecting…</title>\n</head>\n<body>\n<script>\n(function () {\n  var targetBase = \"https://skydevaaben.no/shorturl/" + htmlEscape(shortSlug) + "/\";\n  var params = new URLSearchParams(window.location.search || \"\");\n  params.set(\"cid\", \"" + htmlEscape(cid) + "\");\n  window.location.replace(targetBase + \"?\" + params.toString());\n})();\n</script>\n</body>\n</html>";
+    return "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <meta name=\"robots\" content=\"noindex,nofollow\" />\n  <title>Redirecting…</title>\n</head>\n<body>\n<script>\n(function () {\n  var targetBase = \"https://skydevaaben.no/shorturl/" + htmlEscape(shortSlug) + "/\";\n  var params = new URLSearchParams(window.location.search || \"\");\n  params.set(\"cid\", \"" + htmlEscape(cid) + "\");\n  window.location.replace(targetBase + \"?\" + params.toString());\n})();\n</script>
+<script src="../scripts/common.js"></script>\n</body>\n</html>";
   }
 
   // ---------- validation + batch build ----------
