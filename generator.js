@@ -776,6 +776,12 @@
       }
     }).join("");
 
+    const scriptVars = `  var DESTINATIONS = ${JSON.stringify(destinations.map(d => ({ key: d.key, baseUrl: d.baseUrl, spotifyId: d.spotifyId })))};
+  var META_PIXEL_ID = ${JSON.stringify(metaPixelId || "")};
+  var TRACK_SLUG = ${JSON.stringify(trackSlug || "")};
+  var UTM_CAMPAIGN = ${JSON.stringify(utm_campaign || "")};
+  var UTM_CONTENT_DEFAULT = "meta";`;
+
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -823,12 +829,7 @@
   </p>
 
 <script>
-  var DESTINATIONS = ${JSON.stringify(destinations.map(d => ({ key: d.key, baseUrl: d.baseUrl, spotifyId: d.spotifyId })))};
-  var META_PIXEL_ID = ${JSON.stringify(metaPixelId || "")};
-  var TRACK_SLUG = ${JSON.stringify(trackSlug || "")};
-  var UTM_CAMPAIGN = ${JSON.stringify(utm_campaign || "")};
-  var UTM_CONTENT_DEFAULT = "meta";
-
+${scriptVars}
 </script>
 <script src="../scripts/common.js"></script>
 </body>
