@@ -827,6 +827,7 @@
   var META_PIXEL_ID = "${htmlEscape(metaPixelId || "")}";
   var TRACK_SLUG = "${htmlEscape(trackSlug || "")}";
   var UTM_CAMPAIGN = "${htmlEscape(utm_campaign || "")}";
+  var UTM_CONTENT_DEFAULT = "meta";
 
 </script>
 <script src="../scripts/common.js"></script>
