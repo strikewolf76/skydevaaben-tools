@@ -862,10 +862,9 @@ ${scriptVars}
 </html>`;
   }
 
-  function generateRHtml(shortSlug, cid) {
-    return "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <meta name=\"robots\" content=\"noindex,nofollow\" />\n  <title>Redirecting…</title>\n</head>\n<body>\n<script>\n(function () {\n  var targetBase = \"https://skydevaaben.no/shorturl/" + htmlEscape(shortSlug) + "/\";\n  var params = new URLSearchParams(window.location.search || \"\");\n  params.set(\"cid\", \"" + htmlEscape(cid) + "\");\n  window.location.replace(targetBase + \"?\" + params.toString());\n})();\n</script>
-<script src="../scripts/common.js"></script>\n</body>\n</html>";
-  }
+function generateRHtml(shortSlug, cid) {
+  return "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <meta name=\"robots\" content=\"noindex,nofollow\" />\n  <title>Redirecting…</title>\n</head>\n<body>\n<script>\n(function () {\n  var targetBase = \"https://skydevaaben.no/shorturl/" + htmlEscape(shortSlug) + "/\";\n  var params = new URLSearchParams(window.location.search || \"\");\n  params.set(\"cid\", \"" + htmlEscape(cid) + "\");\n  window.location.replace(targetBase + \"?\" + params.toString());\n})();\n<\/script>\n<script src=\"../scripts/common.js\"><\/script>\n</body>\n</html>";
+}
 
   // ---------- validation + batch build ----------
   async function validateOnly(requireOg = true) {
