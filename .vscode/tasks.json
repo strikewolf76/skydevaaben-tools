@@ -1,0 +1,33 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "git commit and push tiktok metadata",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"add",
+				".",
+				"&&",
+				"git",
+				"commit",
+				"-m",
+				"\"TikTok metadata cleanup, renumbering, caption optimization, and reusable README playbook\"",
+				"&&",
+				"git",
+				"push"
+			]
+		},
+		{
+			"label": "git-commit-push-direct",
+			"type": "shell",
+			"command": "git add .; git commit -m \"TikTok metadata cleanup, renumbering, caption optimization, and reusable README playbook\"; git push"
+		},
+		{
+			"label": "git-add-commit-push-now",
+			"type": "shell",
+			"command": "git add .; git commit -m \"TikTok metadata cleanup, renumbering, caption optimization, and reusable README playbook\"; git push",
+			"isBackground": false
+		}
+	]
+}

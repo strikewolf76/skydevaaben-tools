@@ -1,4 +1,11 @@
 {
   "terminal.integrated.shellIntegration.enabled": true,
-  "terminal.integrated.shellIntegration.suggestEnabled": false
+  "terminal.integrated.shellIntegration.suggestEnabled": false,
+  "python-envs.pythonProjects": [
+    {
+      "path": ".",
+      "envManager": "ms-python.python:venv",
+      "packageManager": "ms-python.python:pip"
+    }
+  ]
 }
