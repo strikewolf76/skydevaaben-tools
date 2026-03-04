@@ -19,6 +19,8 @@ This repository contains static tooling used to generate and publish:
 
 All logic runs client-side in the browser and publishes through the GitHub Contents API.
 
+Track runtime behavior is centralized in the target repo at `tracks/scripts/common.js`; the generator emits per-page variables and the shared runtime include.
+
 ## Repository Structure
 - `generator.html` – UI shell
 - `generator.js` – validation, batch generation, GitHub publish workflow
