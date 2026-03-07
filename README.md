@@ -70,5 +70,9 @@ Before promoting generator changes:
 - Verify redirect chain (`r -> shorturl -> tracks`) and `cid` propagation
 - Verify `r/data.js` updates include expected slugs and artist mappings
 
+## Backlog
+- Centralized idea log: `BACKLOG.md`
+- Add new implementation ideas there instead of embedding them in README narrative sections.
+
 ## License
 MIT

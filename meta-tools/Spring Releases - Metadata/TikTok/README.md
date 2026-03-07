@@ -76,8 +76,7 @@ Use this section as the standard process when repeating this work for:
 
 ---
 
-## Notes for next platform pass
+## Backlog reference
 
-- For Instagram: bias toward concise emotional hooks + visual framing language.
-- For Facebook: allow slightly clearer context in line 2–3, but keep opening punchy.
-- Keep this README as the process baseline and copy it into Instagram/Facebook folders, then only replace platform-specific rules.
+- Cross-platform and future-pass ideas are tracked in `BACKLOG.md` at repo root.
+- Keep this README focused on completed work and reusable process only.

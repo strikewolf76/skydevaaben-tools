@@ -20,8 +20,11 @@
 - Numbering and chronology preserved.
 - Multiple caption structures used across the full set.
 
-## Reusable workflow for next Instagram pass
+## Reusable workflow
 - Keep one metadata file per release.
 - Number files by publish order.
 - Use schedule CSV, YouTube long-form metadata, and Suno docs as sources.
 - Validate count, numbering, duplicates, hook quality, and repetition control.
+
+## Backlog reference
+- New ideas and future enhancements are tracked in `BACKLOG.md` at repo root.
