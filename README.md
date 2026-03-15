@@ -48,6 +48,14 @@ Generated output is committed to `strikewolf76/skydevaaben` on `main`.
 - Slug sanitization for both track slugs and short slugs
 - Validation before publish to reduce malformed outputs
 
+## Generated Track HTML Contract
+Generator output for track pages is intentionally aligned with `tracks/scripts/common.js` in the publish repo.
+
+- Emit `TikTok:*` social tags (`TikTok:card`, `TikTok:title`, `TikTok:description`, `TikTok:image`)
+- Do not emit `twitter:*` meta tags for track pages
+- Render Spotify CTA as `href="#"` and `data-dest="spotify"`
+- Store real per-track Spotify destination in `DESTINATIONS` script data
+
 ## Token Handling
 - Token is stored locally in browser storage (`sv-generator-token`)
 - Use “Forget saved token” to clear cached token

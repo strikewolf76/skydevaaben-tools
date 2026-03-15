@@ -764,7 +764,7 @@
     // Generate buttons for each destination
     const buttonsHtml = destinations.map(dest => {
       if (dest.key === "spotify") {
-        return `<a class="cta spotify-btn" href="${htmlEscape(dest.baseUrl)}" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">
+        return `<a class="cta spotify-btn" href="#" data-dest="${htmlEscape(dest.key)}" rel="noopener noreferrer">
         <span class="spotify-logo">
           <svg width="28" height="28" viewBox="0 0 168 168"><circle fill="#1ED760" cx="84" cy="84" r="84"/><path d="M120.1 116.6c-1.7 2.8-5.3 3.7-8.1 2-22.2-13.6-50.2-16.7-83.2-9.2-3.2.7-6.4-1.3-7.1-4.5-.7-3.2 1.3-6.4 4.5-7.1 35.7-7.9 66.1-4.4 90.2 10.5 2.8 1.7 3.7 5.3 2 8.3zm11.5-23.1c-2.1 3.4-6.5 4.5-9.9 2.4-25.5-15.6-64.5-20.1-94.7-11.1-3.8 1.1-7.8-1.1-8.9-4.9-1.1-3.8 1.1-7.8 4.9-8.9 33.9-9.8 76.1-5 104.7 12.2 3.4 2.1 4.5 6.5 2.4 9.9zm12.7-25.2c-30.1-18.1-79.7-19.8-108.1-11.1-4.4 1.3-9-1.2-10.3-5.6-1.3-4.4 1.2-9 5.6-10.3 31.9-9.5 85.2-7.6 119.6 12.3 4 2.4 5.3 7.7 2.9 11.7-2.4 4-7.7 5.3-11.7 2.9z" fill="#fff"/></svg>
         </span>
@@ -799,10 +799,10 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${artist ? htmlEscape(artist) + " - " + htmlEscape(title) : htmlEscape(title)}">
-  <meta name="twitter:description" content="${htmlEscape(description)}">
-  <meta name="twitter:image" content="${htmlEscape(ogImageAbs)}">
+  <meta name="TikTok:card" content="summary_large_image">
+  <meta name="TikTok:title" content="${artist ? htmlEscape(artist) + " - " + htmlEscape(title) : htmlEscape(title)}">
+  <meta name="TikTok:description" content="${htmlEscape(description)}">
+  <meta name="TikTok:image" content="${htmlEscape(ogImageAbs)}">
 
   <link rel="stylesheet" href="../scripts/common.css">
   <style>
