@@ -72,6 +72,10 @@
         <button class="primary" id="btnCopyCreds" data-tip="Copy current PAT and Meta Pixel ID to clipboard.">Copy token + pixel</button>
         <button id="btnTheme" data-tip="Cycle themes for preview; not persisted.">Theme: Base</button>
         <button class="danger" id="btnReset" data-tip="Clear inputs and restore defaults.">Reset</button>
+        <span style="width:1px;height:24px;background:var(--panel-border);display:inline-block;align-self:center;"></span>
+        <button type="button" id="artistCredSkd" class="artist-toggle" data-tip="Toggle Skydevaaben as artist credit.">Skydevaaben</button>
+        <button type="button" id="artistCredSkyAI" class="artist-toggle" data-tip="Toggle Sky.AI as artist credit.">Sky.AI</button>
+        <button type="button" id="artistCredAB" class="artist-toggle" data-tip="Toggle After Brügge as artist credit.">After Brügge</button>
       </div>
 
       <div class="full panel">
@@ -85,14 +89,6 @@
             <div class="panel-head"><div><strong>Artist Name</strong></div></div>
             <input id="artist" />
             <div class="hint">Used for page metadata and short slug generation.</div>
-
-            <div class="panel-head mt-8"><div><strong>Artist Credits</strong></div></div>
-            <div class="row gap-8 mt-4" style="margin-top:6px;">
-              <button type="button" id="artistCredSkd" class="artist-toggle">Skydevaaben</button>
-              <button type="button" id="artistCredSkyAI" class="artist-toggle">Sky.AI</button>
-              <button type="button" id="artistCredAB" class="artist-toggle">After Brügge</button>
-            </div>
-            <div class="hint">Select all that apply for the artist filter on the redirects page. At least one required.</div>
 
             <div class="panel-head"><div><strong>Song Title</strong></div></div>
             <input id="title" />
