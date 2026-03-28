@@ -10,6 +10,9 @@
     metaPixelInputWrap: $("metaPixelInputWrap"),
 
     artist: $("artist"),
+    artistCredSkd: $("artistCredSkd"),
+    artistCredSkyAI: $("artistCredSkyAI"),
+    artistCredAB: $("artistCredAB"),
     title: $("title"),
     trackSlug: $("trackSlug"),
     utmCampaign: $("utmCampaign"),
@@ -744,6 +747,14 @@
     }
   }
 
+  function getSelectedArtistCredits() {
+    const credits = [];
+    if (els.artistCredSkd?.classList.contains('active')) credits.push('Skydevaaben');
+    if (els.artistCredSkyAI?.classList.contains('active')) credits.push('Sky.AI');
+    if (els.artistCredAB?.classList.contains('active')) credits.push('After Brügge');
+    return credits;
+  }
+
   // ---------- HTML generation ----------
   function generateHtml({
     title,
@@ -908,6 +919,8 @@ function generateRHtml(shortSlug, cid) {
 
     const anyDest = els.destSpotify.checked;
     if (!anyDest) requiredMissing.push("Select at least one destination.");
+
+    if (getSelectedArtistCredits().length === 0) requiredMissing.push("Select at least one artist credit (Skydevaaben, Sky.AI, or After Brügge).");
 
     let spotifyIdParsed = null;
     if (els.destSpotify.checked) {
@@ -1260,8 +1273,8 @@ function generateRHtml(shortSlug, cid) {
   }
 
   // Function to update and publish r/data.js with new slugs
-  async function updateDataJs(newSlugs, token, songCode, songName, songImageUrl) {
-    console.log('updateDataJs called with:', newSlugs, songCode, songName);
+  async function updateDataJs(newSlugs, token, songCode, songName, songImageUrl, songArtistCredits) {
+    console.log('updateDataJs called with:', newSlugs, songCode, songName, songArtistCredits);
     // Fetch current content
     const currentContent = await fetchDataJs();
     if (!currentContent) {
@@ -1302,6 +1315,21 @@ function generateRHtml(shortSlug, cid) {
       }
     }
 
+    // Parse existing songArtists object
+    const songArtistsMatch = currentContent.match(/window\.songArtists = \{([^\}]*)\};/s);
+    let allSongArtists = {};
+    if (songArtistsMatch) {
+      const entries = songArtistsMatch[1].match(/'(\w+)': \[([^\]]*)\]/g);
+      if (entries) {
+        entries.forEach(entry => {
+          const m = entry.match(/'(\w+)': \[([^\]]*)\]/);
+          if (m) {
+            allSongArtists[m[1]] = m[2].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+          }
+        });
+      }
+    }
+
     // Parse existing slugs array
     const slugsMatch = currentContent.match(/window\.slugs = \[([^\]]*)\];/s);
     let allSlugs = [];
@@ -1338,6 +1366,11 @@ function generateRHtml(shortSlug, cid) {
       allSongImages[songCode] = songImageUrl;
     }
 
+    // Add songArtists (always overwrite if provided, so credits can be corrected)
+    if (songCode && songArtistCredits && songArtistCredits.length > 0) {
+      allSongArtists[songCode] = songArtistCredits;
+    }
+
     // Sort slugs alphabetically
     allSlugs.sort();
 
@@ -1345,12 +1378,14 @@ function generateRHtml(shortSlug, cid) {
     const songsString = allSongs.map(song => `'${song}'`).join(', ');
     const songNamesString = Object.entries(allSongNames).map(([k, v]) => `'${k}': '${v.replace(/'/g, "\\'")}'`).join(', ');
     const songImagesString = Object.entries(allSongImages).map(([k, v]) => `'${k}': '${v.replace(/'/g, "\\'")}'`).join(', ');
+    const songArtistsString = Object.entries(allSongArtists).map(([k, v]) => `'${k}': [${v.map(a => `'${a.replace(/'/g, "\\'")}'`).join(', ')}]`).join(', ');
     const slugsString = allSlugs.map(slug => `\n  '${slug}'`).join(',') + '\n';
 
     const newContent = `// Data for Skydevaaben redirects
 window.songs = [${songsString}];
 window.songNames = { ${songNamesString} };
 window.songImages = { ${songImagesString} };
+window.songArtists = { ${songArtistsString} };
 window.slugs = [${slugsString}];`;
 
     // Put the new content
@@ -1530,7 +1565,7 @@ window.slugs = [${slugsString}];`;
     const newSlugs = batch.shortUrlItems.map(it => it.relPath.replace(/^r\//, '').replace(/\/index\.html$/, ''));
     console.log('New slugs to add:', newSlugs);
     try {
-      await updateDataJs(newSlugs, token, batch.shortSlug, els.title.value.trim(), batch.ogImageAbs);
+      await updateDataJs(newSlugs, token, batch.shortSlug, els.title.value.trim(), batch.ogImageAbs, getSelectedArtistCredits());
     } catch (error) {
       console.error('Data update error:', error);
       addLogItem({ title: "Data update failed", status: "ERROR", lines: [normalizeTokenError(error)] });
@@ -1598,6 +1633,8 @@ window.slugs = [${slugsString}];`;
     els.spotifyUrl.value = "";
     if (els.btnTestSpotify) els.btnTestSpotify.disabled = true;
     if (els.btnSearchSpotify) els.btnSearchSpotify.disabled = true;
+
+    [els.artistCredSkd, els.artistCredSkyAI, els.artistCredAB].forEach(btn => btn?.classList.remove('active'));
 
     els.ogFile.value = "";
     els.ogFileInfo.textContent = "";
@@ -1685,6 +1722,9 @@ window.slugs = [${slugsString}];`;
     if (els.platformIg) els.platformIg.addEventListener("change", updateValidation);
     if (els.platformFb) els.platformFb.addEventListener("change", updateValidation);
     if (els.platformTt) els.platformTt.addEventListener("change", updateValidation);
+    [els.artistCredSkd, els.artistCredSkyAI, els.artistCredAB].forEach(btn => {
+      if (btn) btn.addEventListener('click', () => { btn.classList.toggle('active'); updateValidation(); });
+    });
     document.querySelectorAll('input[name="numReels"]').forEach(radio => {
       radio.addEventListener('change', updateValidation);
     });

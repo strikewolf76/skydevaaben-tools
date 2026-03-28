@@ -79,6 +79,8 @@ input:disabled, textarea:disabled, select:disabled { opacity: 0.4; background: r
 }
 @media (max-width: 640px) { .settings-grid { grid-template-columns: 1fr; } }
 
+.artist-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
 .log { display:flex; flex-direction:column; gap:10px; }
 .logitem { border:1px solid rgba(127,127,127,0.22); border-radius:14px; padding:12px; }
 .logitem .top { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
