@@ -1,21 +1,21 @@
 # Spring Releases Progress Log
 
 ## Facebook
-- All files for March scheduled.
+- All files for AVRIL scheduled.
 - Total files: 40 (up to July 2026)
 
 ## Instagram
-- Last file published: 22 - Please Crimson Noise (2026-03-30)
-- Progress: 22/40
-- Next: 23
+- Last file published: 25 - Concrete Halo
+- Progress: 25/40
+- Next: 26
 
 ## YouTube
 - Done.
 - Total files: 40
 
 ## TikTok
-- Last file: 17 - King Egosentric Crimson Echo (2026-03-27)
-- Progress: 17/40
-- Next: 18
+- Last file: 25 - Concrete Halo (2026-04-19)
+- Progress: 25/40
+- Next: 26
 
-*Last updated: March 3, 2026*
+*Last updated: Avril 5, 2026*
